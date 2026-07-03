@@ -1,0 +1,55 @@
+toml
+
+[package]
+name = "statekit"
+version = "0.1.0"
+edition = "2021"
+description = "A small finite state machine library"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/your-name/statekit"
+readme = "README.md"
+keywords = ["state-machine", "fsm", "workflow"]
+categories = ["data-structures"]
+
+---
+
+readme
+
+what it does
+installation
+quick example
+error behavior
+license
+
+---
+
+api encapsulation 
+
+---
+
+#![deny(missing_docs)]
+
+documents
+
+---
+
+equality checks
+
+cargo fmt
+cargo clippy -- -D warnings
+cargo test
+cargo doc --no-deps
+
+---
+
+topics
+
+README/design docs
+crate-level documentation
+clippy/fmt standards
+semantic versioning
+feature flags
+From/Into API improvements
+Iterator APIs over states/transitions
+typed state IDs
+publishing checklist
