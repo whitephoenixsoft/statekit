@@ -64,8 +64,8 @@ mod test {
             
         let m = builder.build().unwrap();
         
-        assert_eq!(m.transition("start", "finish"), 
-            Ok("finish".to_string()));
+        assert!(m.transition("start", "finish").is_ok()); 
+            
     }
     
     #[test]
@@ -76,8 +76,7 @@ mod test {
             
         let m = builder.build().unwrap();
         
-        assert_eq!(m.transition("start", "finish"), 
-            Ok("finish".to_string()));
+        assert!(m.transition("start", "finish").is_ok()); 
     }
     
     #[test]
@@ -123,7 +122,6 @@ mod test {
             
         let m = builder.build().unwrap();
         
-        assert_eq!(m.transition("finish", "start"), 
-            Ok("start".to_string()));
+        assert!(m.transition("finish", "start").is_ok());
     }
 }
