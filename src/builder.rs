@@ -56,7 +56,7 @@ impl MachineBuilder {
         Ok(Machine {
             transitions: self.transitions
                 .iter()
-                .map(|&s| (s.0.into(), s.1))
+                .map(|s| (StateName(s.0.clone()), s.1.clone()))
                 .collect()
         })
     }
