@@ -36,6 +36,26 @@ impl MachineBuilder {
         
         self
     }
+    
+    pub fn try_allow(
+        self, 
+        from: impl Into<String>,
+        to: impl Into<String>,
+    ) -> Result<Self, StateError>{
+        let from = from.into();
+        let to = to.into();
+        
+        if from.is_empty() || to.is_empty()  {
+            return Err(StateError::EmptyState);
+        } else if from == to {
+            return Err(
+                StateError::SelfTransition {
+                    state: from.to_string(),
+                });
+        }
+
+        Ok(self.allow(from, to))
+    }
 
     pub fn build(self) -> Result<Machine, StateError> {
         if self.transitions.is_empty() {
@@ -220,5 +240,137 @@ mod test {
         let builder = MachineBuilder::new();
         
         assert_eq!(builder.build(), Err(StateError::NoTransitions));
+    }
+    
+    #[test]
+    fn try_allow_once_has_one_state() {
+        let builder = MachineBuilder::new();
+        let builder = builder.try_allow("start", "finish").ok();
+        
+        assert_eq!(builder.state_count(), 1);
+    }
+
+    #[test]
+    fn try_allow_once_has_one_transition() {
+        let builder = MachineBuilder::new();
+        let builder = builder.try_allow("start", "finish").ok();
+        
+        assert_eq!(builder.transition_count(), 1);
+    }
+    
+    #[test]
+    fn try_allow_twice_same_state_has_one_state() {
+        let builder = MachineBuilder::new();
+        let builder = builder.try_allow("start", "finish").ok();
+        let builder = builder.try_allow("start", "finish2").ok();
+        
+        assert_eq!(builder.state_count(), 1);
+    }
+
+    #[test]
+    fn try_allow_twice_same_state_has_two_transition() {
+        let builder = MachineBuilder::new();
+        let builder = builder.try_allow("start", "finish").ok();
+        let builder = builder.try_allow("start", "finish2").ok();
+        
+        assert_eq!(builder.transition_count(), 2);
+    }
+    
+    #[test]
+    fn try_allow_twice_same_state_same_transition_has_one_transition() {
+        let builder = MachineBuilder::new();
+        let builder = builder.try_allow("start", "finish").ok();
+        let builder = builder.try_allow("start", "finish").ok();
+        
+        assert_eq!(builder.transition_count(), 1);
+    }
+    
+    #[test]
+    fn try_allow_twice_different_state_has_two_states() {
+        let builder = MachineBuilder::new();
+        let builder = builder.try_allow("start", "finish").ok();
+        let builder = builder.try_allow("start2", "finish2").ok();
+        
+        assert_eq!(builder.state_count(), 2);
+    }
+    
+    #[test]
+    fn try_allow_twice_different_state_has_two_transitions() {
+        let builder = MachineBuilder::new();
+        let builder = builder.try_allow("start", "finish").ok();
+        let builder = builder.try_allow("start2", "finish2").ok();
+        
+        assert_eq!(builder.transition_count(), 2);
+    }
+    
+    #[test]
+    fn try_allow_twice_continual_transition_has_two_states() {
+        let builder = MachineBuilder::new();
+        let builder = builder.try_allow("start", "mid").ok();
+        let builder = builder.try_allow("mid", "finish").ok();
+        
+        assert_eq!(builder.state_count(), 2);
+    }
+    
+    #[test]
+    fn try_allow_twice_continual_transition_has_two_transitions() {
+        let builder = MachineBuilder::new();
+        let builder = builder.try_allow("start", "mid").ok();
+        let builder = builder.try_allow("mid", "finish").ok();
+        
+        assert_eq!(builder.transition_count(), 2);
+    }
+    
+    #[test]
+    fn try_allow_case_sensitive_state_same_transition_has_two_states() {
+        let builder = MachineBuilder::new();
+        let builder = builder.try_allow("start", "finish").ok();
+        let builder = builder.try_allow("Start", "finish").ok();
+        
+        assert_eq!(builder.state_count(), 2);
+    }
+    
+    #[test]
+    fn try_allow_case_sensitive_state_same_transition_has_two_transitions() {
+        let builder = MachineBuilder::new();
+        let builder = builder.try_allow("start", "finish").ok();
+        let builder = builder.try_allow("Start", "finish").ok();
+        
+        assert_eq!(builder.transition_count(), 2);
+    }
+    
+    #[test]
+    fn try_allow_case_sensitive_same_transition_has_two_transitions() {
+        let builder = MachineBuilder::new();
+        let builder = builder.try_allow("start", "finish").ok();
+        let builder = builder.try_allow("start", "Finish").ok();
+        
+        assert_eq!(builder.transition_count(), 2);
+    }
+    
+    #[test]
+    fn try_allow_empty_from_state_invalid() {
+        let builder = MachineBuilder::new();
+        let builder = builder.try_allow("", "finish");
+        
+        assert_eq!(builder, Err(StateError::EmptyState));
+    }
+    
+    #[test]
+    fn try_allow_empty_to_state_invalid() {
+        let builder = MachineBuilder::new();
+        let builder = builder.try_allow("start", "");
+        
+        assert_eq!(builder, Err(StateError::EmptyState));
+    }
+    
+    #[test]
+    fn try_allow_transaction_to_self_invalid() {
+        let builder = MachineBuilder::new();
+        let builder = builder.try_allow("start", "start");
+        
+        assert_eq!(builder, Err(StateError::SelfTransition { 
+            state: "start".to_string(),
+        }));
     }
 }
