@@ -245,7 +245,7 @@ mod test {
     #[test]
     fn try_allow_once_has_one_state() {
         let builder = MachineBuilder::new();
-        let builder = builder.try_allow("start", "finish").ok();
+        let builder = builder.try_allow("start", "finish").unwrap();
         
         assert_eq!(builder.state_count(), 1);
     }
@@ -253,7 +253,7 @@ mod test {
     #[test]
     fn try_allow_once_has_one_transition() {
         let builder = MachineBuilder::new();
-        let builder = builder.try_allow("start", "finish").ok();
+        let builder = builder.try_allow("start", "finish").unwrap();
         
         assert_eq!(builder.transition_count(), 1);
     }
@@ -261,8 +261,8 @@ mod test {
     #[test]
     fn try_allow_twice_same_state_has_one_state() {
         let builder = MachineBuilder::new();
-        let builder = builder.try_allow("start", "finish").ok();
-        let builder = builder.try_allow("start", "finish2").ok();
+        let builder = builder.try_allow("start", "finish").unwrap();
+        let builder = builder.try_allow("start", "finish2").unwrap();
         
         assert_eq!(builder.state_count(), 1);
     }
@@ -270,8 +270,8 @@ mod test {
     #[test]
     fn try_allow_twice_same_state_has_two_transition() {
         let builder = MachineBuilder::new();
-        let builder = builder.try_allow("start", "finish").ok();
-        let builder = builder.try_allow("start", "finish2").ok();
+        let builder = builder.try_allow("start", "finish").unwrap();
+        let builder = builder.try_allow("start", "finish2").unwrap();
         
         assert_eq!(builder.transition_count(), 2);
     }
@@ -279,8 +279,8 @@ mod test {
     #[test]
     fn try_allow_twice_same_state_same_transition_has_one_transition() {
         let builder = MachineBuilder::new();
-        let builder = builder.try_allow("start", "finish").ok();
-        let builder = builder.try_allow("start", "finish").ok();
+        let builder = builder.try_allow("start", "finish").unwrap();
+        let builder = builder.try_allow("start", "finish").unwrap();
         
         assert_eq!(builder.transition_count(), 1);
     }
@@ -288,8 +288,8 @@ mod test {
     #[test]
     fn try_allow_twice_different_state_has_two_states() {
         let builder = MachineBuilder::new();
-        let builder = builder.try_allow("start", "finish").ok();
-        let builder = builder.try_allow("start2", "finish2").ok();
+        let builder = builder.try_allow("start", "finish").unwrap();
+        let builder = builder.try_allow("start2", "finish2").unwrap();
         
         assert_eq!(builder.state_count(), 2);
     }
@@ -297,8 +297,8 @@ mod test {
     #[test]
     fn try_allow_twice_different_state_has_two_transitions() {
         let builder = MachineBuilder::new();
-        let builder = builder.try_allow("start", "finish").ok();
-        let builder = builder.try_allow("start2", "finish2").ok();
+        let builder = builder.try_allow("start", "finish").unwrap();
+        let builder = builder.try_allow("start2", "finish2").unwrap();
         
         assert_eq!(builder.transition_count(), 2);
     }
@@ -306,8 +306,8 @@ mod test {
     #[test]
     fn try_allow_twice_continual_transition_has_two_states() {
         let builder = MachineBuilder::new();
-        let builder = builder.try_allow("start", "mid").ok();
-        let builder = builder.try_allow("mid", "finish").ok();
+        let builder = builder.try_allow("start", "mid").unwrap();
+        let builder = builder.try_allow("mid", "finish").unwrap();
         
         assert_eq!(builder.state_count(), 2);
     }
@@ -315,8 +315,8 @@ mod test {
     #[test]
     fn try_allow_twice_continual_transition_has_two_transitions() {
         let builder = MachineBuilder::new();
-        let builder = builder.try_allow("start", "mid").ok();
-        let builder = builder.try_allow("mid", "finish").ok();
+        let builder = builder.try_allow("start", "mid").unwrap();
+        let builder = builder.try_allow("mid", "finish").unwrap();
         
         assert_eq!(builder.transition_count(), 2);
     }
@@ -324,8 +324,8 @@ mod test {
     #[test]
     fn try_allow_case_sensitive_state_same_transition_has_two_states() {
         let builder = MachineBuilder::new();
-        let builder = builder.try_allow("start", "finish").ok();
-        let builder = builder.try_allow("Start", "finish").ok();
+        let builder = builder.try_allow("start", "finish").unwrap();
+        let builder = builder.try_allow("Start", "finish").unwrap();
         
         assert_eq!(builder.state_count(), 2);
     }
@@ -333,8 +333,8 @@ mod test {
     #[test]
     fn try_allow_case_sensitive_state_same_transition_has_two_transitions() {
         let builder = MachineBuilder::new();
-        let builder = builder.try_allow("start", "finish").ok();
-        let builder = builder.try_allow("Start", "finish").ok();
+        let builder = builder.try_allow("start", "finish").unwrap();
+        let builder = builder.try_allow("Start", "finish").unwrap();
         
         assert_eq!(builder.transition_count(), 2);
     }
@@ -342,8 +342,8 @@ mod test {
     #[test]
     fn try_allow_case_sensitive_same_transition_has_two_transitions() {
         let builder = MachineBuilder::new();
-        let builder = builder.try_allow("start", "finish").ok();
-        let builder = builder.try_allow("start", "Finish").ok();
+        let builder = builder.try_allow("start", "finish").unwrap();
+        let builder = builder.try_allow("start", "Finish").unwrap();
         
         assert_eq!(builder.transition_count(), 2);
     }
