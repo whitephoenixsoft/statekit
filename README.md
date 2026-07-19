@@ -10,3 +10,34 @@ This crate was created so that this work can easily be bootstrapped into the cod
 
 IN DEVELOPMENT
 
+## Installation
+
+TBD
+
+## Example
+
+```rust
+use statekit::{Machine, StateError};
+
+fn main() -> Result<(), StateError> {
+    let machine = Machine::builder()
+        .allow("queued", "running")
+        .allow("running", "completed")
+        .allow("running", "failed")
+        .build()?;
+
+    let state = machine.transition("queued", "running");
+
+    assert!(state.is_ok());
+
+    Ok(())
+}
+```
+
+## Error Behavior
+TBD
+
+
+## License
+MIT
+
