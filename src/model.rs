@@ -1,6 +1,6 @@
 
 #[derive(Debug, PartialEq, Clone, Hash, Eq)]
-pub struct StateName(pub String);
+pub struct StateName(pub(crate) String);
 
 impl From<&str> for StateName {
     fn from(s: &str) -> Self {

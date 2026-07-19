@@ -4,31 +4,24 @@ use crate::MachineBuilder;
 use crate::StateError;
 use crate::StateName;
 
-/*
-    pub fn targets(&self, from: &str) -> Option<impl Iterator<Item = &str>>
-pub fn contains_state(&self, state: &str) -> bool
-pub fn transition_count(&self) -> usize
----
-builder.try_allow("a", "b")?
-allow(...) -> Self          // ergonomic, validates on build
-try_allow(...) -> Result<Self, StateError>
----
-let definition = Machine::builder().allow(...).build()?;
-let mut instance = definition.start_at("queued")?;
-instance.transition_to("running")?;
-    
-    */
-
+/// An immutable state-machine definition.
+///
+/// A `Machine` always contains at least one transition, and every stored 
+/// transition has valid, non-empty endpoints.
 #[derive(Debug, PartialEq)]
 pub struct Machine {
     pub(crate) transitions: HashMap<StateName, HashSet<String>>,
 }
 
 impl Machine {
+    /// Builder for creating a new Machine. This is the only way to instantiate it.
     pub fn builder() -> MachineBuilder {
         MachineBuilder::new() 
     }
     
+    /// Checks if a transition is possible in the state machine.
+    ///
+    /// Returns true if possible, false if not possible.
     pub fn can_transition(&self, from: &str, to: &str) -> bool {
         let state: StateName = from.into();
         self.transitions
@@ -36,6 +29,9 @@ impl Machine {
             .is_some_and(|targets| targets.contains(to))
     }
 
+    /// Validates a transition. 
+    ///
+    /// Returns Ok() if valid, or a StateError if not.
     pub fn transition(
         &self,
         from: &str,
@@ -52,12 +48,14 @@ impl Machine {
         }   
     }
 
+    /// Returns the number of transitions in the state machine.
     pub fn transition_count(&self) -> usize {
         self.transitions.values()
             .map(|s| s.len())
             .sum()
     }
 
+    /// Return true if the a state exist in any transition.
     pub fn contains_state(&self, state: &str) -> bool {
         self.transitions.keys()
             .any(|s| s.0 == state) ||
