@@ -2,6 +2,12 @@
 name = "statekit"
 version = "0.1.0"
 edition = "2024"
+description = "A small finite state machine library"
+license = "MIT"
+repository = "https://github.com/whitephoenixsoft/statekit"
+readme = "README.md"
+keywords = ["state-machine", "fsm", "workflow"]
+categories = ["data-structures"]
 
 [dependencies]
 thiserror = "2"
