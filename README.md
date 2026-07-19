@@ -37,6 +37,14 @@ fn main() -> Result<(), StateError> {
 ## Error Behavior
 TBD
 
+## What it is Not
+
+Statekit is not:
+- a process engine
+- a policy engine
+- pathfinding code
+
+It can support these effort but will not implement them.
 
 ## License
 MIT
