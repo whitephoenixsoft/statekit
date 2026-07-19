@@ -11,10 +11,9 @@ fn transition_allow_queued_to_running() -> Result<(), StateError> {
     let state = machine.transition("queued", "running");
 
     assert!(state.is_ok());
-    
+
     Ok(())
 }
-
 
 #[test]
 fn transition_allow_running_to_failed() -> Result<(), StateError> {
@@ -27,7 +26,7 @@ fn transition_allow_running_to_failed() -> Result<(), StateError> {
     let state = machine.transition("running", "failed");
 
     assert!(state.is_ok());
-    
+
     Ok(())
 }
 
@@ -42,7 +41,7 @@ fn transition_allow_running_to_completed() -> Result<(), StateError> {
     let state = machine.transition("running", "completed");
 
     assert!(state.is_ok());
-    
+
     Ok(())
 }
 
@@ -56,18 +55,19 @@ fn transition_allow_running_to_invalid_state() -> Result<(), StateError> {
 
     let state = machine.transition("running", "invalid");
 
-    assert_eq!(state, 
+    assert_eq!(
+        state,
         Err(StateError::InvalidTransition {
             from: "running".to_string(),
             to: "invalid".to_string(),
-        }));
-    
+        })
+    );
+
     Ok(())
 }
 
 //---------
 //
-
 
 #[test]
 fn transition_try_allow_queued_to_running() -> Result<(), StateError> {
@@ -80,10 +80,9 @@ fn transition_try_allow_queued_to_running() -> Result<(), StateError> {
     let state = machine.transition("queued", "running");
 
     assert!(state.is_ok());
-    
+
     Ok(())
 }
-
 
 #[test]
 fn transition_try_allow_running_to_failed() -> Result<(), StateError> {
@@ -96,7 +95,7 @@ fn transition_try_allow_running_to_failed() -> Result<(), StateError> {
     let state = machine.transition("running", "failed");
 
     assert!(state.is_ok());
-    
+
     Ok(())
 }
 
@@ -111,7 +110,7 @@ fn transition_try_allow_running_to_completed() -> Result<(), StateError> {
     let state = machine.transition("running", "completed");
 
     assert!(state.is_ok());
-    
+
     Ok(())
 }
 
@@ -125,12 +124,13 @@ fn transition_try_allow_running_to_invalid_state() -> Result<(), StateError> {
 
     let state = machine.transition("running", "invalid");
 
-    assert_eq!(state, 
+    assert_eq!(
+        state,
         Err(StateError::InvalidTransition {
             from: "running".to_string(),
             to: "invalid".to_string(),
-        }));
-    
+        })
+    );
+
     Ok(())
 }
-

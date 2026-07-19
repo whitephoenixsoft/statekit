@@ -1,8 +1,8 @@
 #![deny(missing_docs)]
 //! Statekit
-//!     A simple immutable state-machine that validates allowed predefined transitions. 
+//!     A simple immutable state-machine that validates allowed predefined transitions.
 //!
-//! This crate is useful for cases when states are dynamic or when they exist as data 
+//! This crate is useful for cases when states are dynamic or when they exist as data
 //! so that the application does not have to couple itself to the states.
 //!
 //! # Example Code
@@ -28,8 +28,7 @@ mod error;
 mod machine;
 mod model;
 
-pub(crate) use model::StateName;
 pub use builder::MachineBuilder;
 pub use error::StateError;
 pub use machine::Machine;
-
+pub(crate) use model::StateName;
