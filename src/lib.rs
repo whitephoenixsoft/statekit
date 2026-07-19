@@ -1,4 +1,4 @@
-//#![deny(missing_docs)]
+#![deny(missing_docs)]
 //! Statekit
 //!     A simple immutable state-machine that validates allowed predefined transitions. 
 //!
@@ -28,7 +28,7 @@ mod error;
 mod machine;
 mod model;
 
-pub use model::StateName;
+pub(crate) use model::StateName;
 pub use builder::MachineBuilder;
 pub use error::StateError;
 pub use machine::Machine;

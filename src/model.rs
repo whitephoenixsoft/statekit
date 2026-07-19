@@ -1,6 +1,6 @@
-
+/// The state of the transition.
 #[derive(Debug, PartialEq, Clone, Hash, Eq)]
-pub struct StateName(pub(crate) String);
+pub(crate) struct StateName(pub(crate) String);
 
 impl From<&str> for StateName {
     fn from(s: &str) -> Self {
