@@ -51,6 +51,19 @@ impl Machine {
             })
         }   
     }
+
+    pub fn transition_count(&self) -> usize {
+        self.transitions.values()
+            .map(|s| s.len())
+            .sum()
+    }
+
+    pub fn contains_state(&self, state: &str) -> bool {
+        self.transitions.keys()
+            .any(|s| s.0 == state) ||
+        self.transitions.values()
+            .any(|s| s.contains(state))
+    }
 }
 
 #[cfg(test)]
@@ -69,6 +82,16 @@ mod test {
     }
     
     #[test]
+    fn transaction_count_1_transaction() {
+        let builder = Machine::builder()
+            .allow("start", "finish");
+            
+        let m = builder.build().unwrap();
+        
+        assert_eq!(m.transition_count(), 1); 
+    }
+
+    #[test]
     fn transition_exists_multiple_states_returns_next_state() {
         let builder = Machine::builder()
             .allow("start", "finish")
@@ -79,6 +102,17 @@ mod test {
         assert!(m.transition("start", "finish").is_ok()); 
     }
     
+    #[test]
+    fn transaction_count_2_transactions() {
+        let builder = Machine::builder()
+            .allow("start", "finish")
+            .allow("1", "2");
+            
+        let m = builder.build().unwrap();
+        
+        assert_eq!(m.transition_count(), 2); 
+    }
+
     #[test]
     fn can_transition_exists_returns_true() {
         let builder = Machine::builder()
@@ -123,5 +157,112 @@ mod test {
         let m = builder.build().unwrap();
         
         assert!(m.transition("finish", "start").is_ok());
+    }
+
+    #[test]
+    fn contains_state_one_transaction_existing_to_state_returns_true() {
+        let builder = Machine::builder()
+            .allow("start", "finish");
+            
+        let m = builder.build().unwrap();
+        
+        assert!(m.contains_state("start")); 
+    }
+
+    #[test]
+    fn contains_state_one_transaction_existing_from_state_returns_true() {
+        let builder = Machine::builder()
+            .allow("start", "finish");
+            
+        let m = builder.build().unwrap();
+        
+        assert!(m.contains_state("finish")); 
+    }
+
+    #[test]
+    fn contains_state_one_transaction_nonexisting_state_returns_false() {
+        let builder = Machine::builder()
+            .allow("start", "finish");
+            
+        let m = builder.build().unwrap();
+        
+        assert!(m.contains_state("other") == false); 
+    }
+
+    #[test]
+    fn contains_state_two_transactions_on_same_from_state_finds_from_state() {
+        let builder = Machine::builder()
+            .allow("start", "rest")
+            .allow("start", "finish");
+            
+        let m = builder.build().unwrap();
+        
+        assert!(m.contains_state("start")); 
+    }
+
+    #[test]
+    fn contains_state_two_transactions_on_same_from_state_finds_first_to_state() {
+        let builder = Machine::builder()
+            .allow("start", "rest")
+            .allow("start", "finish");
+            
+        let m = builder.build().unwrap();
+        
+        assert!(m.contains_state("rest")); 
+    }
+
+    #[test]
+    fn contains_state_two_transactions_on_same_from_state_finds_second_to_state() {
+        let builder = Machine::builder()
+            .allow("start", "rest")
+            .allow("start", "finish");
+            
+        let m = builder.build().unwrap();
+        
+        assert!(m.contains_state("finish")); 
+    }
+
+    #[test]
+    fn contains_state_two_transactions_on_different_from_state_finds_first_from_state() {
+        let builder = Machine::builder()
+            .allow("start", "end")
+            .allow("rest", "finish");
+            
+        let m = builder.build().unwrap();
+        
+        assert!(m.contains_state("start")); 
+    }
+
+    #[test]
+    fn contains_state_two_transactions_on_different_from_state_finds_second_from_state() {
+        let builder = Machine::builder()
+            .allow("start", "end")
+            .allow("rest", "finish");
+            
+        let m = builder.build().unwrap();
+        
+        assert!(m.contains_state("rest")); 
+    }
+
+    #[test]
+    fn contains_state_two_transactions_on_different_from_state_finds_first_to_state() {
+        let builder = Machine::builder()
+            .allow("start", "end")
+            .allow("rest", "finish");
+            
+        let m = builder.build().unwrap();
+        
+        assert!(m.contains_state("end")); 
+    }
+
+    #[test]
+    fn contains_state_two_transactions_on_different_from_state_finds_second_to_state() {
+        let builder = Machine::builder()
+            .allow("start", "end")
+            .allow("rest", "finish");
+            
+        let m = builder.build().unwrap();
+        
+        assert!(m.contains_state("finish")); 
     }
 }

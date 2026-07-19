@@ -97,10 +97,17 @@ mod test {
     use super::*;
     
     #[test]
-    fn new_builder_has_empty_map() {
+    fn state_count_new_builder_returns_0() {
         let builder = MachineBuilder::new();
         
         assert_eq!(builder.state_count(), 0);
+    }
+    
+    #[test]
+    fn transition_count_new_builder_returns_0() {
+        let builder = MachineBuilder::new();
+        
+        assert_eq!(builder.transition_count(), 0);
     }
     
     #[test]
