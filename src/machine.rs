@@ -55,13 +55,12 @@ impl Machine {
     }
 
     /// Returns an iterator of the target states from the state specified.
-    pub fn targets(&self, from: &str) -> Option<impl Iterator<Item = &str>>
-    {
+    pub fn targets(&self, from: &str) -> Option<impl Iterator<Item = &str>> {
         Some(
             self.transitions
-            .get(&StateName(from.to_string()))?
-            .iter()
-            .map(|s| s.as_str())
+                .get(&StateName(from.to_string()))?
+                .iter()
+                .map(|s| s.as_str()),
         )
     }
 }
@@ -256,8 +255,7 @@ mod test {
 
     #[test]
     fn targets_one_transition_key_does_not_exist_returns_none() {
-        let builder = Machine::builder()
-            .allow("start", "finish");
+        let builder = Machine::builder().allow("start", "finish");
 
         let m = builder.build().unwrap();
         let iter = m.targets("other");
@@ -267,8 +265,7 @@ mod test {
 
     #[test]
     fn targets_one_transition_one_value() {
-        let builder = Machine::builder()
-            .allow("start", "finish");
+        let builder = Machine::builder().allow("start", "finish");
 
         let m = builder.build().unwrap();
         let collected: Vec<_> = m.targets("start").into_iter().flatten().collect();
@@ -278,12 +275,11 @@ mod test {
 
     #[test]
     fn targets_one_transition_two_values() {
-        let builder = Machine::builder()
-            .allow("start", "1")
-            .allow("start", "2");
+        let builder = Machine::builder().allow("start", "1").allow("start", "2");
 
         let m = builder.build().unwrap();
-        let collected: Vec<_>= m.targets("start").into_iter().flatten().collect();
+        let mut collected: Vec<_> = m.targets("start").into_iter().flatten().collect();
+        collected.sort();
 
         assert_eq!(collected, vec!["1", "2"]);
     }
@@ -296,7 +292,8 @@ mod test {
             .allow("start", "3");
 
         let m = builder.build().unwrap();
-        let collected: Vec<_> = m.targets("start").into_iter().flatten().collect();
+        let mut collected: Vec<_> = m.targets("start").into_iter().flatten().collect();
+        collected.sort();
 
         assert_eq!(collected, vec!["1", "2", "3"]);
     }
