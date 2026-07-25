@@ -53,6 +53,17 @@ impl Machine {
         self.transitions.keys().any(|s| s.0 == state)
             || self.transitions.values().any(|s| s.contains(state))
     }
+
+    /// Returns an iterator of the target states from the state specified.
+    pub fn targets(&self, from: &str) -> Option<impl Iterator<Item = &str>>
+    {
+        Some(
+            self.transitions
+            .get(&StateName(from.to_string()))?
+            .iter()
+            .map(|s| s.as_str())
+        )
+    }
 }
 
 #[cfg(test)]
@@ -241,5 +252,52 @@ mod test {
         let m = builder.build().unwrap();
 
         assert!(m.contains_state("finish"));
+    }
+
+    #[test]
+    fn targets_one_transition_key_does_not_exist_returns_none() {
+        let builder = Machine::builder()
+            .allow("start", "finish");
+
+        let m = builder.build().unwrap();
+        let iter = m.targets("other");
+
+        assert!(iter.is_none());
+    }
+
+    #[test]
+    fn targets_one_transition_one_value() {
+        let builder = Machine::builder()
+            .allow("start", "finish");
+
+        let m = builder.build().unwrap();
+        let collected: Vec<_> = m.targets("start").into_iter().flatten().collect();
+
+        assert_eq!(collected, vec!["finish"]);
+    }
+
+    #[test]
+    fn targets_one_transition_two_values() {
+        let builder = Machine::builder()
+            .allow("start", "1")
+            .allow("start", "2");
+
+        let m = builder.build().unwrap();
+        let collected: Vec<_>= m.targets("start").into_iter().flatten().collect();
+
+        assert_eq!(collected, vec!["1", "2"]);
+    }
+
+    #[test]
+    fn targets_one_transition_three_values() {
+        let builder = Machine::builder()
+            .allow("start", "1")
+            .allow("start", "2")
+            .allow("start", "3");
+
+        let m = builder.build().unwrap();
+        let collected: Vec<_> = m.targets("start").into_iter().flatten().collect();
+
+        assert_eq!(collected, vec!["1", "2", "3"]);
     }
 }
