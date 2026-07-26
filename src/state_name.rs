@@ -1,3 +1,5 @@
+use std::borrow::Borrow;
+
 /// A validated identifier for a state within a machine.
 ///
 /// `StateName` exists to represent the domain concept of a state.
@@ -15,5 +17,11 @@ impl StateName {
 impl From<&str> for StateName {
     fn from(s: &str) -> Self {
         Self(s.to_string())
+    }
+}
+
+impl Borrow<str> for StateName {
+    fn borrow(&self) -> &str {
+        self.as_str()
     }
 }

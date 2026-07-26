@@ -23,9 +23,8 @@ impl Machine {
     ///
     /// Returns true if possible, false if not possible.
     pub fn can_transition(&self, from: &str, to: &str) -> bool {
-        let state: StateName = from.into();
         self.transitions
-            .get(&state)
+            .get(from)
             .is_some_and(|targets| targets.contains(to))
     }
 
@@ -58,9 +57,9 @@ impl Machine {
     pub fn targets(&self, from: &str) -> Option<impl Iterator<Item = &str>> {
         Some(
             self.transitions
-                .get(&StateName::from(from))?
+                .get(from)?
                 .iter()
-                .map(|s| s.as_str()),
+                .map(String::as_str),
         )
     }
 }
