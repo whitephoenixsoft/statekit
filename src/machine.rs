@@ -50,7 +50,7 @@ impl Machine {
 
     /// Return true if the a state exist in any transition.
     pub fn contains_state(&self, state: &str) -> bool {
-        self.transitions.keys().any(|s| s.0 == state)
+        self.transitions.keys().any(|s| s.as_str() == state)
             || self.transitions.values().any(|s| s.contains(state))
     }
 
@@ -58,7 +58,7 @@ impl Machine {
     pub fn targets(&self, from: &str) -> Option<impl Iterator<Item = &str>> {
         Some(
             self.transitions
-                .get(&StateName(from.to_string()))?
+                .get(&StateName::from(from))?
                 .iter()
                 .map(|s| s.as_str()),
         )

@@ -84,7 +84,7 @@ impl MachineBuilder {
             transitions: self
                 .transitions
                 .iter()
-                .map(|s| (StateName(s.0.clone()), s.1.clone()))
+                .map(|s| (StateName::from(s.0.as_str()), s.1.clone()))
                 .collect(),
         })
     }

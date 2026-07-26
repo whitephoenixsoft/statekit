@@ -26,9 +26,9 @@
 mod builder;
 mod error;
 mod machine;
-mod model;
+mod state_name;
 
 pub use builder::MachineBuilder;
 pub use error::StateError;
 pub use machine::Machine;
-pub(crate) use model::StateName;
+pub(crate) use state_name::StateName;
