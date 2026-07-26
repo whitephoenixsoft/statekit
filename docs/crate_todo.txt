@@ -1,17 +1,4 @@
-toml
-
-[package]
-name = "statekit"
-version = "0.1.0"
-edition = "2021"
-description = "A small finite state machine library"
-license = "MIT OR Apache-2.0"
-repository = "https://github.com/your-name/statekit"
-readme = "README.md"
-keywords = ["state-machine", "fsm", "workflow"]
-categories = ["data-structures"]
-
----
+CRATE ACTIONS NEEDED
 
 readme
 
@@ -20,16 +7,6 @@ installation
 quick example
 error behavior
 license
-
----
-
-api encapsulation 
-
----
-
-#![deny(missing_docs)]
-
-documents
 
 ---
 

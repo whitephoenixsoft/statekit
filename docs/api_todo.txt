@@ -1,3 +1,7 @@
+TODO For different API ideas
+
+STATENAME
+-----------
 use std::fmt;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -39,6 +43,7 @@ impl fmt::Display for StateName {
     }
 }
 
+TRY ALLOW
 ---
 
 builder.try_allow("a", "b")?
@@ -68,22 +73,8 @@ pub fn try_allow(
     Ok(self)
 }
 
----
 
-apis
-
-pub fn targets(&self, from: &str) -> Option<impl Iterator<Item = &str>>
-pub fn contains_state(&self, state: &str) -> bool
-pub fn transition_count(&self) -> usize
-
----
-
-pub fn transition<'a>(
-    &self,
-    from: &'a str,
-    to: &'a str,
-) -> Result<() , StateError>
-
+LONG TERM SPLIT FOR MACHINE
 ---
 
 split Machine 
