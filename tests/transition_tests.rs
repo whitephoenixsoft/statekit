@@ -1,14 +1,16 @@
 use statekit::{Machine, StateError};
 
+// allow version of the tests
+
 #[test]
-fn transition_allow_queued_to_running() -> Result<(), StateError> {
+fn validate_transition_allow_queued_to_running() -> Result<(), StateError> {
     let machine = Machine::builder()
         .allow("queued", "running")
         .allow("running", "completed")
         .allow("running", "failed")
         .build()?;
 
-    let state = machine.transition("queued", "running");
+    let state = machine.validate_transition("queued", "running");
 
     assert!(state.is_ok());
 
@@ -16,14 +18,14 @@ fn transition_allow_queued_to_running() -> Result<(), StateError> {
 }
 
 #[test]
-fn transition_allow_running_to_failed() -> Result<(), StateError> {
+fn validate_transition_allow_running_to_failed() -> Result<(), StateError> {
     let machine = Machine::builder()
         .allow("queued", "running")
         .allow("running", "completed")
         .allow("running", "failed")
         .build()?;
 
-    let state = machine.transition("running", "failed");
+    let state = machine.validate_transition("running", "failed");
 
     assert!(state.is_ok());
 
@@ -31,14 +33,14 @@ fn transition_allow_running_to_failed() -> Result<(), StateError> {
 }
 
 #[test]
-fn transition_allow_running_to_completed() -> Result<(), StateError> {
+fn validate_transition_allow_running_to_completed() -> Result<(), StateError> {
     let machine = Machine::builder()
         .allow("queued", "running")
         .allow("running", "completed")
         .allow("running", "failed")
         .build()?;
 
-    let state = machine.transition("running", "completed");
+    let state = machine.validate_transition("running", "completed");
 
     assert!(state.is_ok());
 
@@ -46,14 +48,14 @@ fn transition_allow_running_to_completed() -> Result<(), StateError> {
 }
 
 #[test]
-fn transition_allow_running_to_invalid_state() -> Result<(), StateError> {
+fn validate_transition_allow_running_to_invalid_state() -> Result<(), StateError> {
     let machine = Machine::builder()
         .allow("queued", "running")
         .allow("running", "completed")
         .allow("running", "failed")
         .build()?;
 
-    let state = machine.transition("running", "invalid");
+    let state = machine.validate_transition("running", "invalid");
 
     assert_eq!(
         state,
@@ -66,18 +68,17 @@ fn transition_allow_running_to_invalid_state() -> Result<(), StateError> {
     Ok(())
 }
 
-//---------
-//
+// try_allow version of the tests
 
 #[test]
-fn transition_try_allow_queued_to_running() -> Result<(), StateError> {
+fn validate_transition_try_allow_queued_to_running() -> Result<(), StateError> {
     let machine = Machine::builder()
         .try_allow("queued", "running")?
         .try_allow("running", "completed")?
         .try_allow("running", "failed")?
         .build()?;
 
-    let state = machine.transition("queued", "running");
+    let state = machine.validate_transition("queued", "running");
 
     assert!(state.is_ok());
 
@@ -85,14 +86,14 @@ fn transition_try_allow_queued_to_running() -> Result<(), StateError> {
 }
 
 #[test]
-fn transition_try_allow_running_to_failed() -> Result<(), StateError> {
+fn validate_transition_try_allow_running_to_failed() -> Result<(), StateError> {
     let machine = Machine::builder()
         .try_allow("queued", "running")?
         .try_allow("running", "completed")?
         .try_allow("running", "failed")?
         .build()?;
 
-    let state = machine.transition("running", "failed");
+    let state = machine.validate_transition("running", "failed");
 
     assert!(state.is_ok());
 
@@ -100,14 +101,14 @@ fn transition_try_allow_running_to_failed() -> Result<(), StateError> {
 }
 
 #[test]
-fn transition_try_allow_running_to_completed() -> Result<(), StateError> {
+fn validate_transition_try_allow_running_to_completed() -> Result<(), StateError> {
     let machine = Machine::builder()
         .try_allow("queued", "running")?
         .try_allow("running", "completed")?
         .try_allow("running", "failed")?
         .build()?;
 
-    let state = machine.transition("running", "completed");
+    let state = machine.validate_transition("running", "completed");
 
     assert!(state.is_ok());
 
@@ -115,14 +116,14 @@ fn transition_try_allow_running_to_completed() -> Result<(), StateError> {
 }
 
 #[test]
-fn transition_try_allow_running_to_invalid_state() -> Result<(), StateError> {
+fn validate_transition_try_allow_running_to_invalid_state() -> Result<(), StateError> {
     let machine = Machine::builder()
         .try_allow("queued", "running")?
         .try_allow("running", "completed")?
         .try_allow("running", "failed")?
         .build()?;
 
-    let state = machine.transition("running", "invalid");
+    let state = machine.validate_transition("running", "invalid");
 
     assert_eq!(
         state,

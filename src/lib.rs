@@ -16,7 +16,7 @@
 //!         .allow("running", "failed")
 //!         .build()?;
 //!
-//!     let state = machine.transition("queued", "running");
+//!     let state = machine.validate_transition("queued", "running");
 //!
 //!     assert!(state.is_ok());
 //!

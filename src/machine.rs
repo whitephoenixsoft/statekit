@@ -32,7 +32,7 @@ impl Machine {
     /// Validates a transition.
     ///
     /// Returns Ok() if valid, or a StateError if not.
-    pub fn transition(&self, from: &str, to: &str) -> Result<(), StateError> {
+    pub fn validate_transition(&self, from: &str, to: &str) -> Result<(), StateError> {
         if self.can_transition(from, to) {
             Ok(())
         } else {
@@ -70,12 +70,12 @@ mod test {
     use super::*;
 
     #[test]
-    fn transition_exists_returns_next_state() {
+    fn validate_transition_exists_returns_next_state() {
         let builder = Machine::builder().allow("start", "finish");
 
         let m = builder.build().unwrap();
 
-        assert!(m.transition("start", "finish").is_ok());
+        assert!(m.validate_transition("start", "finish").is_ok());
     }
 
     #[test]
@@ -88,12 +88,12 @@ mod test {
     }
 
     #[test]
-    fn transition_exists_multiple_states_returns_next_state() {
+    fn validate_transition_exists_multiple_states_returns_next_state() {
         let builder = Machine::builder().allow("start", "finish").allow("1", "2");
 
         let m = builder.build().unwrap();
 
-        assert!(m.transition("start", "finish").is_ok());
+        assert!(m.validate_transition("start", "finish").is_ok());
     }
 
     #[test]
@@ -115,13 +115,13 @@ mod test {
     }
 
     #[test]
-    fn transition_not_exists_returns_invalid_error() {
+    fn validate_transition_not_exists_returns_invalid_error() {
         let builder = Machine::builder().allow("start", "finish");
 
         let m = builder.build().unwrap();
 
         assert_eq!(
-            m.transition("start", "invalid"),
+            m.validate_transition("start", "invalid"),
             Err(StateError::InvalidTransition {
                 from: "start".to_string(),
                 to: "invalid".to_string(),
@@ -139,14 +139,14 @@ mod test {
     }
 
     #[test]
-    fn transition_cyclic_is_valid() {
+    fn validate_transition_cyclic_is_valid() {
         let builder = Machine::builder()
             .allow("start", "finish")
             .allow("finish", "start");
 
         let m = builder.build().unwrap();
 
-        assert!(m.transition("finish", "start").is_ok());
+        assert!(m.validate_transition("finish", "start").is_ok());
     }
 
     #[test]
