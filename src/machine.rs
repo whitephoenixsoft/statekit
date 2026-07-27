@@ -6,13 +6,13 @@ use crate::{MachineBuilder, StateError, StateName};
 ///
 /// A `Machine` always contains at least one transition, and every stored
 /// transition has valid, non-empty endpoints.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct Machine {
     transitions: HashMap<StateName, HashSet<String>>,
 }
 
 impl Machine {
-    /// Private contructor for a new machine
+    /// Constructs a machine from a validated transition table.
     pub(crate) fn new(transitions: HashMap<StateName, HashSet<String>>) -> Self {
         Self { transitions }
     }
@@ -24,7 +24,7 @@ impl Machine {
         MachineBuilder::new()
     }
 
-    /// Returns wheter the transition from `from` to `to` is allowed.
+    /// Returns whether the transition from `from` to `to` is allowed.
     pub fn can_transition(&self, from: &str, to: &str) -> bool {
         self.transitions
             .get(from)
@@ -66,17 +66,19 @@ impl Machine {
     ///
     /// Returns `None` when `from` has no outgoing transitions. This includes
     /// states that appear only as transition targets.
+    ///
+    /// The iteration order is unspecified.
     pub fn targets(&self, from: &str) -> Option<impl Iterator<Item = &str>> {
         Some(self.transitions.get(from)?.iter().map(String::as_str))
     }
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use super::*;
 
     #[test]
-    fn validate_transition_exists_returns_next_state() {
+    fn validate_transition_exists_returns_ok() {
         let builder = Machine::builder().allow("start", "finish");
 
         let m = builder.build().unwrap();
@@ -94,7 +96,7 @@ mod test {
     }
 
     #[test]
-    fn validate_transition_exists_multiple_states_returns_next_state() {
+    fn validate_transition_exists_multiple_states_returns_ok() {
         let builder = Machine::builder().allow("start", "finish").allow("1", "2");
 
         let m = builder.build().unwrap();
@@ -141,7 +143,7 @@ mod test {
 
         let m = builder.build().unwrap();
 
-        assert_eq!(m.can_transition("start", "invalid"), false);
+        assert!(!m.can_transition("start", "invalid"));
     }
 
     #[test]
@@ -179,7 +181,7 @@ mod test {
 
         let m = builder.build().unwrap();
 
-        assert!(m.contains_state("other") == false);
+        assert!(!m.contains_state("other"));
     }
 
     #[test]
@@ -302,5 +304,30 @@ mod test {
         collected.sort();
 
         assert_eq!(collected, vec!["1", "2", "3"]);
+    }
+    
+    #[test]
+    fn targets_target_only_state_returns_none() {
+        let machine = Machine::builder()
+            .allow("start", "finish")
+            .build()
+            .unwrap();
+    
+        assert!(machine.contains_state("finish"));
+        assert!(machine.targets("finish").is_none());
+    }
+    
+    #[test]
+    fn duplicate_transition_is_stored_once() {
+        let machine = Machine::builder()
+            .allow("start", "finish")
+            .allow("start", "finish")
+            .build()
+            .unwrap();
+
+        assert_eq!(machine.transition_count(), 1);
+    
+        let targets: Vec<_> = machine.targets("start").unwrap().collect();
+        assert_eq!(targets, vec!["finish"]);
     }
 }
