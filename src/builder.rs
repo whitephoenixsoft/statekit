@@ -425,7 +425,7 @@ mod test {
     }
 
     #[test]
-    fn try_allow_transaction_to_self_invalid() {
+    fn try_allow_transition_to_self_invalid() {
         let builder = MachineBuilder::new();
         let builder = builder.try_allow("start", "start");
 

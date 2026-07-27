@@ -53,8 +53,8 @@ impl Machine {
 
     /// Return true if the a state exist in any transition.
     pub fn contains_state(&self, state: &str) -> bool {
-        self.transitions.keys().any(|s| s.as_str() == state)
-            || self.transitions.values().any(|s| s.contains(state))
+        self.transitions.contains_key(state)
+            || self.transitions.values().any(|targets| targets.contains(state))
     }
 
     /// Returns an iterator of the target states from the state specified.
@@ -77,7 +77,7 @@ mod test {
     }
 
     #[test]
-    fn transaction_count_1_transaction() {
+    fn transition_count_1_transition() {
         let builder = Machine::builder().allow("start", "finish");
 
         let m = builder.build().unwrap();
@@ -95,7 +95,7 @@ mod test {
     }
 
     #[test]
-    fn transaction_count_2_transactions() {
+    fn transition_count_2_transitions() {
         let builder = Machine::builder().allow("start", "finish").allow("1", "2");
 
         let m = builder.build().unwrap();
@@ -148,7 +148,7 @@ mod test {
     }
 
     #[test]
-    fn contains_state_one_transaction_existing_to_state_returns_true() {
+    fn contains_state_one_transition_existing_source_state_returns_true() {
         let builder = Machine::builder().allow("start", "finish");
 
         let m = builder.build().unwrap();
@@ -157,7 +157,7 @@ mod test {
     }
 
     #[test]
-    fn contains_state_one_transaction_existing_from_state_returns_true() {
+    fn contains_state_one_transition_existing_target_state_returns_true() {
         let builder = Machine::builder().allow("start", "finish");
 
         let m = builder.build().unwrap();
@@ -166,7 +166,7 @@ mod test {
     }
 
     #[test]
-    fn contains_state_one_transaction_nonexisting_state_returns_false() {
+    fn contains_state_one_transition_nonexisting_state_returns_false() {
         let builder = Machine::builder().allow("start", "finish");
 
         let m = builder.build().unwrap();
@@ -175,7 +175,7 @@ mod test {
     }
 
     #[test]
-    fn contains_state_two_transactions_on_same_from_state_finds_from_state() {
+    fn contains_state_two_transitions_on_same_source_state_returns_true() {
         let builder = Machine::builder()
             .allow("start", "rest")
             .allow("start", "finish");
@@ -186,7 +186,7 @@ mod test {
     }
 
     #[test]
-    fn contains_state_two_transactions_on_same_from_state_finds_first_to_state() {
+    fn contains_state_two_transitions_on_same_source_state_finds_first_target_state() {
         let builder = Machine::builder()
             .allow("start", "rest")
             .allow("start", "finish");
@@ -197,7 +197,7 @@ mod test {
     }
 
     #[test]
-    fn contains_state_two_transactions_on_same_from_state_finds_second_to_state() {
+    fn contains_state_two_transitions_on_same_source_state_finds_second_target_state() {
         let builder = Machine::builder()
             .allow("start", "rest")
             .allow("start", "finish");
@@ -208,7 +208,7 @@ mod test {
     }
 
     #[test]
-    fn contains_state_two_transactions_on_different_from_state_finds_first_from_state() {
+    fn contains_state_two_transitions_on_different_source_states_finds_first_source_state() {
         let builder = Machine::builder()
             .allow("start", "end")
             .allow("rest", "finish");
@@ -219,7 +219,7 @@ mod test {
     }
 
     #[test]
-    fn contains_state_two_transactions_on_different_from_state_finds_second_from_state() {
+    fn contains_state_two_transitions_on_different_source_state_finds_second_source_state() {
         let builder = Machine::builder()
             .allow("start", "end")
             .allow("rest", "finish");
@@ -230,7 +230,7 @@ mod test {
     }
 
     #[test]
-    fn contains_state_two_transactions_on_different_from_state_finds_first_to_state() {
+    fn contains_state_two_transitions_on_different_source_state_finds_first_target_state() {
         let builder = Machine::builder()
             .allow("start", "end")
             .allow("rest", "finish");
@@ -241,7 +241,7 @@ mod test {
     }
 
     #[test]
-    fn contains_state_two_transactions_on_different_from_state_finds_second_to_state() {
+    fn contains_state_two_transitions_on_different_source_states_finds_second_target_state() {
         let builder = Machine::builder()
             .allow("start", "end")
             .allow("rest", "finish");
