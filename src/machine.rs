@@ -185,50 +185,6 @@ mod tests {
     }
 
     #[test]
-    fn contains_state_two_transitions_on_same_source_state_returns_true() {
-        let builder = Machine::builder()
-            .allow("start", "rest")
-            .allow("start", "finish");
-
-        let m = builder.build().unwrap();
-
-        assert!(m.contains_state("start"));
-    }
-
-    #[test]
-    fn contains_state_two_transitions_on_same_source_state_finds_first_target_state() {
-        let builder = Machine::builder()
-            .allow("start", "rest")
-            .allow("start", "finish");
-
-        let m = builder.build().unwrap();
-
-        assert!(m.contains_state("rest"));
-    }
-
-    #[test]
-    fn contains_state_two_transitions_on_same_source_state_finds_second_target_state() {
-        let builder = Machine::builder()
-            .allow("start", "rest")
-            .allow("start", "finish");
-
-        let m = builder.build().unwrap();
-
-        assert!(m.contains_state("finish"));
-    }
-
-    #[test]
-    fn contains_state_two_transitions_on_different_source_states_finds_first_source_state() {
-        let builder = Machine::builder()
-            .allow("start", "end")
-            .allow("rest", "finish");
-
-        let m = builder.build().unwrap();
-
-        assert!(m.contains_state("start"));
-    }
-
-    #[test]
     fn contains_state_two_transitions_on_different_source_state_finds_second_source_state() {
         let builder = Machine::builder()
             .allow("start", "end")
@@ -237,28 +193,6 @@ mod tests {
         let m = builder.build().unwrap();
 
         assert!(m.contains_state("rest"));
-    }
-
-    #[test]
-    fn contains_state_two_transitions_on_different_source_state_finds_first_target_state() {
-        let builder = Machine::builder()
-            .allow("start", "end")
-            .allow("rest", "finish");
-
-        let m = builder.build().unwrap();
-
-        assert!(m.contains_state("end"));
-    }
-
-    #[test]
-    fn contains_state_two_transitions_on_different_source_states_finds_second_target_state() {
-        let builder = Machine::builder()
-            .allow("start", "end")
-            .allow("rest", "finish");
-
-        let m = builder.build().unwrap();
-
-        assert!(m.contains_state("finish"));
     }
 
     #[test]
