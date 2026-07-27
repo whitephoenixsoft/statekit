@@ -1,8 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
-use crate::MachineBuilder;
-use crate::StateError;
-use crate::StateName;
+use crate::{MachineBuilder, StateError, StateName};
 
 /// An immutable state-machine definition.
 ///
@@ -18,46 +16,56 @@ impl Machine {
     pub(crate) fn new(transitions: HashMap<StateName, HashSet<String>>) -> Self {
         Self { transitions }
     }
-    /// Builder for creating a new Machine. This is the only way to instantiate it.
+
+    /// Returns a builder for constructing a [`Machine`].
+    ///
+    /// This is the public entry point for creating machine definitions.
     pub fn builder() -> MachineBuilder {
         MachineBuilder::new()
     }
 
-    /// Checks if a transition is possible in the state machine.
-    ///
-    /// Returns true if possible, false if not possible.
+    /// Returns wheter the transition from `from` to `to` is allowed.
     pub fn can_transition(&self, from: &str, to: &str) -> bool {
         self.transitions
             .get(from)
             .is_some_and(|targets| targets.contains(to))
     }
 
-    /// Validates a transition.
+    /// Validates that the transition from `from` to `to` is allowed.
     ///
-    /// Returns Ok() if valid, or a StateError if not.
+    /// # Errors
+    ///
+    /// Returns [`StateError::InvalidTransition`] when the machine does not
+    /// contain the requested transition.
     pub fn validate_transition(&self, from: &str, to: &str) -> Result<(), StateError> {
         if self.can_transition(from, to) {
             Ok(())
         } else {
             Err(StateError::InvalidTransition {
-                from: from.to_string(),
-                to: to.to_string(),
+                from: from.to_owned(),
+                to: to.to_owned(),
             })
         }
     }
 
     /// Returns the number of transitions in the state machine.
     pub fn transition_count(&self) -> usize {
-        self.transitions.values().map(|s| s.len()).sum()
+        self.transitions.values().map(HashSet::len).sum()
     }
 
-    /// Return true if the a state exist in any transition.
+    /// Returns whether `state` appears as either endpoint of a transition.
     pub fn contains_state(&self, state: &str) -> bool {
         self.transitions.contains_key(state)
-            || self.transitions.values().any(|targets| targets.contains(state))
+            || self
+                .transitions
+                .values()
+                .any(|targets| targets.contains(state))
     }
 
-    /// Returns an iterator of the target states from the state specified.
+    /// Returns an iterator over states directly reachable from `from`.
+    ///
+    /// Returns `None` when `from` has no outgoing transitions. This includes
+    /// states that appear only as transition targets.
     pub fn targets(&self, from: &str) -> Option<impl Iterator<Item = &str>> {
         Some(self.transitions.get(from)?.iter().map(String::as_str))
     }
