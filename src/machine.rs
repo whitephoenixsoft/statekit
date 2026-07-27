@@ -10,10 +10,14 @@ use crate::StateName;
 /// transition has valid, non-empty endpoints.
 #[derive(Debug, PartialEq)]
 pub struct Machine {
-    pub(crate) transitions: HashMap<StateName, HashSet<String>>,
+    transitions: HashMap<StateName, HashSet<String>>,
 }
 
 impl Machine {
+    /// Private contructor for a new machine
+    pub(crate) fn new(transitions: HashMap<StateName, HashSet<String>>) -> Self {
+        Self { transitions }
+    }
     /// Builder for creating a new Machine. This is the only way to instantiate it.
     pub fn builder() -> MachineBuilder {
         MachineBuilder::new()
@@ -55,12 +59,7 @@ impl Machine {
 
     /// Returns an iterator of the target states from the state specified.
     pub fn targets(&self, from: &str) -> Option<impl Iterator<Item = &str>> {
-        Some(
-            self.transitions
-                .get(from)?
-                .iter()
-                .map(String::as_str),
-        )
+        Some(self.transitions.get(from)?.iter().map(String::as_str))
     }
 }
 

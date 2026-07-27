@@ -80,13 +80,12 @@ impl MachineBuilder {
             }
         }
 
-        Ok(Machine {
-            transitions: self
-                .transitions
+        Ok(Machine::new(
+            self.transitions
                 .iter()
                 .map(|s| (StateName::from(s.0.as_str()), s.1.clone()))
                 .collect(),
-        })
+        ))
     }
 
     /// Returns the number of transitions added to the state machine.
