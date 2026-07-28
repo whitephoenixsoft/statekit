@@ -1,40 +1,28 @@
 use std::collections::{HashMap, HashSet};
 
-use crate::Machine;
-use crate::StateError;
-use crate::StateName;
+use crate::{ Machine, StateError, StateName };
 
-/*
-Contraints
-- empty string invalid
-- self-transition invalid
-- case-sensitive by default
-- cycles allowed
-- terminal states need no special behavior yet
-*/
-
-/// The builder for the Machine.
+/// A builder for constructing a [`Machine`].
 ///
-/// Adds transitions to the state-machine by allowing them, then builds and immutable `Machine`.
+/// Transitions are added with [`MachineBuilder::allow`] and validated when
+/// [`MachineBuilder::build`] is called.
 ///
-/// Validate transitions must connect to two different states, and states must be not empty.
-/// When building the `Machine` there must be at least one transition.
-#[derive(Debug, PartialEq)]
+/// State names are case-sensitive. Empty state names and self-transitions are
+/// rejected. Cycles are allowed.
+#[derive(Debug, PartialEq, Default)]
 pub struct MachineBuilder {
     transitions: HashMap<String, HashSet<String>>,
 }
 
 impl MachineBuilder {
-    /// Create a new builder.
+    /// Creates an empty builder.
     pub(crate) fn new() -> Self {
-        Self {
-            transitions: HashMap::new(),
-        }
+        Self::default()
     }
-
-    /// Add a new transition from one state to another.
+    
+    /// Adds an allowed transition from one state to another.
     ///
-    /// Identical transitions are ignored.
+    /// Adding the same transition more than once has no additional effect.
     pub fn allow(mut self, from: impl Into<String>, to: impl Into<String>) -> Self {
         self.transitions
             .entry(from.into())
@@ -43,43 +31,53 @@ impl MachineBuilder {
 
         self
     }
-
-    /// Validate the transitions and build them into an immutable state Machine.
+    
+    /// Validates the configured transitions and builds an immutable [`Machine`].
+    ///
+    /// # Errors
+    ///
+    /// Returns:
+    ///
+    /// - [`StateError::NoTransitions`] if no transitions were configured.
+    /// - [`StateError::EmptyState`] if an endpoint is empty.
+    /// - [`StateError::SelfTransition`] if a transition has identical endpoints.
     pub fn build(self) -> Result<Machine, StateError> {
         if self.transitions.is_empty() {
             return Err(StateError::NoTransitions);
         }
 
-        for transition in self.transitions.iter() {
-            if transition.0.is_empty() || transition.1.contains("") {
+        for (from, targets) in &self.transitions {
+            if from.is_empty() || targets.contains("") {
                 return Err(StateError::EmptyState);
-            } else if transition.1.contains(transition.0) {
+            } 
+            
+            if targets.contains(from) {
                 return Err(StateError::SelfTransition {
-                    state: transition.0.clone(),
+                    state: from.clone(),
                 });
             }
         }
+        
+        let transitions = self.transitions
+            .into_iter()
+            .map(|(from, targets)| (StateName::from(from), targets))
+            .collect();
 
-        Ok(Machine::new(
-            self.transitions
-                .iter()
-                .map(|s| (StateName::from(s.0.as_str()), s.1.clone()))
-                .collect(),
-        ))
+        Ok(Machine::new(transitions))
     }
 
     /// Returns the number of transitions added to the state machine.
     pub fn transition_count(&self) -> usize {
-        self.transitions.values().map(|s| s.len()).sum()
+        self.transitions.values().map(HashSet::len).sum()
     }
 
-    /// Returns the number of unique states in the state machine.
+    /// Returns the number of unique states used by the configured transitions.
     pub fn state_count(&self) -> usize {
-        let mut unique = HashSet::new();
+        let mut unique: HashSet<&str> = HashSet::new();
 
-        for (key, set) in &self.transitions {
-            unique.insert(key.clone());
-            unique.extend(set.iter().cloned());
+        for (from, targets) in &self.transitions {
+            unique.insert(from.as_str());
+            unique.extend(targets.iter().map(String::as_str));
         }
 
         unique.len()
@@ -87,7 +85,7 @@ impl MachineBuilder {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use super::*;
 
     #[test]
@@ -262,5 +260,15 @@ mod test {
         let builder = MachineBuilder::new();
 
         assert_eq!(builder.build(), Err(StateError::NoTransitions));
+    }
+    
+    #[test]
+    fn build_allows_cycles() {
+        let machine = MachineBuilder::new()
+            .allow("start", "finish")
+            .allow("finish", "start")
+            .build();
+    
+        assert!(machine.is_ok());
     }
 }

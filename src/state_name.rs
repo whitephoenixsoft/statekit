@@ -20,6 +20,12 @@ impl From<&str> for StateName {
     }
 }
 
+impl From<String> for StateName {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
 impl Borrow<str> for StateName {
     fn borrow(&self) -> &str {
         self.as_str()
