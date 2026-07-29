@@ -5,7 +5,7 @@
 //! This crate is useful for cases when states are dynamic or when they exist as data
 //! so that the application does not have to couple itself to the states.
 //!
-//! # Example Code
+//! # Examples
 //! ```
 //! use statekit::{Machine, StateError};
 //!
