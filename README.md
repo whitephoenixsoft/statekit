@@ -35,7 +35,11 @@ fn main() -> Result<(), StateError> {
 ```
 
 ## Error Behavior
-TBD
+1. Defining a state machine through the builder will validate when build is called.
+2. Empty states are not allowed.
+3. States are case sensitive.
+4. A State cannot transition to itself.
+5. All errors inherit std::Error.
 
 ## What it is Not
 
