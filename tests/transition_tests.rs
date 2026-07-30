@@ -1,69 +1,58 @@
 use statekit::{Machine, StateError};
 
-// allow version of the tests
-
-#[test]
-fn validate_transition_allow_queued_to_running() -> Result<(), StateError> {
-    let machine = Machine::builder()
+fn workflow_machine() -> Result<Machine, StateError> {
+    Machine::builder()
         .allow("queued", "running")
         .allow("running", "completed")
         .allow("running", "failed")
-        .build()?;
+        .build()
+}
 
-    let state = machine.validate_transition("queued", "running");
+#[test]
+fn validates_configured_workflow_transitions() -> Result<(), StateError> {
+    let machine = workflow_machine()?;
 
-    assert!(state.is_ok());
+    assert!(machine.validate_transition("queued", "running").is_ok());
+    assert!(machine.validate_transition("running", "completed").is_ok());
+    assert!(machine.validate_transition("running", "failed").is_ok());
 
     Ok(())
 }
 
 #[test]
-fn validate_transition_allow_running_to_failed() -> Result<(), StateError> {
-    let machine = Machine::builder()
-        .allow("queued", "running")
-        .allow("running", "completed")
-        .allow("running", "failed")
-        .build()?;
+fn rejects_transition_not_defined_by_the_workflow() -> Result<(), StateError> {
+    let machine = workflow_machine()?;
 
-    let state = machine.validate_transition("running", "failed");
-
-    assert!(state.is_ok());
-
-    Ok(())
-}
-
-#[test]
-fn validate_transition_allow_running_to_completed() -> Result<(), StateError> {
-    let machine = Machine::builder()
-        .allow("queued", "running")
-        .allow("running", "completed")
-        .allow("running", "failed")
-        .build()?;
-
-    let state = machine.validate_transition("running", "completed");
-
-    assert!(state.is_ok());
-
-    Ok(())
-}
-
-#[test]
-fn validate_transition_allow_running_to_invalid_state() -> Result<(), StateError> {
-    let machine = Machine::builder()
-        .allow("queued", "running")
-        .allow("running", "completed")
-        .allow("running", "failed")
-        .build()?;
-
-    let state = machine.validate_transition("running", "invalid");
+    let result = machine.validate_transition("running", "invalid");
 
     assert_eq!(
-        state,
+        result,
         Err(StateError::InvalidTransition {
-            from: "running".to_string(),
-            to: "invalid".to_string(),
+            from: "running".to_owned(),
+            to: "invalid".to_owned(),
         })
     );
 
     Ok(())
+}
+
+#[test]
+fn rejects_an_empty_machine_definition() {
+    let result = Machine::builder().build();
+
+    assert_eq!(result, Err(StateError::NoTransitions));
+}
+
+#[test]
+fn rejects_a_self_transition() {
+    let result = Machine::builder()
+        .allow("running", "running")
+        .build();
+
+    assert_eq!(
+        result,
+        Err(StateError::SelfTransition {
+            state: "running".to_owned(),
+        })
+    );
 }
