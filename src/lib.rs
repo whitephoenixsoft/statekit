@@ -1,9 +1,11 @@
 #![deny(missing_docs)]
-//! Statekit
-//!     A simple immutable state-machine that validates allowed predefined transitions.
+
+//! # Statekit
 //!
-//! This crate is useful for cases when states are dynamic or when they exist as data
-//! so that the application does not have to couple itself to the states.
+//! An immutable state-machine definition for validating predefined transitions.
+//!
+//! This crate is useful when states are dynamic, configuration-driven, or stored
+//! as data, allowing applications to avoid hard-coding state transitions.
 //!
 //! # Examples
 //! ```
