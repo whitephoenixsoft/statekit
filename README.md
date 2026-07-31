@@ -21,7 +21,7 @@ Examples include:
 
 ## Status
 
-Stable API for v0.1.
+Stable API for v0.1.1.
 
 Future releases will expand functionality while maintaining semantic versioning.
 
@@ -64,7 +64,7 @@ fn main() -> Result<(), StateError> {
 ### Error
 All public errors implement `std::error::Error`
 
-### Immutabilitu
+### Immutability
 Once constructed, a machine cannot be modified.
 
 This makes it inexpensive to share safely between threads and application components.
