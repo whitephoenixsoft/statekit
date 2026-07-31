@@ -3,14 +3,18 @@ name = "statekit"
 version = "0.1.0"
 edition = "2024"
 rust-version = "1.85"
-description = "A small finite state machine library"
+description = "An immutable state-machine for validating predefined transitions."
 license = "MIT"
 repository = "https://github.com/whitephoenixsoft/statekit"
 homepage = "https://github.com/whitephoenixsoft/statekit"
 documentation = "https://docs.rs/statekit"
 readme = "README.md"
-keywords = ["state-machine", "fsm", "workflow"]
+keywords = ["state-machine", "fsm", "workflow", "state"]
 categories = ["data-structures"]
+
+exclude = [
+	"docs/internal-docs/**"
+]
 
 [dependencies]
 thiserror = "2"
