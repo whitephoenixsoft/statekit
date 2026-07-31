@@ -29,7 +29,7 @@ Future releases will expand functionality while maintaining semantic versioning.
 
 ```toml
 [dependencies]
-statekit = "0.1"
+statekit = "0.1.1"
 ```
 
 ## Example
