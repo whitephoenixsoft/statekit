@@ -1,7 +1,7 @@
 use thiserror::Error;
 
 /// Errors produced when contructing or using a state machine.
-/// 
+///
 /// Each variant represents a violation of one of the crate's domain invariants.
 #[derive(Debug, Error, PartialEq, Eq)]
 pub enum StateError {

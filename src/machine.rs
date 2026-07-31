@@ -239,18 +239,15 @@ mod tests {
 
         assert_eq!(collected, vec!["1", "2", "3"]);
     }
-    
+
     #[test]
     fn targets_target_only_state_returns_none() {
-        let machine = Machine::builder()
-            .allow("start", "finish")
-            .build()
-            .unwrap();
-    
+        let machine = Machine::builder().allow("start", "finish").build().unwrap();
+
         assert!(machine.contains_state("finish"));
         assert!(machine.targets("finish").is_none());
     }
-    
+
     #[test]
     fn duplicate_transition_is_stored_once() {
         let machine = Machine::builder()
@@ -260,7 +257,7 @@ mod tests {
             .unwrap();
 
         assert_eq!(machine.transition_count(), 1);
-    
+
         let targets: Vec<_> = machine.targets("start").unwrap().collect();
         assert_eq!(targets, vec!["finish"]);
     }

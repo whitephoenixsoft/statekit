@@ -45,9 +45,7 @@ fn rejects_an_empty_machine_definition() {
 
 #[test]
 fn rejects_a_self_transition() {
-    let result = Machine::builder()
-        .allow("running", "running")
-        .build();
+    let result = Machine::builder().allow("running", "running").build();
 
     assert_eq!(
         result,

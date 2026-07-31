@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
-use crate::{ Machine, StateError, StateName };
+use crate::{Machine, StateError, StateName};
 
 /// A builder for constructing a [`Machine`].
 ///
@@ -19,7 +19,7 @@ impl MachineBuilder {
     pub(crate) fn new() -> Self {
         Self::default()
     }
-    
+
     /// Adds an allowed transition from one state to another.
     ///
     /// Adding the same transition more than once has no additional effect.
@@ -31,7 +31,7 @@ impl MachineBuilder {
 
         self
     }
-    
+
     /// Validates the configured transitions and builds an immutable [`Machine`].
     ///
     /// # Errors
@@ -49,16 +49,17 @@ impl MachineBuilder {
         for (from, targets) in &self.transitions {
             if from.is_empty() || targets.contains("") {
                 return Err(StateError::EmptyState);
-            } 
-            
+            }
+
             if targets.contains(from) {
                 return Err(StateError::SelfTransition {
                     state: from.clone(),
                 });
             }
         }
-        
-        let transitions = self.transitions
+
+        let transitions = self
+            .transitions
             .into_iter()
             .map(|(from, targets)| (StateName::from(from), targets))
             .collect();
@@ -261,14 +262,14 @@ mod tests {
 
         assert_eq!(builder.build(), Err(StateError::NoTransitions));
     }
-    
+
     #[test]
     fn build_allows_cycles() {
         let machine = MachineBuilder::new()
             .allow("start", "finish")
             .allow("finish", "start")
             .build();
-    
+
         assert!(machine.is_ok());
     }
 }
