@@ -19,7 +19,7 @@
 //!     assert!(machine.can_transition("queued", "running"));
 //!     assert!(!machine.can_transition("queued", "completed"));
 //!
-//!  machine.validate_transition("queued", "running")?;
+//!     machine.validate_transition("queued", "running")?;
 //!
 //!     Ok(())
 //! }
