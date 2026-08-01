@@ -1,4 +1,5 @@
 use std::borrow::Borrow;
+use crate::StateError;
 
 /// A validated identifier for a state within a machine.
 ///
@@ -14,15 +15,21 @@ impl StateName {
     }
 }
 
-impl From<&str> for StateName {
-    fn from(s: &str) -> Self {
-        Self(s.to_string())
+impl TryFrom<&str> for StateName {
+    type Error = StateError;
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        validate_state_name(value)?;
+
+        Ok(Self(value.to_owned()))
     }
 }
 
-impl From<String> for StateName {
-    fn from(value: String) -> Self {
-        Self(value)
+impl TryFrom<String> for StateName {
+    type Error = StateError;
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        validate_state_name(&value)?;
+        
+        Ok(Self(value))
     }
 }
 
@@ -30,4 +37,15 @@ impl Borrow<str> for StateName {
     fn borrow(&self) -> &str {
         self.as_str()
     }
+}
+
+/// Validates the state definition.
+///
+/// Returns a result of Ok() or a [`StateError`] if validation fails.
+fn validate_state_name(value: &str) -> Result<(), StateError> {
+    if value.is_empty() {
+        return Err(StateError::EmptyState);
+    }
+
+    Ok(())
 }
