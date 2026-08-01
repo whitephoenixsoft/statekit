@@ -12,10 +12,15 @@ license
 
 equality checks
 
-cargo fmt
-cargo clippy -- -D warnings
+cargo fmt --check
+cargo clippy -all-targets --all-features -- -D warnings
 cargo test
 cargo doc --no-deps
+cargo package --list
+cargo publish --dry-run
+cargo publish
+git tag v<version>
+git push origin --all-tags
 
 ---
 
