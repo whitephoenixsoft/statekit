@@ -34,6 +34,7 @@ Expose Models:
 - `TryFrom`
 - Finalize `try_allow()`
 - earlier validation
+- deprecate `allow()`
 
 ### Phase 3 - Better domain model (v0.3)
 

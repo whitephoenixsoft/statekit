@@ -23,6 +23,8 @@ Examples include:
 
 Stable API for v0.1.1.
 
+In development of v0.2.0.
+
 Future releases will expand functionality while maintaining semantic versioning.
 
 ## Installation
@@ -32,8 +34,9 @@ Future releases will expand functionality while maintaining semantic versioning.
 statekit = "0.1.1"
 ```
 
-## Example
+## Examples
 
+### Version 0.1 (deprecated)
 ```rust
 use statekit::{Machine, StateError};
 
@@ -52,12 +55,42 @@ fn main() -> Result<(), StateError> {
 }
 ```
 
+### Version 0.2
+
+```rust
+use statekit::{Machine, StateError};
+
+fn main() -> Result<(), StateError> {
+    let machine = Machine::builder()
+        .try_allow("queued", "running")?
+        .try_allow("running", "completed")?
+        .try_allow("running", "failed")?
+        .build()?;
+
+    let result = machine.validate_transition("queued", "running");
+
+    assert!(result.is_ok());
+
+    Ok(())
+}
+```
+
 ## Invariants
+### Version 0.1
 - Validation occurs when `build()` is called.
 - State names must not be empty.
 - State names are case-sensitive.
 - Self-transitions are rejected.
 - A machine must define at least one transition.
+
+### Version 0.2
+- Validation of the transition occurs when `try_allow()` is called.
+- Validation of the state machine occurs when `build()` is called.
+	- A machine must define at least one transition.
+- `StateName` will be used as the basis for the states and will ensure:
+	- State names must not be empty.
+	- State names are case-sensitive.
+- Self-transitions are rejected.
 
 ## Features
 
