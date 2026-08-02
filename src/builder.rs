@@ -11,7 +11,7 @@ use crate::{Machine, StateError, StateName};
 /// rejected. Cycles are allowed.
 #[derive(Debug, PartialEq, Default)]
 pub struct MachineBuilder {
-    transitions: HashMap<String, HashSet<String>>,
+    transitions: HashMap<StateName, HashSet<StateName>>,
 }
 
 impl MachineBuilder {
@@ -30,6 +30,28 @@ impl MachineBuilder {
             .insert(to.into());
 
         self
+    }
+
+    pub fn try_allow(
+        mut self,
+        from: impl AsRef<str>,
+        to: impl AsRef<str>,
+    ) -> Result<Self, StateError> {
+        let from = StateName::try_from(from.as_ref())?;
+        let to = StateName::try_from(to.as_ref())?;
+
+        if from == to {
+            return Err(StateError::SelfTransition {
+                state: from.as_str().to_owned(),
+            });
+        }
+
+        self.transitions
+            .entry(from)
+            .or_default()
+            .insert(to);
+
+        Ok(self)
     }
 
     /// Validates the configured transitions and builds an immutable [`Machine`].
