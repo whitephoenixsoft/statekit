@@ -8,12 +8,12 @@ use crate::{MachineBuilder, StateError, StateName};
 /// transition has valid, non-empty endpoints.
 #[derive(Debug, PartialEq, Eq)]
 pub struct Machine {
-    transitions: HashMap<StateName, HashSet<String>>,
+    transitions: HashMap<StateName, HashSet<StateName>>,
 }
 
 impl Machine {
     /// Constructs a machine from a validated transition table.
-    pub(crate) fn new(transitions: HashMap<StateName, HashSet<String>>) -> Self {
+    pub(crate) fn new(transitions: HashMap<StateName, HashSet<StateName>>) -> Self {
         Self { transitions }
     }
 

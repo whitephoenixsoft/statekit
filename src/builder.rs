@@ -4,7 +4,7 @@ use crate::{Machine, StateError, StateName};
 
 /// A builder for constructing a [`Machine`].
 ///
-/// Transitions are added with [`MachineBuilder::allow`] and validated when
+/// Transitions are added with [`MachineBuilder::try_allow`] and validated when
 /// [`MachineBuilder::build`] is called.
 ///
 /// State names are case-sensitive. Empty state names and self-transitions are
@@ -20,18 +20,28 @@ impl MachineBuilder {
         Self::default()
     }
 
+    /// Deprecated. Adds an allowed transition from one state to another.
+    ///
+    /// Adding the same transition more than once has no additional effect.
+    /// Will panic if an invalid transition is added.
+    #[deprecated(
+        since = "0.2.0",
+        note = "use `try_allow` to handle invalid transitions without panicking"
+    )]
+    pub fn allow(self, from: impl AsRef<str>, to: impl AsRef<str>) -> Self {
+        self.try_allow(from, to).expect("invalid transition passed to MachineBuilder::allow")
+    }
+
     /// Adds an allowed transition from one state to another.
     ///
     /// Adding the same transition more than once has no additional effect.
-    pub fn allow(mut self, from: impl Into<String>, to: impl Into<String>) -> Self {
-        self.transitions
-            .entry(from.into())
-            .or_default()
-            .insert(to.into());
-
-        self
-    }
-
+    ///
+    /// # Errors
+    ///
+    /// Returns:
+    ///
+    /// - [`StateError::EmptyState`] if an endpoint is empty.
+    /// - [`StateError::SelfTransition`] if a transition has identical endpoints.
     pub fn try_allow(
         mut self,
         from: impl AsRef<str>,
@@ -68,25 +78,7 @@ impl MachineBuilder {
             return Err(StateError::NoTransitions);
         }
 
-        for (from, targets) in &self.transitions {
-            if from.is_empty() || targets.contains("") {
-                return Err(StateError::EmptyState);
-            }
-
-            if targets.contains(from) {
-                return Err(StateError::SelfTransition {
-                    state: from.clone(),
-                });
-            }
-        }
-
-        let transitions = self
-            .transitions
-            .into_iter()
-            .map(|(from, targets)| (StateName::from(from), targets))
-            .collect();
-
-        Ok(Machine::new(transitions))
+        Ok(Machine::new(self.transitions))
     }
 
     /// Returns the number of transitions added to the state machine.
@@ -96,11 +88,11 @@ impl MachineBuilder {
 
     /// Returns the number of unique states used by the configured transitions.
     pub fn state_count(&self) -> usize {
-        let mut unique: HashSet<&str> = HashSet::new();
+        let mut unique: HashSet<&StateName> = HashSet::new();
 
         for (from, targets) in &self.transitions {
-            unique.insert(from.as_str());
-            unique.extend(targets.iter().map(String::as_str));
+            unique.insert(&from);
+            unique.extend(targets);
         }
 
         unique.len()
