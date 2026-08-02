@@ -21,13 +21,31 @@ The method to fulfill this is to provide an immutable state-machine definition t
 
 Holds the state transitions.
 
-## Machine Builder
+- It is only valid if there is a transition.
+- Validates that a transition exists.
+- Must support actions related to state transitions.
+
+### Machine Builder
 
 Validates and builds the state-machine.
 
-## State Name
+- Converts states into transitions.
+- Must support actions for dynamically creating transitions.
+
+### State Name
 
 Validates and holds the state. 
+
+- Crates and maintains a valid state.
+- Must support actions related to the state domain. 
+
+
+## Architecture
+
+[Machine] -- Contains --> [Transitions] -- Contains --> [States]
+
+[Machine Builder] -- Allows --> [Transition] -- Builds Upon --> [Source State Name, Target State Name]
+                  -- Builds --> [Machine] 
 
 ## What it is Not
 
