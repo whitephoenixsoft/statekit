@@ -88,8 +88,9 @@ fn main() -> Result<(), StateError> {
 - Validation of the state machine occurs when `build()` is called.
 	- A machine must define at least one transition.
 - `StateName` will be used as the basis for the states and will ensure:
-	- State names must not be empty.
-	- State names are case-sensitive.
+    	- State names must not be empty.
+    	- State names are case-sensitive.
+    - State names must start ans end with visible characters
 - Self-transitions are rejected.
 
 ## Features
