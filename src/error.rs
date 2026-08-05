@@ -12,6 +12,10 @@ pub enum StateError {
     /// A state name must not be empty.
     #[error("state names must not be empty")]
     EmptyState,
+    
+    /// A state must start and end with visible characters.
+    #[error("state names must not start or end with invisible characters")]
+    AmbiguousStateName,
 
     /// A transition must connect two different states.
     #[error("self-transitions are not allowed for state `{state}`")]
