@@ -46,6 +46,10 @@ fn validate_state_name(value: &str) -> Result<(), StateError> {
     if value.is_empty() {
         return Err(StateError::EmptyState);
     }
+    
+    if value != value.trim() {
+        return Err(StateError::AmbiguousStateName);
+    }
 
     Ok(())
 }
