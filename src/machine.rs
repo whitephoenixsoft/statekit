@@ -69,7 +69,7 @@ impl Machine {
     ///
     /// The iteration order is unspecified.
     pub fn targets(&self, from: &str) -> Option<impl Iterator<Item = &str>> {
-        Some(self.transitions.get(from)?.iter().map(String::as_str))
+        Some(self.transitions.get(from)?.iter().map(StateName::as_str))
     }
 }
 
