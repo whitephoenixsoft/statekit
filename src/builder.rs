@@ -28,7 +28,11 @@ impl MachineBuilder {
         since = "0.2.0",
         note = "use `try_allow` to handle invalid transitions without panicking"
     )]
-    pub fn allow(self, from: impl AsRef<str>, to: impl AsRef<str>) -> Self {
+    pub fn allow(
+        self, 
+        from: impl AsRef<str>,
+        to: impl AsRef<str>,
+    ) -> Self {
         self.try_allow(from, to).expect("invalid transition passed to MachineBuilder::allow")
     }
 
@@ -124,6 +128,7 @@ mod tests {
      * allow
      */
     #[test]
+    #[allow(deprecated)]
     fn allow_once_has_two_states() {
         let builder = MachineBuilder::new();
         let builder = builder.allow("start", "finish");
@@ -132,6 +137,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(deprecated)]
     fn allow_once_has_one_transition() {
         let builder = MachineBuilder::new();
         let builder = builder.allow("start", "finish");
@@ -140,6 +146,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(deprecated)]
     fn allow_twice_same_from_state_has_three_states() {
         let builder = MachineBuilder::new();
         let builder = builder.allow("start", "finish");
@@ -149,6 +156,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(deprecated)]
     fn allow_twice_same_from_state_has_two_transition() {
         let builder = MachineBuilder::new();
         let builder = builder.allow("start", "finish");
@@ -158,6 +166,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(deprecated)]
     fn allow_twice_same_from_state_same_transition_has_two_states() {
         let builder = MachineBuilder::new();
         let builder = builder.allow("start", "finish");
@@ -167,6 +176,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(deprecated)]
     fn allow_twice_same_from_state_same_transition_has_one_transition() {
         let builder = MachineBuilder::new();
         let builder = builder.allow("start", "finish");
@@ -176,6 +186,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(deprecated)]
     fn allow_twice_different_states_has_four_states() {
         let builder = MachineBuilder::new();
         let builder = builder.allow("start", "finish");
@@ -185,6 +196,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(deprecated)]
     fn allow_twice_different_states_has_two_transitions() {
         let builder = MachineBuilder::new();
         let builder = builder.allow("start", "finish");
@@ -194,6 +206,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(deprecated)]
     fn allow_twice_connnected_transitions_have_three_states() {
         let builder = MachineBuilder::new();
         let builder = builder.allow("start", "mid");
@@ -203,6 +216,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(deprecated)]
     fn allow_twice_connected_transitions_have_two_transitions() {
         let builder = MachineBuilder::new();
         let builder = builder.allow("start", "mid");
@@ -212,6 +226,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(deprecated)]
     fn allow_case_sensitive_from_has_three_states() {
         let builder = MachineBuilder::new();
         let builder = builder.allow("start", "finish");
@@ -221,6 +236,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(deprecated)]
     fn allow_case_sensitive_from_has_two_transitions() {
         let builder = MachineBuilder::new();
         let builder = builder.allow("start", "finish");
@@ -230,6 +246,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(deprecated)]
     fn allow_case_sensitive_to_has_three_states() {
         let builder = MachineBuilder::new();
         let builder = builder.allow("start", "finish");
@@ -239,6 +256,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(deprecated)]
     fn allow_case_sensitive_to_has_two_transitions() {
         let builder = MachineBuilder::new();
         let builder = builder.allow("start", "finish");
@@ -247,31 +265,44 @@ mod tests {
         assert_eq!(builder.transition_count(), 2);
     }
 
+    #[test]
+    #[allow(deprecated)]
+    #[should_panic(expected = "invalid transition passed to MachineBuilder::allow")]
+    fn allow_panics_for_empty_source_state() {
+        MachineBuilder::new().allow("", "running");
+    }
+
+    #[test]
+    #[allow(deprecated)]
+    #[should_panic(expected = "invalid transition passed to MachineBuilder::allow")]
+    fn allow_panics_for_empty_target_state() {
+        MachineBuilder::new().allow("running", "");
+    }
+
+    #[test]
+    #[allow(deprecated)]
+    #[should_panic(expected = "invalid transition passed to MachineBuilder::allow")]
+    fn allow_panics_for_ambiguous_target_state() {
+        MachineBuilder::new().allow("start", "running ");
+    }
+
+    #[test]
+    #[allow(deprecated)]
+    #[should_panic(expected = "invalid transition passed to MachineBuilder::allow")]
+    fn allow_panics_for_ambiguous_source_state() {
+        MachineBuilder::new().allow("start ", "running");
+    }
+
+    #[test]
+    #[allow(deprecated)]
+    #[should_panic(expected = "invalid transition passed to MachineBuilder::allow")]
+    fn allow_panics_for_self_transition() {
+        MachineBuilder::new().allow("running", "running");
+    }
+
     /*
      * Build
      */
-    #[test]
-    fn build_empty_from_state_invalid() {
-        let builder = MachineBuilder::new();
-        let builder = builder.allow("", "finish");
-
-        assert_eq!(builder.build(), Err(StateError::EmptyState));
-    }
-     
-
-    #[test]
-    fn build_transition_to_self_invalid() {
-        let builder = MachineBuilder::new();
-        let builder = builder.allow("start", "start");
-
-        assert_eq!(
-            builder.build(),
-            Err(StateError::SelfTransition {
-                state: "start".to_string(),
-            })
-        );
-    }
-
     #[test]
     fn build_empty_build_invalid() {
         let builder = MachineBuilder::new();
@@ -282,8 +313,8 @@ mod tests {
     #[test]
     fn build_allows_cycles() {
         let machine = MachineBuilder::new()
-            .allow("start", "finish")
-            .allow("finish", "start")
+            .try_allow("start", "finish").ok()
+            .try_allow("finish", "start").ok()
             .build();
 
         assert!(machine.is_ok());
@@ -423,7 +454,7 @@ mod tests {
 
         assert_eq!(
             result,
-        Err(StateError::SelfTransition {
+            Err(StateError::SelfTransition {
                 state: "start".to_string(),
             })
         );
