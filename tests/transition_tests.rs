@@ -2,9 +2,9 @@ use statekit::{Machine, StateError};
 
 fn workflow_machine() -> Result<Machine, StateError> {
     Machine::builder()
-        .allow("queued", "running")
-        .allow("running", "completed")
-        .allow("running", "failed")
+        .try_allow("queued", "running")?
+        .try_allow("running", "completed")?
+        .try_allow("running", "failed")?
         .build()
 }
 
@@ -45,7 +45,7 @@ fn rejects_an_empty_machine_definition() {
 
 #[test]
 fn rejects_a_self_transition() {
-    let result = Machine::builder().allow("running", "running").build();
+    let result = Machine::builder().try_allow("running", "running");
 
     assert_eq!(
         result,
