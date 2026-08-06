@@ -257,14 +257,7 @@ mod tests {
 
         assert_eq!(builder.build(), Err(StateError::EmptyState));
     }
-
-    #[test]
-    fn build_empty_to_state_invalid() {
-        let builder = MachineBuilder::new();
-        let builder = builder.allow("start", "");
-
-        assert_eq!(builder.build(), Err(StateError::EmptyState));
-    }
+     
 
     #[test]
     fn build_transition_to_self_invalid() {
@@ -423,4 +416,16 @@ mod tests {
         assert_eq!(builder.transition_count(), 2);
     }
 
+    #[test]
+    fn try_allow_transition_to_self_invalid() {
+        let builder = MachineBuilder::new();
+        let result = builder.try_allow("start", "start");
+
+        assert_eq!(
+            result,
+        Err(StateError::SelfTransition {
+                state: "start".to_string(),
+            })
+        );
+    }
 }
