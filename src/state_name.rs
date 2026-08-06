@@ -43,7 +43,7 @@ impl Borrow<str> for StateName {
 ///
 /// Returns a result of Ok() or a [`StateError`] if validation fails.
 fn validate_state_name(value: &str) -> Result<(), StateError> {
-    if value.is_empty() {
+    if value.trim().is_empty() {
         return Err(StateError::EmptyState);
     }
     
@@ -56,6 +56,8 @@ fn validate_state_name(value: &str) -> Result<(), StateError> {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+
     #[test]
     fn validatate_state_name_one_word_returns_ok() {
         let result = validate_state_name("something");

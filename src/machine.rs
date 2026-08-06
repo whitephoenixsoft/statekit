@@ -78,55 +78,73 @@ mod tests {
     use super::*;
 
     #[test]
-    fn validate_transition_exists_returns_ok() {
-        let builder = Machine::builder().allow("start", "finish");
+    fn validate_transition_exists_returns_ok() -> Result<(), StateError> {
+        let builder = Machine::builder()
+            .try_allow("start", "finish")?;
 
-        let m = builder.build().unwrap();
+        let m = builder.build()?;
 
         assert!(m.validate_transition("start", "finish").is_ok());
+
+        Ok(())
     }
 
     #[test]
-    fn transition_count_1_transition() {
-        let builder = Machine::builder().allow("start", "finish");
+    fn transition_count_1_transition() -> Result<(), StateError> {
+        let builder = Machine::builder()
+            .try_allow("start", "finish")?;
 
-        let m = builder.build().unwrap();
+        let m = builder.build()?;
 
         assert_eq!(m.transition_count(), 1);
+
+        Ok(())
     }
 
     #[test]
-    fn validate_transition_exists_multiple_states_returns_ok() {
-        let builder = Machine::builder().allow("start", "finish").allow("1", "2");
+    fn validate_transition_exists_multiple_states_returns_ok() -> Result<(), StateError> {
+        let builder = Machine::builder()
+            .try_allow("start", "finish")?
+            .try_allow("1", "2")?;
 
-        let m = builder.build().unwrap();
+        let m = builder.build()?;
 
         assert!(m.validate_transition("start", "finish").is_ok());
+
+        Ok(())
     }
 
     #[test]
-    fn transition_count_2_transitions() {
-        let builder = Machine::builder().allow("start", "finish").allow("1", "2");
+    fn transition_count_2_transitions() -> Result<(), StateError> {
+        let builder = Machine::builder()
+            .try_allow("start", "finish")?
+            .try_allow("1", "2")?;
 
-        let m = builder.build().unwrap();
+        let m = builder.build()?;
 
         assert_eq!(m.transition_count(), 2);
+
+        Ok(())
     }
 
     #[test]
-    fn can_transition_exists_returns_true() {
-        let builder = Machine::builder().allow("start", "finish");
+    fn can_transition_exists_returns_true() -> Result<(), StateError> {
+        let builder = Machine::builder()
+            .try_allow("start", "finish")?;
 
-        let m = builder.build().unwrap();
+        let m = builder.build()?;
 
         assert!(m.can_transition("start", "finish"));
+
+        Ok(())
     }
 
     #[test]
-    fn validate_transition_not_exists_returns_invalid_error() {
-        let builder = Machine::builder().allow("start", "finish");
+    fn validate_transition_not_exists_returns_invalid_error() -> Result<(), StateError> {
+        let builder = Machine::builder()
+            .try_allow("start", "finish")?;
 
-        let m = builder.build().unwrap();
+        let m = builder.build()?;
 
         assert_eq!(
             m.validate_transition("start", "invalid"),
@@ -135,130 +153,165 @@ mod tests {
                 to: "invalid".to_string(),
             })
         );
+
+        Ok(())
     }
 
     #[test]
-    fn can_transition_not_exists_returns_false() {
-        let builder = Machine::builder().allow("start", "finish");
+    fn can_transition_not_exists_returns_false() -> Result<(), StateError> {
+        let builder = Machine::builder()
+            .try_allow("start", "finish")?;
 
-        let m = builder.build().unwrap();
+        let m = builder.build()?;
 
         assert!(!m.can_transition("start", "invalid"));
+
+        Ok(())
     }
 
     #[test]
-    fn validate_transition_cyclic_is_valid() {
+    fn validate_transition_cyclic_is_valid() -> Result<(), StateError> {
         let builder = Machine::builder()
-            .allow("start", "finish")
-            .allow("finish", "start");
+            .try_allow("start", "finish")?
+            .try_allow("finish", "start")?;
 
-        let m = builder.build().unwrap();
+        let m = builder.build()?;
 
         assert!(m.validate_transition("finish", "start").is_ok());
+
+        Ok(())
     }
 
     #[test]
-    fn contains_state_one_transition_existing_source_state_returns_true() {
-        let builder = Machine::builder().allow("start", "finish");
+    fn contains_state_one_transition_existing_source_state_returns_true() -> Result<(), StateError> {
+        let builder = Machine::builder()
+            .try_allow("start", "finish")?;
 
-        let m = builder.build().unwrap();
+        let m = builder.build()?;
 
         assert!(m.contains_state("start"));
+
+        Ok(())
     }
 
     #[test]
-    fn contains_state_one_transition_existing_target_state_returns_true() {
-        let builder = Machine::builder().allow("start", "finish");
+    fn contains_state_one_transition_existing_target_state_returns_true() -> Result<(), StateError> {
+        let builder = Machine::builder()
+            .try_allow("start", "finish")?;
 
-        let m = builder.build().unwrap();
+        let m = builder.build()?;
 
         assert!(m.contains_state("finish"));
+
+        Ok(())
     }
 
     #[test]
-    fn contains_state_one_transition_nonexisting_state_returns_false() {
-        let builder = Machine::builder().allow("start", "finish");
+    fn contains_state_one_transition_nonexisting_state_returns_false() -> Result<(), StateError> {
+        let builder = Machine::builder()
+            .try_allow("start", "finish")?;
 
-        let m = builder.build().unwrap();
+        let m = builder.build()?;
 
         assert!(!m.contains_state("other"));
+
+        Ok(())
     }
 
     #[test]
-    fn contains_state_two_transitions_on_different_source_state_finds_second_source_state() {
+    fn contains_state_two_transitions_on_different_source_state_finds_second_source_state() -> Result<(), StateError> {
         let builder = Machine::builder()
-            .allow("start", "end")
-            .allow("rest", "finish");
+            .try_allow("start", "end")?
+            .try_allow("rest", "finish")?;
 
-        let m = builder.build().unwrap();
+        let m = builder.build()?;
 
         assert!(m.contains_state("rest"));
+
+        Ok(())
     }
 
     #[test]
-    fn targets_one_transition_key_does_not_exist_returns_none() {
-        let builder = Machine::builder().allow("start", "finish");
+    fn targets_one_transition_key_does_not_exist_returns_none() -> Result<(), StateError> {
+        let builder = Machine::builder()
+            .try_allow("start", "finish")?;
 
-        let m = builder.build().unwrap();
+        let m = builder.build()?;
         let iter = m.targets("other");
 
         assert!(iter.is_none());
+
+        Ok(())
     }
 
     #[test]
-    fn targets_one_transition_one_value() {
-        let builder = Machine::builder().allow("start", "finish");
+    fn targets_one_transition_one_value() -> Result<(), StateError> {
+        let builder = Machine::builder()
+            .try_allow("start", "finish")?;
 
-        let m = builder.build().unwrap();
+        let m = builder.build()?;
         let collected: Vec<_> = m.targets("start").into_iter().flatten().collect();
 
         assert_eq!(collected, vec!["finish"]);
+
+        Ok(())
     }
 
     #[test]
-    fn targets_one_transition_two_values() {
-        let builder = Machine::builder().allow("start", "1").allow("start", "2");
+    fn targets_one_transition_two_values() -> Result<(), StateError> {
+        let builder = Machine::builder()
+            .try_allow("start", "1")?
+            .try_allow("start", "2")?;
 
-        let m = builder.build().unwrap();
+        let m = builder.build()?;
         let mut collected: Vec<_> = m.targets("start").into_iter().flatten().collect();
         collected.sort();
 
         assert_eq!(collected, vec!["1", "2"]);
+
+        Ok(())
     }
 
     #[test]
-    fn targets_one_transition_three_values() {
+    fn targets_one_transition_three_values() -> Result<(), StateError> {
         let builder = Machine::builder()
-            .allow("start", "1")
-            .allow("start", "2")
-            .allow("start", "3");
+            .try_allow("start", "1")?
+            .try_allow("start", "2")?
+            .try_allow("start", "3")?;
 
-        let m = builder.build().unwrap();
+        let m = builder.build()?;
         let mut collected: Vec<_> = m.targets("start").into_iter().flatten().collect();
         collected.sort();
 
         assert_eq!(collected, vec!["1", "2", "3"]);
+
+        Ok(())
     }
 
     #[test]
-    fn targets_target_only_state_returns_none() {
-        let machine = Machine::builder().allow("start", "finish").build().unwrap();
+    fn targets_target_only_state_returns_none() -> Result<(), StateError> {
+        let machine = Machine::builder()
+            .try_allow("start", "finish")?
+            .build()?;
 
         assert!(machine.contains_state("finish"));
         assert!(machine.targets("finish").is_none());
+
+        Ok(())
     }
 
     #[test]
-    fn duplicate_transition_is_stored_once() {
+    fn duplicate_transition_is_stored_once() -> Result<(), StateError> {
         let machine = Machine::builder()
-            .allow("start", "finish")
-            .allow("start", "finish")
-            .build()
-            .unwrap();
+            .try_allow("start", "finish")?
+            .try_allow("start", "finish")?
+            .build()?;
 
         assert_eq!(machine.transition_count(), 1);
 
         let targets: Vec<_> = machine.targets("start").unwrap().collect();
         assert_eq!(targets, vec!["finish"]);
+
+        Ok(())
     }
 }
