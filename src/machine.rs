@@ -79,8 +79,7 @@ mod tests {
 
     #[test]
     fn validate_transition_exists_returns_ok() -> Result<(), StateError> {
-        let builder = Machine::builder()
-            .try_allow("start", "finish")?;
+        let builder = Machine::builder().try_allow("start", "finish")?;
 
         let m = builder.build()?;
 
@@ -91,8 +90,7 @@ mod tests {
 
     #[test]
     fn transition_count_1_transition() -> Result<(), StateError> {
-        let builder = Machine::builder()
-            .try_allow("start", "finish")?;
+        let builder = Machine::builder().try_allow("start", "finish")?;
 
         let m = builder.build()?;
 
@@ -129,8 +127,7 @@ mod tests {
 
     #[test]
     fn can_transition_exists_returns_true() -> Result<(), StateError> {
-        let builder = Machine::builder()
-            .try_allow("start", "finish")?;
+        let builder = Machine::builder().try_allow("start", "finish")?;
 
         let m = builder.build()?;
 
@@ -141,8 +138,7 @@ mod tests {
 
     #[test]
     fn validate_transition_not_exists_returns_invalid_error() -> Result<(), StateError> {
-        let builder = Machine::builder()
-            .try_allow("start", "finish")?;
+        let builder = Machine::builder().try_allow("start", "finish")?;
 
         let m = builder.build()?;
 
@@ -159,8 +155,7 @@ mod tests {
 
     #[test]
     fn can_transition_not_exists_returns_false() -> Result<(), StateError> {
-        let builder = Machine::builder()
-            .try_allow("start", "finish")?;
+        let builder = Machine::builder().try_allow("start", "finish")?;
 
         let m = builder.build()?;
 
@@ -183,9 +178,9 @@ mod tests {
     }
 
     #[test]
-    fn contains_state_one_transition_existing_source_state_returns_true() -> Result<(), StateError> {
-        let builder = Machine::builder()
-            .try_allow("start", "finish")?;
+    fn contains_state_one_transition_existing_source_state_returns_true() -> Result<(), StateError>
+    {
+        let builder = Machine::builder().try_allow("start", "finish")?;
 
         let m = builder.build()?;
 
@@ -195,9 +190,9 @@ mod tests {
     }
 
     #[test]
-    fn contains_state_one_transition_existing_target_state_returns_true() -> Result<(), StateError> {
-        let builder = Machine::builder()
-            .try_allow("start", "finish")?;
+    fn contains_state_one_transition_existing_target_state_returns_true() -> Result<(), StateError>
+    {
+        let builder = Machine::builder().try_allow("start", "finish")?;
 
         let m = builder.build()?;
 
@@ -208,8 +203,7 @@ mod tests {
 
     #[test]
     fn contains_state_one_transition_nonexisting_state_returns_false() -> Result<(), StateError> {
-        let builder = Machine::builder()
-            .try_allow("start", "finish")?;
+        let builder = Machine::builder().try_allow("start", "finish")?;
 
         let m = builder.build()?;
 
@@ -219,7 +213,8 @@ mod tests {
     }
 
     #[test]
-    fn contains_state_two_transitions_on_different_source_state_finds_second_source_state() -> Result<(), StateError> {
+    fn contains_state_two_transitions_on_different_source_state_finds_second_source_state()
+    -> Result<(), StateError> {
         let builder = Machine::builder()
             .try_allow("start", "end")?
             .try_allow("rest", "finish")?;
@@ -233,8 +228,7 @@ mod tests {
 
     #[test]
     fn targets_one_transition_key_does_not_exist_returns_none() -> Result<(), StateError> {
-        let builder = Machine::builder()
-            .try_allow("start", "finish")?;
+        let builder = Machine::builder().try_allow("start", "finish")?;
 
         let m = builder.build()?;
         let iter = m.targets("other");
@@ -246,8 +240,7 @@ mod tests {
 
     #[test]
     fn targets_one_transition_one_value() -> Result<(), StateError> {
-        let builder = Machine::builder()
-            .try_allow("start", "finish")?;
+        let builder = Machine::builder().try_allow("start", "finish")?;
 
         let m = builder.build()?;
         let collected: Vec<_> = m.targets("start").into_iter().flatten().collect();
@@ -290,9 +283,7 @@ mod tests {
 
     #[test]
     fn targets_target_only_state_returns_none() -> Result<(), StateError> {
-        let machine = Machine::builder()
-            .try_allow("start", "finish")?
-            .build()?;
+        let machine = Machine::builder().try_allow("start", "finish")?.build()?;
 
         assert!(machine.contains_state("finish"));
         assert!(machine.targets("finish").is_none());

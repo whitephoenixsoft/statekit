@@ -28,12 +28,9 @@ impl MachineBuilder {
         since = "0.2.0",
         note = "use `try_allow` to handle invalid transitions without panicking"
     )]
-    pub fn allow(
-        self, 
-        from: impl AsRef<str>,
-        to: impl AsRef<str>,
-    ) -> Self {
-        self.try_allow(from, to).expect("invalid transition passed to MachineBuilder::allow")
+    pub fn allow(self, from: impl AsRef<str>, to: impl AsRef<str>) -> Self {
+        self.try_allow(from, to)
+            .expect("invalid transition passed to MachineBuilder::allow")
     }
 
     /// Adds an allowed transition from one state to another.
@@ -62,10 +59,7 @@ impl MachineBuilder {
             });
         }
 
-        self.transitions
-            .entry(from)
-            .or_default()
-            .insert(to);
+        self.transitions.entry(from).or_default().insert(to);
 
         Ok(self)
     }
@@ -125,7 +119,7 @@ mod tests {
 
         assert_eq!(builder.transition_count(), 0);
     }
-    
+
     /*
      * allow
      */
@@ -323,7 +317,7 @@ mod tests {
 
         Ok(())
     }
-    
+
     /*
      * try_allow
      */
@@ -381,7 +375,8 @@ mod tests {
     }
 
     #[test]
-    fn try_allow_twice_same_from_state_same_transition_has_one_transition() -> Result<(), StateError> {
+    fn try_allow_twice_same_from_state_same_transition_has_one_transition() -> Result<(), StateError>
+    {
         let builder = MachineBuilder::new();
         let builder = builder.try_allow("start", "finish")?;
         let builder = builder.try_allow("start", "finish")?;
@@ -496,39 +491,27 @@ mod tests {
     fn try_allow_error_for_empty_source_state() {
         let result = MachineBuilder::new().try_allow("", "running");
 
-        assert_eq!(
-            result,
-            Err(StateError::EmptyState)
-        );
+        assert_eq!(result, Err(StateError::EmptyState));
     }
 
     #[test]
     fn try_allow_error_for_empty_target_state() {
         let result = MachineBuilder::new().try_allow("running", "");
 
-        assert_eq!(
-            result,
-            Err(StateError::EmptyState)
-        );
+        assert_eq!(result, Err(StateError::EmptyState));
     }
 
     #[test]
     fn try_allow_errors_for_ambiguous_target_state() {
         let result = MachineBuilder::new().try_allow("start", "running ");
 
-        assert_eq!(
-            result,
-            Err(StateError::AmbiguousStateName)
-        );
+        assert_eq!(result, Err(StateError::AmbiguousStateName));
     }
 
     #[test]
     fn try_allow_errorss_for_ambiguous_source_state() {
         let result = MachineBuilder::new().try_allow("start ", "running");
 
-        assert_eq!(
-            result,
-            Err(StateError::AmbiguousStateName)
-        );
+        assert_eq!(result, Err(StateError::AmbiguousStateName));
     }
 }
