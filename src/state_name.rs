@@ -53,3 +53,48 @@ fn validate_state_name(value: &str) -> Result<(), StateError> {
 
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn validatate_state_name_one_word_returns_ok() {
+        let result = validate_state_name("something");
+        
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn validatate_state_name_two_words_returns_ok() {
+        let result = validate_state_name("something else");
+        
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn validatate_state_name_empty_returns_error() {
+        let result = validate_state_name("");
+        
+        assert_eq!(result, Err(StateError::EmptyState));
+    }
+
+    #[test]
+    fn validatate_state_name_whitepace_returns_error() {
+        let result = validate_state_name(" \n\t");
+        
+        assert_eq!(result, Err(StateError::EmptyState));
+    }
+
+    #[test]
+    fn validatate_state_name_whitespace_before_name_returns_error() {
+        let result = validate_state_name("\n\t something");
+        
+        assert_eq!(result, Err(StateError::AmbiguousStateName));
+    }
+
+    #[test]
+    fn validatate_state_name_whitespace_after_name_returns_error() {
+        let result = validate_state_name("something\n\t ");
+        
+        assert_eq!(result, Err(StateError::AmbiguousStateName));
+    }
+}
