@@ -448,7 +448,7 @@ mod tests {
     }
 
     #[test]
-    fn try_allow_transition_to_self_invalid() {
+    fn try_allow_error_transition_to_self() {
         let builder = MachineBuilder::new();
         let result = builder.try_allow("start", "start");
 
@@ -457,6 +457,46 @@ mod tests {
             Err(StateError::SelfTransition {
                 state: "start".to_string(),
             })
+        );
+    }
+
+    #[test]
+    fn try_allow_error_for_empty_source_state() {
+        let result = MachineBuilder::new().try_allow("", "running");
+
+        assert_eq!(
+            result,
+            Err(StateError::EmptyState)
+        );
+    }
+
+    #[test]
+    fn try_allow_error_for_empty_target_state() {
+        let result = MachineBuilder::new().try_allow("running", "");
+
+        assert_eq!(
+            result,
+            Err(StateError::EmptyState)
+        );
+    }
+
+    #[test]
+    fn try_allow_errors_for_ambiguous_target_state() {
+        let result = MachineBuilder::new().try_allow("start", "running ");
+
+        assert_eq!(
+            result,
+            Err(StateError::AmbiguousStateName)
+        );
+    }
+
+    #[test]
+    fn try_allow_errorss_for_ambiguous_source_state() {
+        let result = MachineBuilder::new().try_allow("start ", "running");
+
+        assert_eq!(
+            result,
+            Err(StateError::AmbiguousStateName)
         );
     }
 }
