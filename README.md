@@ -31,32 +31,10 @@ Future releases will expand functionality while maintaining semantic versioning.
 
 ```toml
 [dependencies]
-statekit = "0.1.1"
+statekit = "0.2.0"
 ```
 
 ## Examples
-
-### Version 0.1 (deprecated)
-```rust
-use statekit::{Machine, StateError};
-
-fn main() -> Result<(), StateError> {
-    let machine = Machine::builder()
-        .allow("queued", "running")
-        .allow("running", "completed")
-        .allow("running", "failed")
-        .build()?;
-
-    let result = machine.validate_transition("queued", "running");
-
-    assert!(result.is_ok());
-
-    Ok(())
-}
-```
-
-### Version 0.2
-
 ```rust
 use statekit::{Machine, StateError};
 
@@ -76,21 +54,13 @@ fn main() -> Result<(), StateError> {
 ```
 
 ## Invariants
-### Version 0.1
-- Validation occurs when `build()` is called.
-- State names must not be empty.
-- State names are case-sensitive.
-- Self-transitions are rejected.
-- A machine must define at least one transition.
-
-### Version 0.2
 - Validation of the transition occurs when `try_allow()` is called.
 - Validation of the state machine occurs when `build()` is called.
 	- A machine must define at least one transition.
 - `StateName` will be used as the basis for the states and will ensure:
-    	- State names must not be empty.
+	- State names must not be empty.
     	- State names are case-sensitive.
-    - State names must start ans end with visible characters
+	- State names must start and end with visible characters
 - Self-transitions are rejected.
 
 ## Features
