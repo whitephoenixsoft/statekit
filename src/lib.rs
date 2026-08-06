@@ -13,9 +13,9 @@
 //!
 //! fn main() -> Result<(), StateError> {
 //!     let machine = Machine::builder()
-//!         .allow("queued", "running")
-//!         .allow("running", "completed")
-//!         .allow("running", "failed")
+//!         .try_allow("queued", "running")?
+//!         .try_allow("running", "completed")?
+//!         .try_allow("running", "failed")?
 //!         .build()?;
 //!
 //!     assert!(machine.can_transition("queued", "running"));
