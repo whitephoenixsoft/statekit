@@ -22,22 +22,36 @@ The method to fulfill this is to provide an immutable state-machine definition t
 Holds the state transitions.
 
 - It is only valid if there is a transition.
-- Validates that a transition exists.
+- Verifies that a transition exists.
 - Must support actions related to state transitions.
+
+#### Invariants and Constraints
+
+- Machine must be immutable.
+- Machine will validate a transition based on source and target states.
+- A transition is unique.
 
 ### Machine Builder
 
 Validates and builds the state-machine.
 
-- Converts states into transitions.
+- Converts states relationships into transitions.
 - Must support actions for dynamically creating transitions.
+
+#### Invariants and Constraints
+
+- A transition is defined by its source and target states.
+- The source and target of a transition must be different.
 
 ### State Name
 
 Validates and holds the state. 
 
-- Crates and maintains a valid state.
+- Creates and maintains a valid state.
+	- A state is unique
+	- A state name must start and end with visible characters
 - Must support actions related to the state domain. 
+- Must support UTF-8 strings.
 
 
 ## Architecture
