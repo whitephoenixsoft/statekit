@@ -7,7 +7,7 @@ To define how statekit will evolve over next versions.
 
 ## Phases
 
-### Phase 1 - Publishable MVP (v0.1.x)
+### Phase 1 - Publishable MVP (v0.1.x) -- COMPLETED
 
 **Goal:** A small, polished crate that does one thing well.
 
@@ -26,7 +26,7 @@ Expose Models:
 - MachineBuilder
 - StateError
 
-### Phase 2 - Strengthen the model (v0.2)
+### Phase 2 - Strengthen the model (v0.2) -- COMPLETED
 
 **Goal:** Introduce stronger invariants; make invalid state impossible.
 
