@@ -29,20 +29,23 @@ Holds the state transitions.
 
 - Machine must be immutable.
 - Machine will validate a transition based on source and target states.
-- A transition is unique.
 - There must be at least one transition.
+
+### Transition
+
+Holds a unique state transitions.
+
+- A transition is defined by its source and target states.
+- A transition is unique.
+	- The source and target of a transition must be different.
 
 ### Machine Builder
 
 Validates and builds the state-machine.
 
 - Converts states relationships into transitions.
+- Enforces validation before the immutable `Machine` is built.
 - Must support actions for dynamically creating transitions.
-
-#### Invariants and Constraints
-
-- A transition is defined by its source and target states.
-- The source and target of a transition must be different.
 
 ### State Name
 
