@@ -42,7 +42,7 @@ impl MachineBuilder {
     /// Returns:
     ///
     /// - [`StateError::AmbiguousStateName`] if an endpoint contains whitepace before or after
-    /// the name.
+    ///   the name.
     /// - [`StateError::EmptyState`] if an endpoint is empty.
     /// - [`StateError::SelfTransition`] if a transition has identical endpoints.
     pub fn try_allow(
@@ -91,7 +91,7 @@ impl MachineBuilder {
         let mut unique: HashSet<&StateName> = HashSet::new();
 
         for (from, targets) in &self.transitions {
-            unique.insert(&from);
+            unique.insert(from);
             unique.extend(targets);
         }
 
