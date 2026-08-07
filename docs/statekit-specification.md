@@ -30,6 +30,7 @@ Holds the state transitions.
 - Machine must be immutable.
 - Machine will validate a transition based on source and target states.
 - A transition is unique.
+- There must be at least one transition.
 
 ### Machine Builder
 
@@ -50,6 +51,8 @@ Validates and holds the state.
 - Creates and maintains a valid state.
 	- A state is unique
 	- A state name must start and end with visible characters
+	- A state cannot be empty
+	- A state cannot be entirely whitespace
 - Must support actions related to the state domain. 
 - Must support UTF-8 strings.
 
