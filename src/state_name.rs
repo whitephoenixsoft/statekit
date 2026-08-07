@@ -3,8 +3,8 @@ use std::borrow::Borrow;
 
 /// A validated identifier for a state within a machine.
 ///
-/// `StateName` exists to represent the domain concept of a state.
-/// Future versions will enforce naming invariants during construction.
+/// A `StateName` is guaranteed to be non-empty and to contain no
+/// leading or trailing whitespace.
 #[derive(Debug, PartialEq, Clone, Hash, Eq)]
 pub(crate) struct StateName(String);
 
@@ -39,9 +39,7 @@ impl Borrow<str> for StateName {
     }
 }
 
-/// Validates the state definition.
-///
-/// Returns a result of Ok() or a [`StateError`] if validation fails.
+/// Validates a state name against the crate's naming invariants.
 fn validate_state_name(value: &str) -> Result<(), StateError> {
     if value.trim().is_empty() {
         return Err(StateError::EmptyState);
@@ -59,42 +57,63 @@ mod tests {
     use super::*;
 
     #[test]
-    fn validatate_state_name_one_word_returns_ok() {
+    fn try_from_str_valid_state_succeeds() {
+        let state = StateName::try_from("in progress").unwrap();
+
+        assert_eq!(state.as_str(), "in progress");
+    }
+
+    #[test]
+    fn try_from_string_reuses_valid_input() {
+        let state = StateName::try_from(String::from("queued")).unwrap();
+
+        assert_eq!(state.as_str(), "queued");
+    }
+
+    #[test]
+    fn try_from_rejects_leading_whitespace() {
+        let result = StateName::try_from(" queued");
+
+        assert_eq!(result, Err(StateError::AmbiguousStateName));
+    }
+
+    #[test]
+    fn validate_state_name_one_word_returns_ok() {
         let result = validate_state_name("something");
 
         assert!(result.is_ok());
     }
 
     #[test]
-    fn validatate_state_name_two_words_returns_ok() {
+    fn validate_state_name_two_words_returns_ok() {
         let result = validate_state_name("something else");
 
         assert!(result.is_ok());
     }
 
     #[test]
-    fn validatate_state_name_empty_returns_error() {
+    fn validate_state_name_empty_returns_error() {
         let result = validate_state_name("");
 
         assert_eq!(result, Err(StateError::EmptyState));
     }
 
     #[test]
-    fn validatate_state_name_whitepace_returns_error() {
+    fn validate_state_name_whitespace_returns_error() {
         let result = validate_state_name(" \n\t");
 
         assert_eq!(result, Err(StateError::EmptyState));
     }
 
     #[test]
-    fn validatate_state_name_whitespace_before_name_returns_error() {
+    fn validate_state_name_whitespace_before_name_returns_error() {
         let result = validate_state_name("\n\t something");
 
         assert_eq!(result, Err(StateError::AmbiguousStateName));
     }
 
     #[test]
-    fn validatate_state_name_whitespace_after_name_returns_error() {
+    fn validate_state_name_whitespace_after_name_returns_error() {
         let result = validate_state_name("something\n\t ");
 
         assert_eq!(result, Err(StateError::AmbiguousStateName));
