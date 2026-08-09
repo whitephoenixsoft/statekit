@@ -73,6 +73,10 @@ Once constructed, a machine cannot be modified.
 
 This makes it inexpensive to share safely between threads and application components.
 
+## Specification
+
+Statekit's domain definitions and invariants are documented in the [Statekit Specification](docs/statekit-specification.md).
+
 ## What it is Not
 
 Statekit is not:

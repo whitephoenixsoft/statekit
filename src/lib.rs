@@ -26,6 +26,14 @@
 //!     Ok(())
 //! }
 //! ```
+//! 
+//! # Invariants
+//!
+//! - A machine contains at least one transition.
+//! - State names are non-empty.
+//! - State names may not begin or end with whitespace.
+//! - Self-transitions are rejected.
+//! - Cycles between distinct states are permitted.
 mod builder;
 mod error;
 mod machine;
