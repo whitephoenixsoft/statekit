@@ -4,8 +4,8 @@ use crate::{MachineBuilder, StateError, StateName};
 
 /// An immutable state-machine definition.
 ///
-/// A `Machine` always contains at least one transition, and every stored
-/// transition has valid, non-empty endpoints.
+/// A `Machine` contains at least one transition. Every stored state name and
+/// transition has already been validated by the builder.
 #[derive(Debug, PartialEq, Eq)]
 pub struct Machine {
     transitions: HashMap<StateName, HashSet<StateName>>,
@@ -36,7 +36,8 @@ impl Machine {
     /// # Errors
     ///
     /// Returns [`StateError::InvalidTransition`] when the machine does not
-    /// contain the requested transition.
+    /// contain the requested transition. Submitted `from` and `to`names must 
+    /// match exactly the transition state names exactly.
     pub fn validate_transition(&self, from: &str, to: &str) -> Result<(), StateError> {
         if self.can_transition(from, to) {
             Ok(())
@@ -78,29 +79,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn validate_transition_exists_returns_ok() -> Result<(), StateError> {
-        let builder = Machine::builder().try_allow("start", "finish")?;
-
-        let m = builder.build()?;
-
-        assert!(m.validate_transition("start", "finish").is_ok());
-
-        Ok(())
-    }
-
-    #[test]
-    fn transition_count_1_transition() -> Result<(), StateError> {
-        let builder = Machine::builder().try_allow("start", "finish")?;
-
-        let m = builder.build()?;
-
-        assert_eq!(m.transition_count(), 1);
-
-        Ok(())
-    }
-
-    #[test]
-    fn validate_transition_exists_multiple_states_returns_ok() -> Result<(), StateError> {
+    fn validate_transition_accepts_configured_transition() -> Result<(), StateError> {
         let builder = Machine::builder()
             .try_allow("start", "finish")?
             .try_allow("1", "2")?;
@@ -113,7 +92,7 @@ mod tests {
     }
 
     #[test]
-    fn transition_count_2_transitions() -> Result<(), StateError> {
+    fn transition_count_counts_transitions() -> Result<(), StateError> {
         let builder = Machine::builder()
             .try_allow("start", "finish")?
             .try_allow("1", "2")?;
@@ -178,19 +157,7 @@ mod tests {
     }
 
     #[test]
-    fn contains_state_one_transition_existing_source_state_returns_true() -> Result<(), StateError>
-    {
-        let builder = Machine::builder().try_allow("start", "finish")?;
-
-        let m = builder.build()?;
-
-        assert!(m.contains_state("start"));
-
-        Ok(())
-    }
-
-    #[test]
-    fn contains_state_one_transition_existing_target_state_returns_true() -> Result<(), StateError>
+    fn contains_state_finds_target_only_state() -> Result<(), StateError>
     {
         let builder = Machine::builder().try_allow("start", "finish")?;
 
@@ -202,7 +169,7 @@ mod tests {
     }
 
     #[test]
-    fn contains_state_one_transition_nonexisting_state_returns_false() -> Result<(), StateError> {
+    fn contains_state_rejects_unknown_state() -> Result<(), StateError> {
         let builder = Machine::builder().try_allow("start", "finish")?;
 
         let m = builder.build()?;
@@ -213,7 +180,7 @@ mod tests {
     }
 
     #[test]
-    fn contains_state_two_transitions_on_different_source_state_finds_second_source_state()
+    fn contains_state_finds_source_state()
     -> Result<(), StateError> {
         let builder = Machine::builder()
             .try_allow("start", "end")?
