@@ -72,6 +72,28 @@ impl Machine {
     pub fn targets(&self, from: &str) -> Option<impl Iterator<Item = &str>> {
         Some(self.transitions.get(from)?.iter().map(StateName::as_str))
     }
+
+    /// Returns an iterator over all source states.
+    ///
+    /// The iteration order is unspecified.
+    pub fn sources(&self) -> impl Iterator<Item = &str> {
+        self.transitions.keys().map(StateName::as_str)
+    }
+
+
+    /// Returns an iterator over all unique source and target states.
+    ///
+    /// The iteration order is unspecified.
+    pub fn state(&self) -> impl Iterator<Item = &str> {
+        let mut unique: HashSet<&StateName> = HashSet::new();
+
+        for (from, target) in &self.transitions {
+            unique.insert(from);
+            unique.extend(target);
+        }
+
+        unique.into_iter().map(StateName::as_str)
+    }
 }
 
 #[cfg(test)]
