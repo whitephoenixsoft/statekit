@@ -106,6 +106,8 @@ mod tests {
     use super::*;
 
     mod empty {
+        use super::*;
+
         #[test]
         fn state_count_new_builder_returns_0() {
             let builder = MachineBuilder::new();
@@ -122,6 +124,8 @@ mod tests {
     }
     
     mod allow {
+        use super::*;
+
         #[test]
         #[allow(deprecated)]
         fn allow_once_has_two_states() {
@@ -149,6 +153,8 @@ mod tests {
     }
 
     mod buid {
+        use super::*;
+
         #[test]
         fn build_empty_build_invalid() {
             let builder = MachineBuilder::new();
@@ -170,6 +176,8 @@ mod tests {
     }
     
     mod try_allow {
+        use super::*;
+
         #[test]
         fn try_allow_once_has_two_states() -> Result<(), StateError> {
             let builder = MachineBuilder::new();
