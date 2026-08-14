@@ -34,6 +34,11 @@
 //! - State names may not begin or end with whitespace.
 //! - Self-transitions are rejected.
 //! - Cycles between distinct states are permitted.
+//! # Additional documentation
+//!
+//! - [Statekit Specification](https://github.com/whitephoenixsoft/statekit/blob/main/docs/statekit-specification.md)
+//! - [Migration Guide](https://github.com/whitephoenixsoft/statekit/blob/main/MIGRATION.md)
+//! - [Change Log](https://github.com/whitephoenixsoft/statekit/blob/main/CHANGELOG.md)
 mod builder;
 mod error;
 mod machine;
