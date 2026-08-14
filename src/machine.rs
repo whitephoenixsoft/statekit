@@ -63,7 +63,7 @@ impl Machine {
                 .any(|targets| targets.contains(state))
     }
 
-    /// Returns an iterator over states directly reachable from `from`.
+    /// Returns an iterator over states directly reachable from `from`. Use `targets_from` instead.
     ///
     /// Returns `None` when `from` has no outgoing transitions. This includes
     /// states that appear only as transition targets.
@@ -98,7 +98,7 @@ impl Machine {
     /// Returns an iterator over all unique source and target states.
     ///
     /// The iteration order is unspecified.
-    pub fn state(&self) -> impl Iterator<Item = &str> {
+    pub fn states(&self) -> impl Iterator<Item = &str> {
         let mut unique: HashSet<&StateName> = HashSet::new();
 
         for (from, target) in &self.transitions {
@@ -324,6 +324,74 @@ mod tests {
 
             let targets: Vec<_> = machine.targets_from("start").unwrap().collect();
             assert_eq!(targets, vec!["finish"]);
+
+            Ok(())
+        }
+    }
+
+    mod sources {
+        use super::*;
+
+        #[test]
+        fn sources_one_source_one_value() -> Result<(), StateError> {
+            let machine = Machine::builder()
+                .try_allow("start", "finish")?
+                .build()?;
+
+            let sources: Vec<_> = machine.sources().collect();
+
+            assert_eq!(sources, vec!["start"]);
+
+            Ok(())
+        }
+
+        #[test]
+        fn sources_multiple_sources_matches_with_undefined_sorting() -> Result<(), StateError> {
+            let machine = Machine::builder()
+                .try_allow("1", "0")?
+                .try_allow("2", "0")?
+                .try_allow("3", "0")?
+                .build()?;
+
+            let mut sources: Vec<_> = machine.sources().collect();
+            sources.sort();
+
+            assert_eq!(sources, vec!["1", "2", "3"]);
+
+            Ok(())
+        }
+    }
+
+    mod states {
+        use super::*;
+
+        #[test]
+        fn states_one_transition_returns_2_values() -> Result<(), StateError> {
+            let machine = Machine::builder()
+                .try_allow("1", "2")?
+                .build()?;
+
+            let mut states: Vec<_> = machine.states().collect();
+            states.sort();
+
+            assert_eq!(states, vec!["1", "2"]);
+
+            Ok(())
+        }
+
+        #[test]
+        fn states_multiple_transitions_with_duplicate_sources_and_targets() -> Result<(), StateError> {
+            let machine = Machine::builder()
+                .try_allow("1", "2")?
+                .try_allow("1", "3")?
+                .try_allow("2", "3")?
+                .try_allow("3", "4")?
+                .build()?;
+
+            let mut states: Vec<_> = machine.states().collect();
+            states.sort();
+
+            assert_eq!(states, vec!["1", "2", "3", "4"]);
 
             Ok(())
         }
