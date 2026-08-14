@@ -87,6 +87,11 @@ Statekit is not:
 
 It can be used as a building block for these kinds of systems, but it intentionally does not implement them.
 
+## Documentation
+
+- [Statekit Specification](docs/statekit-specification.md)
+- [Migration Guide](MIGRATION.md)
+- [Change Log](CHANGELOG.md)
 ## License
 MIT
 
