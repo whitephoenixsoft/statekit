@@ -144,6 +144,18 @@ for source in machine.sources() {
 
 This complements `targets_from` and allows callers to inspect the transition graph without exposing Statekit's internal storage representation.
 
+### Unique states can be enumerated
+
+Version 0.2 adds a source-state iterator:
+
+```rust
+for state in machine.states() {
+    println!("{state}");
+}
+```
+
+`states()` returns all the source and target states in all transitions. States will not be duplicated and since there can only be a minimum of one transition with unique states, two states are the minimum amount of states returned.
+
 ### Internal architectural changes
 
 The following changes are important to Statekit's architecture but do not themselves form part of the public storage contract.
