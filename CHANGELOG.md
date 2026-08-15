@@ -9,21 +9,22 @@ All notable changes to Statekit are documented in this file.
 ### Added
 
 - Added `MachineBuilder::try_allow` for fallible transition construction.
-- Added validation for leading and trailing whitespace in state names.
+-  Added validation that rejects state names with leading or trailing Unicode whitespace.
 - Added `StateError::AmbiguousStateName`.
 - Added `Machine::sources` for iterating states with outgoing transitions.
-- Added `Machine::states` for iterating in unique states contained within both sources and targets.
+- Added `Machine::states` for iterating over all unique states in the machine.
+- Added `Machine::targets_from` as a clearer transition-target query.
 
 ### Changed
 
 - State names are validated when transitions are added rather than during `build`.
 - Internal machine storage now uses validated state-name domain types.
-- Added `Machine::targets` to replace `Machine::targets_from`.
+- `MachineBuilder::allow` now validates transitions immediately and panics on invalid input.
 
 ### Deprecated
 
 - Deprecated `MachineBuilder::allow` in favor of `MachineBuilder::try_allow`.
-- Deprecated `MachineBuilder::targets` in favor of `MachineBuilder::targets_from`.
+- Deprecated `Machine::targets` in favor of `Machine::targets_from`.
 
 ### Documentation
 
