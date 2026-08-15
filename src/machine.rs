@@ -36,8 +36,9 @@ impl Machine {
     /// # Errors
     ///
     /// Returns [`StateError::InvalidTransition`] when the machine does not
-    /// contain the requested transition. Submitted `from` and `to`names must 
-    /// match exactly the transition state names exactly.
+    /// contain the requested transition. 
+    /// State names are matched exactly. This method does not trim, normalize,
+/// or otherwise modify the supplied names.
     pub fn validate_transition(&self, from: &str, to: &str) -> Result<(), StateError> {
         if self.can_transition(from, to) {
             Ok(())
@@ -63,7 +64,7 @@ impl Machine {
                 .any(|targets| targets.contains(state))
     }
 
-    /// Returns an iterator over states directly reachable from `from`. Use `targets_from` instead.
+    /// Returns an iterator over states directly reachable from `from`.
     ///
     /// Returns `None` when `from` has no outgoing transitions. This includes
     /// states that appear only as transition targets.
@@ -346,7 +347,7 @@ mod tests {
         }
 
         #[test]
-        fn sources_multiple_sources_matches_with_undefined_sorting() -> Result<(), StateError> {
+        fn returns_all_source_states() -> Result<(), StateError> {
             let machine = Machine::builder()
                 .try_allow("1", "0")?
                 .try_allow("2", "0")?
@@ -380,7 +381,7 @@ mod tests {
         }
 
         #[test]
-        fn states_multiple_transitions_with_duplicate_sources_and_targets() -> Result<(), StateError> {
+        fn returns_unique_source_and_target_states() -> Result<(), StateError> {
             let machine = Machine::builder()
                 .try_allow("1", "2")?
                 .try_allow("1", "3")?
@@ -393,6 +394,20 @@ mod tests {
 
             assert_eq!(states, vec!["1", "2", "3", "4"]);
 
+            Ok(())
+        }
+        
+        #[test]
+        fn includes_target_only_states() -> Result<(), StateError> {
+            let machine = Machine::builder()
+                .try_allow("queued", "running")?
+                .build()?;
+        
+            let mut states: Vec<_> = machine.states().collect();
+            states.sort();
+        
+            assert_eq!(states, vec!["queued", "running"]);
+        
             Ok(())
         }
     }
