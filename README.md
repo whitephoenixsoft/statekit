@@ -21,11 +21,9 @@ Examples include:
 
 ## Status
 
-Stable API for v0.1.1.
+Current release: v0.2.0.
 
-In development of v0.2.0.
-
-Future releases will expand functionality while maintaining semantic versioning.
+Statekit follows semantic versioning.
 
 ## Installation
 
@@ -53,29 +51,53 @@ fn main() -> Result<(), StateError> {
 }
 ```
 
+## Inspecting a Machine
+
+Machines can be inspected without exposing their internal storage.
+
+```rust
+for source in machine.sources() {
+    println!("{source}");
+
+    if let Some(targets) = machine.targets_from(source) {
+        for target in targets {
+            println!("  -> {target}");
+        }
+    }
+}
+
+for state in machine.states() {
+    println!("{state}");
+}
+```
+
+Iteration order is unspecified.
 ## Invariants
-- Validation of the transition occurs when `try_allow()` is called.
-- Validation of the state machine occurs when `build()` is called.
-	- A machine must define at least one transition.
-- `StateName` will be used as the basis for the states and will ensure:
-	- State names must not be empty.
-    	- State names are case-sensitive.
-	- State names must start and end with visible characters
+
+- State names must not be empty or consist entirely of whitespace.
+- State names must not begin or end with Unicode whitespace.
+- State names are case-sensitive.
 - Self-transitions are rejected.
+- Cycles between distinct states are permitted.
+- A machine must contain at least one transition.
+
+## Validation
+
+`try_allow()` validates state names and transition relationships when they are added.
+
+`build()` validates machine-level requirements, including that at least one transition exists.
 
 ## Features
 
-### Error
-All public errors implement `std::error::Error`
+### Error Handling
+
+All public Statekit errors implement `std::error::Error`.
 
 ### Immutability
+
 Once constructed, a machine cannot be modified.
 
-This makes it inexpensive to share safely between threads and application components.
-
-## Specification
-
-Statekit's domain definitions and invariants are documented in the [Statekit Specification](docs/statekit-specification.md).
+This allows a machine definition to be reused safely without callers mutating its transition structure.
 
 ## What it is Not
 
@@ -85,13 +107,14 @@ Statekit is not:
 - pathfinding code
 - workflow engine
 
-It can be used as a building block for these kinds of systems, but it intentionally does not implement them.
+Statekit can be used as a building block for these kinds of systems, but intentionally does not implement them.
 
 ## Documentation
 
-- [Statekit Specification](docs/statekit-specification.md)
-- [Migration Guide](MIGRATION.md)
-- [Change Log](CHANGELOG.md)
+- [Statekit Specification](docs/statekit-specification.md) — domain definitions and invariants
+- [Migration Guide](MIGRATION.md) — guidance for upgrading between releases
+- [Changelog](CHANGELOG.md) — notable changes by release
+
 ## License
 MIT
 
