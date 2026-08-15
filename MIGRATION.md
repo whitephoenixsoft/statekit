@@ -32,6 +32,8 @@ let machine = Machine::builder()
 
 The deprecated `allow` method remains available for compatibility but panics when given an invalid transition. New code should use `try_allow`.
 
+> **Important:** Although `allow` remains available for source compatibility, its error behavior has changed. In 0.1, invalid transitions were generally rejected by `build()`. In 0.2, invalid input passed to `allow` causes an immediate panic. Code that handles invalid or externally supplied state names should migrate to `try_allow`.
+
 ### Validation now occurs when transitions are added
 
 In 0.1, invalid transition definitions could be stored temporarily in `MachineBuilder` and were rejected by `build()`.
@@ -44,7 +46,7 @@ As a result, errors such as invalid state names and self-transitions are returne
 
 ### State-name validation is stricter
 
-Version 0.2 introduces stronger state-name invariants.
+Version 0.2 introduces stronger state-name invariants. This is a behavioral compatibility change: state names accepted by 0.1 may be rejected by 0.2.
 
 A state name:
 
@@ -108,9 +110,11 @@ queued  -> running
 running -> queued
 ```
 
-### `Machine::targets` is renamed to `Machine::targets_from`
+### `Machine::targets` is deprecated in favor of `Machine::targets_from`
 
-The transition-query API has been made more explicit. The original method has been marked deprecated.
+`Machine::targets` remains available in 0.2 for compatibility, but is deprecated. Existing code continues to compile with a deprecation warning.
+
+New code should use `targets_from`.
 
 Version 0.1:
 
@@ -140,13 +144,13 @@ for source in machine.sources() {
 }
 ```
 
-`sources()` returns states that have at least one outgoing transition. States that appear only as transition targets are not included.
+`sources()` returns states that have at least one outgoing transition. States that appear only as transition targets are not included. The iteration order is unspecified.
 
 This complements `targets_from` and allows callers to inspect the transition graph without exposing Statekit's internal storage representation.
 
 ### Unique states can be enumerated
 
-Version 0.2 adds a source-state iterator:
+Version 0.2 adds an iterator over all unique states in the machine:
 
 ```rust
 for state in machine.states() {
@@ -154,7 +158,9 @@ for state in machine.states() {
 }
 ```
 
-`states()` returns all the source and target states in all transitions. States will not be duplicated and since there can only be a minimum of one transition with unique states, two states are the minimum amount of states returned.
+`states()` returns every unique state that appears as either the source or target of a transition. Each state is returned once, and iteration order is unspecified.
+
+Because a valid machine contains at least one transition and self-transitions are prohibited, a machine contains at least two unique states.
 
 ### Internal architectural changes
 
