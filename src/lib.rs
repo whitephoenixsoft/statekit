@@ -2,10 +2,13 @@
 
 //! # Statekit
 //!
-//! An immutable state-machine definition for validating predefined transitions.
+//! An immutable state-transition validator for predefined workflows.
 //!
 //! This crate is useful when states are dynamic, configuration-driven, or stored
 //! as data, allowing applications to avoid hard-coding state transitions.
+//! 
+//! State and transition invariants are enforced while constructing the machine
+//! through [`MachineBuilder`].
 //!
 //! # Examples
 //! ```
@@ -31,9 +34,10 @@
 //!
 //! - A machine contains at least one transition.
 //! - State names are non-empty.
-//! - State names may not begin or end with whitespace.
+//! - State names may not begin or end with Unicode whitespace.
 //! - Self-transitions are rejected.
 //! - Cycles between distinct states are permitted.
+//! 
 //! # Additional documentation
 //!
 //! - [Statekit Specification](https://github.com/whitephoenixsoft/statekit/blob/main/docs/statekit-specification.md)
