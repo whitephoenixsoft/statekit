@@ -1,8 +1,9 @@
 use thiserror::Error;
 
-/// Errors produced when contructing or using a state machine.
+/// Errors produced when constructing or using a state machine.
 ///
-/// Each variant represents a violation of one of the crate's domain invariants.
+/// Each variant represents either a violated construction invariant
+/// or an invalid operation against a machine definition.
 #[derive(Debug, Error, PartialEq, Eq)]
 pub enum StateError {
     /// The machine must contain at least one transition.
@@ -13,8 +14,8 @@ pub enum StateError {
     #[error("state names must not be empty")]
     EmptyState,
 
-    /// A state must start and end with visible characters.
-    #[error("state names must not start or end with invisible characters")]
+    /// A state name must not begin or end with Unicode whitespace.
+    #[error("state names must not begin or end with Unicode whitespace")]
     AmbiguousStateName,
 
     /// A transition must connect two different states.
@@ -37,6 +38,16 @@ pub enum StateError {
 #[cfg(test)]
 mod tests {
     use super::*;
+    
+    #[test]
+    fn empty_state_display_message() {
+        let error = StateError::EmptyState;
+    
+        assert_eq!(
+            error.to_string(),
+            "state names must not be empty"
+        );
+    }
 
     #[test]
     fn no_transitions_display_message() {
@@ -70,6 +81,16 @@ mod tests {
         assert_eq!(
             error.to_string(),
             "transition from `start` to `finish` is not allowed"
+        );
+    }
+    
+    #[test]
+    fn ambiguous_state_name_display_message() {
+        let error = StateError::AmbiguousStateName;
+    
+        assert_eq!(
+            error.to_string(),
+            "state names must not begin or end with Unicode whitespace"
         );
     }
 }
