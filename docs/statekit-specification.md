@@ -1,6 +1,6 @@
 # Statekit Specification
 
-Version: 0.2
+Version: 0.3
 
 Status: Foundational — In Development
 
@@ -29,11 +29,21 @@ Holds the state transitions.
 - It is only valid if there is a transition.
 - Verifies that a transition exists.
 - Machine must support querying allowed transitions.
+- Manages access to all transition functions in Transitions.
 #### Invariants and Constraints
 
 - Machine must be immutable.
 - Machine will validate a transition based on source and target states.
 - There must be at least one transition.
+
+### Transitions
+
+The collection of transitions.
+
+- Manages storage for each transition.
+- Is internal to the Machine
+- Supports queries related to a individual transition or for the collection.
+- Transitions must be immutable.
 
 ### Transition
 

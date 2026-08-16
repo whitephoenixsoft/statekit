@@ -4,6 +4,10 @@ All notable changes to Statekit are documented in this file.
 
 ## [Unreleased]
 
+### Documentation 
+
+- Updated specification to include Transitions domain model responsibilities.
+
 ## [0.2.0]
 
 ### Added
