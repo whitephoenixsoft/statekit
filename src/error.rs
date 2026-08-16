@@ -38,15 +38,12 @@ pub enum StateError {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn empty_state_display_message() {
         let error = StateError::EmptyState;
-    
-        assert_eq!(
-            error.to_string(),
-            "state names must not be empty"
-        );
+
+        assert_eq!(error.to_string(), "state names must not be empty");
     }
 
     #[test]
@@ -83,11 +80,11 @@ mod tests {
             "transition from `start` to `finish` is not allowed"
         );
     }
-    
+
     #[test]
     fn ambiguous_state_name_display_message() {
         let error = StateError::AmbiguousStateName;
-    
+
         assert_eq!(
             error.to_string(),
             "state names must not begin or end with Unicode whitespace"

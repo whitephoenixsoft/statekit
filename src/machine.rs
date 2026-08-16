@@ -36,9 +36,9 @@ impl Machine {
     /// # Errors
     ///
     /// Returns [`StateError::InvalidTransition`] when the machine does not
-    /// contain the requested transition. 
+    /// contain the requested transition.
     /// State names are matched exactly. This method does not trim, normalize,
-/// or otherwise modify the supplied names.
+    /// or otherwise modify the supplied names.
     pub fn validate_transition(&self, from: &str, to: &str) -> Result<(), StateError> {
         if self.can_transition(from, to) {
             Ok(())
@@ -70,10 +70,7 @@ impl Machine {
     /// states that appear only as transition targets.
     ///
     /// The iteration order is unspecified.
-    #[deprecated(
-        since = "0.2.0",
-        note = "use `targets_from` instead"
-    )]
+    #[deprecated(since = "0.2.0", note = "use `targets_from` instead")]
     pub fn targets(&self, from: &str) -> Option<impl Iterator<Item = &str>> {
         self.targets_from(from)
     }
@@ -94,7 +91,6 @@ impl Machine {
     pub fn sources(&self) -> impl Iterator<Item = &str> {
         self.transitions.keys().map(StateName::as_str)
     }
-
 
     /// Returns an iterator over all unique source and target states.
     ///
@@ -209,8 +205,7 @@ mod tests {
         use super::*;
 
         #[test]
-        fn contains_state_finds_target_only_state() -> Result<(), StateError>
-        {
+        fn contains_state_finds_target_only_state() -> Result<(), StateError> {
             let builder = Machine::builder().try_allow("start", "finish")?;
 
             let m = builder.build()?;
@@ -232,8 +227,7 @@ mod tests {
         }
 
         #[test]
-        fn contains_state_finds_source_state()
-        -> Result<(), StateError> {
+        fn contains_state_finds_source_state() -> Result<(), StateError> {
             let builder = Machine::builder()
                 .try_allow("start", "end")?
                 .try_allow("rest", "finish")?;
@@ -335,9 +329,7 @@ mod tests {
 
         #[test]
         fn sources_one_source_one_value() -> Result<(), StateError> {
-            let machine = Machine::builder()
-                .try_allow("start", "finish")?
-                .build()?;
+            let machine = Machine::builder().try_allow("start", "finish")?.build()?;
 
             let sources: Vec<_> = machine.sources().collect();
 
@@ -368,9 +360,7 @@ mod tests {
 
         #[test]
         fn states_one_transition_returns_2_values() -> Result<(), StateError> {
-            let machine = Machine::builder()
-                .try_allow("1", "2")?
-                .build()?;
+            let machine = Machine::builder().try_allow("1", "2")?.build()?;
 
             let mut states: Vec<_> = machine.states().collect();
             states.sort();
@@ -396,18 +386,16 @@ mod tests {
 
             Ok(())
         }
-        
+
         #[test]
         fn includes_target_only_states() -> Result<(), StateError> {
-            let machine = Machine::builder()
-                .try_allow("queued", "running")?
-                .build()?;
-        
+            let machine = Machine::builder().try_allow("queued", "running")?.build()?;
+
             let mut states: Vec<_> = machine.states().collect();
             states.sort();
-        
+
             assert_eq!(states, vec!["queued", "running"]);
-        
+
             Ok(())
         }
     }
