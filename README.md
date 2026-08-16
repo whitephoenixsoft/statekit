@@ -21,7 +21,9 @@ Examples include:
 
 ## Status
 
-Current release: v0.2.0.
+IN DEVELOPMENT.
+
+Current release: v0.3.0.
 
 Statekit follows semantic versioning.
 
@@ -29,7 +31,7 @@ Statekit follows semantic versioning.
 
 ```toml
 [dependencies]
-statekit = "0.2.0"
+statekit = "0.3.0"
 ```
 
 ## Examples
@@ -68,6 +70,14 @@ for source in machine.sources() {
 
 for state in machine.states() {
     println!("{state}");
+}
+
+for transition in machine.transitions() {
+    println!(
+        "{} -> {}",
+        transition.source(),
+        transition.target()
+    );
 }
 ```
 

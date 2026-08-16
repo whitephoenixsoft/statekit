@@ -7,6 +7,7 @@ All notable changes to Statekit are documented in this file.
 ### Documentation 
 
 - Updated specification to include Transitions domain model responsibilities.
+- Updated README to include new API for inspecting transitions.
 
 ## [0.2.0]
 

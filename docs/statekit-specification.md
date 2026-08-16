@@ -62,6 +62,8 @@ Validates and builds the state-machine.
 - Enforces transition and state validation before a `Machine` is built.
 - Provides an API for constructing a machine definition incrementally.
 
+Note: Statekit may eventually need a compilation/import layer that can accumulate multiple validation diagnostics before producing a Machine.
+
 ### State Name
 
 Validates and holds the state. 
