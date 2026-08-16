@@ -12,9 +12,9 @@ fn workflow_machine() -> Result<Machine, StateError> {
 fn validates_configured_workflow_transitions() -> Result<(), StateError> {
     let machine = workflow_machine()?;
     machine.validate_transition("queued", "running")?;
-    
+
     machine.validate_transition("running", "completed")?;
-    
+
     machine.validate_transition("running", "failed")?;
 
     Ok(())
@@ -58,13 +58,9 @@ fn rejects_a_self_transition() {
 
 #[test]
 fn rejects_ambiguous_state_names() {
-    let result = Machine::builder()
-        .try_allow("queued ", "running");
+    let result = Machine::builder().try_allow("queued ", "running");
 
-    assert_eq!(
-        result,
-        Err(StateError::AmbiguousStateName)
-    );
+    assert_eq!(result, Err(StateError::AmbiguousStateName));
 }
 
 #[test]
@@ -75,21 +71,15 @@ fn exposes_machine_structure_for_inspection() -> Result<(), StateError> {
     sources.sort();
 
     assert_eq!(sources, vec!["queued", "running"]);
-    
-    let mut targets: Vec<_> = machine.targets_from("queued").collect();
-    
-    assert_eq!(
-        targets,
-        vec!["running"]
-    );
+
+    let targets: Vec<_> = machine.targets_from("queued").into_iter().flatten().collect();
+
+    assert_eq!(targets, vec!["running"]);
 
     let mut states: Vec<_> = machine.states().collect();
     states.sort();
 
-    assert_eq!(
-        states,
-        vec!["completed", "failed", "queued", "running"]
-    );
+    assert_eq!(states, vec!["completed", "failed", "queued", "running"]);
 
     Ok(())
 }
