@@ -4,14 +4,17 @@ use crate::{Machine, StateError, StateName};
 
 /// A builder for constructing a [`Machine`].
 ///
-/// Transitions are added with [`MachineBuilder::allow`] and validated when
-/// [`MachineBuilder::build`] is called.
+/// Transitions are added with [`MachineBuilder::try_allow`] and validated
+/// immediately before being stored.
+///
+/// [`MachineBuilder::build`] only succeeds when at least one valid transition
+/// has been configured.
 ///
 /// State names are case-sensitive. Empty state names and self-transitions are
 /// rejected. Cycles are allowed.
 #[derive(Debug, PartialEq, Default)]
 pub struct MachineBuilder {
-    transitions: HashMap<String, HashSet<String>>,
+    transitions: HashMap<StateName, HashSet<StateName>>,
 }
 
 impl MachineBuilder {
@@ -23,48 +26,61 @@ impl MachineBuilder {
     /// Adds an allowed transition from one state to another.
     ///
     /// Adding the same transition more than once has no additional effect.
-    pub fn allow(mut self, from: impl Into<String>, to: impl Into<String>) -> Self {
-        self.transitions
-            .entry(from.into())
-            .or_default()
-            .insert(to.into());
-
-        self
+    ///
+    /// # Panics
+    ///
+    /// Panics if either state name is invalid or the transition is a self-transition.
+    #[deprecated(
+        since = "0.2.0",
+        note = "use `try_allow` to handle invalid transitions without panicking"
+    )]
+    pub fn allow(self, from: impl AsRef<str>, to: impl AsRef<str>) -> Self {
+        self.try_allow(from, to)
+            .expect("invalid transition passed to MachineBuilder::allow")
     }
 
-    /// Validates the configured transitions and builds an immutable [`Machine`].
+    /// Adds an allowed transition from one state to another.
+    ///
+    /// Adding the same transition more than once has no additional effect.
     ///
     /// # Errors
     ///
     /// Returns:
     ///
-    /// - [`StateError::NoTransitions`] if no transitions were configured.
+    /// - [`StateError::AmbiguousStateName`] if an endpoint contains whitespace before or after
+    ///   the name.
     /// - [`StateError::EmptyState`] if an endpoint is empty.
     /// - [`StateError::SelfTransition`] if a transition has identical endpoints.
+    pub fn try_allow(
+        mut self,
+        from: impl AsRef<str>,
+        to: impl AsRef<str>,
+    ) -> Result<Self, StateError> {
+        let from = StateName::try_from(from.as_ref())?;
+        let to = StateName::try_from(to.as_ref())?;
+
+        if from == to {
+            return Err(StateError::SelfTransition {
+                state: from.as_str().to_owned(),
+            });
+        }
+
+        self.transitions.entry(from).or_default().insert(to);
+
+        Ok(self)
+    }
+
+    /// Builds an immutable [`Machine`].
+    ///
+    /// # Errors
+    ///
+    /// Returns [`StateError::NoTransitions`] if no transitions were configured.
     pub fn build(self) -> Result<Machine, StateError> {
         if self.transitions.is_empty() {
             return Err(StateError::NoTransitions);
         }
 
-        for (from, targets) in &self.transitions {
-            if from.is_empty() || targets.contains("") {
-                return Err(StateError::EmptyState);
-            }
-
-            if targets.contains(from) {
-                return Err(StateError::SelfTransition {
-                    state: from.clone(),
-                });
-            }
-        }
-
-        let transitions = self
-            .transitions
-            .into_iter()
-            .map(|(from, targets)| (StateName::from(from), targets))
-            .collect();
-
-        Ok(Machine::new(transitions))
+        Ok(Machine::new(self.transitions))
     }
 
     /// Returns the number of transitions added to the state machine.
@@ -74,11 +90,11 @@ impl MachineBuilder {
 
     /// Returns the number of unique states used by the configured transitions.
     pub fn state_count(&self) -> usize {
-        let mut unique: HashSet<&str> = HashSet::new();
+        let mut unique: HashSet<&StateName> = HashSet::new();
 
         for (from, targets) in &self.transitions {
-            unique.insert(from.as_str());
-            unique.extend(targets.iter().map(String::as_str));
+            unique.insert(from);
+            unique.extend(targets);
         }
 
         unique.len()
@@ -89,187 +105,271 @@ impl MachineBuilder {
 mod tests {
     use super::*;
 
-    #[test]
-    fn state_count_new_builder_returns_0() {
-        let builder = MachineBuilder::new();
+    mod empty {
+        use super::*;
 
-        assert_eq!(builder.state_count(), 0);
+        #[test]
+        fn state_count_new_builder_returns_0() {
+            let builder = MachineBuilder::new();
+
+            assert_eq!(builder.state_count(), 0);
+        }
+
+        #[test]
+        fn transition_count_new_builder_returns_0() {
+            let builder = MachineBuilder::new();
+
+            assert_eq!(builder.transition_count(), 0);
+        }
     }
 
-    #[test]
-    fn transition_count_new_builder_returns_0() {
-        let builder = MachineBuilder::new();
+    mod allow {
+        use super::*;
 
-        assert_eq!(builder.transition_count(), 0);
+        #[test]
+        #[allow(deprecated)]
+        fn allow_once_has_two_states() {
+            let builder = MachineBuilder::new();
+            let builder = builder.allow("start", "finish");
+
+            assert_eq!(builder.state_count(), 2);
+        }
+
+        #[test]
+        #[allow(deprecated)]
+        fn allow_once_has_one_transition() {
+            let builder = MachineBuilder::new();
+            let builder = builder.allow("start", "finish");
+
+            assert_eq!(builder.transition_count(), 1);
+        }
+
+        #[test]
+        #[allow(deprecated)]
+        #[should_panic(expected = "invalid transition passed to MachineBuilder::allow")]
+        fn allow_panics_for_empty_source_state() {
+            MachineBuilder::new().allow("", "running");
+        }
     }
 
-    #[test]
-    fn allow_once_has_two_states() {
-        let builder = MachineBuilder::new();
-        let builder = builder.allow("start", "finish");
+    mod buid {
+        use super::*;
 
-        assert_eq!(builder.state_count(), 2);
+        #[test]
+        fn build_empty_build_invalid() {
+            let builder = MachineBuilder::new();
+
+            assert_eq!(builder.build(), Err(StateError::NoTransitions));
+        }
+
+        #[test]
+        fn build_allows_cycles() -> Result<(), StateError> {
+            let machine = MachineBuilder::new()
+                .try_allow("start", "finish")?
+                .try_allow("finish", "start")?
+                .build();
+
+            assert!(machine.is_ok());
+
+            Ok(())
+        }
     }
 
-    #[test]
-    fn allow_once_has_one_transition() {
-        let builder = MachineBuilder::new();
-        let builder = builder.allow("start", "finish");
+    mod try_allow {
+        use super::*;
 
-        assert_eq!(builder.transition_count(), 1);
-    }
+        #[test]
+        fn try_allow_once_has_two_states() -> Result<(), StateError> {
+            let builder = MachineBuilder::new();
+            let builder = builder.try_allow("start", "finish")?;
 
-    #[test]
-    fn allow_twice_same_from_state_has_three_states() {
-        let builder = MachineBuilder::new();
-        let builder = builder.allow("start", "finish");
-        let builder = builder.allow("start", "finish2");
+            assert_eq!(builder.state_count(), 2);
 
-        assert_eq!(builder.state_count(), 3);
-    }
+            Ok(())
+        }
 
-    #[test]
-    fn allow_twice_same_from_state_has_two_transition() {
-        let builder = MachineBuilder::new();
-        let builder = builder.allow("start", "finish");
-        let builder = builder.allow("start", "finish2");
+        #[test]
+        fn try_allow_once_has_one_transition() -> Result<(), StateError> {
+            let builder = MachineBuilder::new();
+            let builder = builder.try_allow("start", "finish")?;
 
-        assert_eq!(builder.transition_count(), 2);
-    }
+            assert_eq!(builder.transition_count(), 1);
 
-    #[test]
-    fn allow_twice_same_from_state_same_transition_has_two_states() {
-        let builder = MachineBuilder::new();
-        let builder = builder.allow("start", "finish");
-        let builder = builder.allow("start", "finish");
+            Ok(())
+        }
 
-        assert_eq!(builder.state_count(), 2);
-    }
+        #[test]
+        fn try_allow_twice_same_from_state_has_three_states() -> Result<(), StateError> {
+            let builder = MachineBuilder::new();
+            let builder = builder.try_allow("start", "finish")?;
+            let builder = builder.try_allow("start", "finish2")?;
 
-    #[test]
-    fn allow_twice_same_from_state_same_transition_has_one_transition() {
-        let builder = MachineBuilder::new();
-        let builder = builder.allow("start", "finish");
-        let builder = builder.allow("start", "finish");
+            assert_eq!(builder.state_count(), 3);
 
-        assert_eq!(builder.transition_count(), 1);
-    }
+            Ok(())
+        }
 
-    #[test]
-    fn allow_twice_different_states_has_four_states() {
-        let builder = MachineBuilder::new();
-        let builder = builder.allow("start", "finish");
-        let builder = builder.allow("start2", "finish2");
+        #[test]
+        fn try_allow_twice_same_from_state_has_two_transition() -> Result<(), StateError> {
+            let builder = MachineBuilder::new();
+            let builder = builder.try_allow("start", "finish")?;
+            let builder = builder.try_allow("start", "finish2")?;
 
-        assert_eq!(builder.state_count(), 4);
-    }
+            assert_eq!(builder.transition_count(), 2);
 
-    #[test]
-    fn allow_twice_different_states_has_two_transitions() {
-        let builder = MachineBuilder::new();
-        let builder = builder.allow("start", "finish");
-        let builder = builder.allow("start2", "finish2");
+            Ok(())
+        }
 
-        assert_eq!(builder.transition_count(), 2);
-    }
+        #[test]
+        fn try_allow_twice_same_from_state_same_transition_has_two_states() -> Result<(), StateError>
+        {
+            let builder = MachineBuilder::new();
+            let builder = builder.try_allow("start", "finish")?;
+            let builder = builder.try_allow("start", "finish")?;
 
-    #[test]
-    fn allow_twice_connnected_transitions_have_three_states() {
-        let builder = MachineBuilder::new();
-        let builder = builder.allow("start", "mid");
-        let builder = builder.allow("mid", "finish");
+            assert_eq!(builder.state_count(), 2);
 
-        assert_eq!(builder.state_count(), 3);
-    }
+            Ok(())
+        }
 
-    #[test]
-    fn allow_twice_connected_transitions_have_two_transitions() {
-        let builder = MachineBuilder::new();
-        let builder = builder.allow("start", "mid");
-        let builder = builder.allow("mid", "finish");
+        #[test]
+        fn try_allow_duplicate_transition_is_ignored() -> Result<(), StateError> {
+            let builder = MachineBuilder::new();
+            let builder = builder.try_allow("start", "finish")?;
+            let builder = builder.try_allow("start", "finish")?;
 
-        assert_eq!(builder.transition_count(), 2);
-    }
+            assert_eq!(builder.transition_count(), 1);
 
-    #[test]
-    fn allow_case_sensitive_from_has_three_states() {
-        let builder = MachineBuilder::new();
-        let builder = builder.allow("start", "finish");
-        let builder = builder.allow("Start", "finish");
+            Ok(())
+        }
 
-        assert_eq!(builder.state_count(), 3);
-    }
+        #[test]
+        fn try_allow_twice_different_states_has_four_states() -> Result<(), StateError> {
+            let builder = MachineBuilder::new();
+            let builder = builder.try_allow("start", "finish")?;
+            let builder = builder.try_allow("start2", "finish2")?;
 
-    #[test]
-    fn allow_case_sensitive_from_has_two_transitions() {
-        let builder = MachineBuilder::new();
-        let builder = builder.allow("start", "finish");
-        let builder = builder.allow("Start", "finish");
+            assert_eq!(builder.state_count(), 4);
 
-        assert_eq!(builder.transition_count(), 2);
-    }
+            Ok(())
+        }
 
-    #[test]
-    fn allow_case_sensitive_to_has_three_states() {
-        let builder = MachineBuilder::new();
-        let builder = builder.allow("start", "finish");
-        let builder = builder.allow("start", "Finish");
+        #[test]
+        fn try_allow_twice_different_states_has_two_transitions() -> Result<(), StateError> {
+            let builder = MachineBuilder::new();
+            let builder = builder.try_allow("start", "finish")?;
+            let builder = builder.try_allow("start2", "finish2")?;
 
-        assert_eq!(builder.state_count(), 3);
-    }
+            assert_eq!(builder.transition_count(), 2);
 
-    #[test]
-    fn allow_case_sensitive_to_has_two_transitions() {
-        let builder = MachineBuilder::new();
-        let builder = builder.allow("start", "finish");
-        let builder = builder.allow("start", "Finish");
+            Ok(())
+        }
 
-        assert_eq!(builder.transition_count(), 2);
-    }
+        #[test]
+        fn try_allow_twice_connected_transitions_have_three_states() -> Result<(), StateError> {
+            let builder = MachineBuilder::new();
+            let builder = builder.try_allow("start", "mid")?;
+            let builder = builder.try_allow("mid", "finish")?;
 
-    #[test]
-    fn build_empty_from_state_invalid() {
-        let builder = MachineBuilder::new();
-        let builder = builder.allow("", "finish");
+            assert_eq!(builder.state_count(), 3);
 
-        assert_eq!(builder.build(), Err(StateError::EmptyState));
-    }
+            Ok(())
+        }
 
-    #[test]
-    fn build_empty_to_state_invalid() {
-        let builder = MachineBuilder::new();
-        let builder = builder.allow("start", "");
+        #[test]
+        fn try_allow_twice_connected_transitions_have_two_transitions() -> Result<(), StateError> {
+            let builder = MachineBuilder::new();
+            let builder = builder.try_allow("start", "mid")?;
+            let builder = builder.try_allow("mid", "finish")?;
 
-        assert_eq!(builder.build(), Err(StateError::EmptyState));
-    }
+            assert_eq!(builder.transition_count(), 2);
 
-    #[test]
-    fn build_transition_to_self_invalid() {
-        let builder = MachineBuilder::new();
-        let builder = builder.allow("start", "start");
+            Ok(())
+        }
 
-        assert_eq!(
-            builder.build(),
-            Err(StateError::SelfTransition {
-                state: "start".to_string(),
-            })
-        );
-    }
+        #[test]
+        fn try_allow_case_sensitive_from_has_three_states() -> Result<(), StateError> {
+            let builder = MachineBuilder::new();
+            let builder = builder.try_allow("start", "finish")?;
+            let builder = builder.try_allow("Start", "finish")?;
 
-    #[test]
-    fn build_empty_build_invalid() {
-        let builder = MachineBuilder::new();
+            assert_eq!(builder.state_count(), 3);
 
-        assert_eq!(builder.build(), Err(StateError::NoTransitions));
-    }
+            Ok(())
+        }
 
-    #[test]
-    fn build_allows_cycles() {
-        let machine = MachineBuilder::new()
-            .allow("start", "finish")
-            .allow("finish", "start")
-            .build();
+        #[test]
+        fn try_allow_case_sensitive_from_has_two_transitions() -> Result<(), StateError> {
+            let builder = MachineBuilder::new();
+            let builder = builder.try_allow("start", "finish")?;
+            let builder = builder.try_allow("Start", "finish")?;
 
-        assert!(machine.is_ok());
+            assert_eq!(builder.transition_count(), 2);
+
+            Ok(())
+        }
+
+        #[test]
+        fn try_allow_case_sensitive_to_has_three_states() -> Result<(), StateError> {
+            let builder = MachineBuilder::new();
+            let builder = builder.try_allow("start", "finish")?;
+            let builder = builder.try_allow("start", "Finish")?;
+
+            assert_eq!(builder.state_count(), 3);
+
+            Ok(())
+        }
+
+        #[test]
+        fn try_allow_case_sensitive_to_has_two_transitions() -> Result<(), StateError> {
+            let builder = MachineBuilder::new();
+            let builder = builder.try_allow("start", "finish")?;
+            let builder = builder.try_allow("start", "Finish")?;
+
+            assert_eq!(builder.transition_count(), 2);
+
+            Ok(())
+        }
+
+        #[test]
+        fn try_allow_error_transition_to_self() {
+            let builder = MachineBuilder::new();
+            let result = builder.try_allow("start", "start");
+
+            assert_eq!(
+                result,
+                Err(StateError::SelfTransition {
+                    state: "start".to_string(),
+                })
+            );
+        }
+
+        #[test]
+        fn try_allow_error_for_empty_source_state() {
+            let result = MachineBuilder::new().try_allow("", "running");
+
+            assert_eq!(result, Err(StateError::EmptyState));
+        }
+
+        #[test]
+        fn try_allow_error_for_empty_target_state() {
+            let result = MachineBuilder::new().try_allow("running", "");
+
+            assert_eq!(result, Err(StateError::EmptyState));
+        }
+
+        #[test]
+        fn try_allow_errors_for_ambiguous_target_state() {
+            let result = MachineBuilder::new().try_allow("start", "running ");
+
+            assert_eq!(result, Err(StateError::AmbiguousStateName));
+        }
+
+        #[test]
+        fn try_allow_errors_for_ambiguous_source_state() {
+            let result = MachineBuilder::new().try_allow("start ", "running");
+
+            assert_eq!(result, Err(StateError::AmbiguousStateName));
+        }
     }
 }

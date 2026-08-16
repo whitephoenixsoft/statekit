@@ -2,19 +2,20 @@ use statekit::{Machine, StateError};
 
 fn workflow_machine() -> Result<Machine, StateError> {
     Machine::builder()
-        .allow("queued", "running")
-        .allow("running", "completed")
-        .allow("running", "failed")
+        .try_allow("queued", "running")?
+        .try_allow("running", "completed")?
+        .try_allow("running", "failed")?
         .build()
 }
 
 #[test]
 fn validates_configured_workflow_transitions() -> Result<(), StateError> {
     let machine = workflow_machine()?;
+    machine.validate_transition("queued", "running")?;
 
-    assert!(machine.validate_transition("queued", "running").is_ok());
-    assert!(machine.validate_transition("running", "completed").is_ok());
-    assert!(machine.validate_transition("running", "failed").is_ok());
+    machine.validate_transition("running", "completed")?;
+
+    machine.validate_transition("running", "failed")?;
 
     Ok(())
 }
@@ -45,7 +46,7 @@ fn rejects_an_empty_machine_definition() {
 
 #[test]
 fn rejects_a_self_transition() {
-    let result = Machine::builder().allow("running", "running").build();
+    let result = Machine::builder().try_allow("running", "running");
 
     assert_eq!(
         result,
@@ -53,4 +54,32 @@ fn rejects_a_self_transition() {
             state: "running".to_owned(),
         })
     );
+}
+
+#[test]
+fn rejects_ambiguous_state_names() {
+    let result = Machine::builder().try_allow("queued ", "running");
+
+    assert_eq!(result, Err(StateError::AmbiguousStateName));
+}
+
+#[test]
+fn exposes_machine_structure_for_inspection() -> Result<(), StateError> {
+    let machine = workflow_machine()?;
+
+    let mut sources: Vec<_> = machine.sources().collect();
+    sources.sort();
+
+    assert_eq!(sources, vec!["queued", "running"]);
+
+    let targets: Vec<_> = machine.targets_from("queued").into_iter().flatten().collect();
+
+    assert_eq!(targets, vec!["running"]);
+
+    let mut states: Vec<_> = machine.states().collect();
+    states.sort();
+
+    assert_eq!(states, vec!["completed", "failed", "queued", "running"]);
+
+    Ok(())
 }
