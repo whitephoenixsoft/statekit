@@ -1,7 +1,9 @@
 # Statekit Specification
 
 Version: 0.2
+
 Status: Foundational — In Development
+
 Scope: Statekit domain definitions and invariants
 
 ## Purpose
