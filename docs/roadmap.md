@@ -35,6 +35,10 @@ Expose Models:
 - Finalize `try_allow()`
 - earlier validation
 - deprecate `allow()`
+- deprecate `targets()`
+- add `targets_from()`
+- add `sources()`
+- add `states()`
 
 ### Phase 3 - Better domain model (v0.3)
 
