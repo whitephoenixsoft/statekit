@@ -66,10 +66,12 @@ Validates and holds the state.
 
 ## Architecture
 
+```
 [Machine] -- Contains --> [Transitions] -- Contains --> [States]
 
 [Machine Builder] -- Allows --> [Transition] -- Builds Upon --> [Source State Name, Target State Name]
                   -- Builds --> [Machine] 
+```
 
 ## Compatibility Principles
 
