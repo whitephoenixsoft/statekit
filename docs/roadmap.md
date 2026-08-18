@@ -47,6 +47,7 @@ Expose Models:
 Introduce:
 - `Transition`
 - `Transitions`
+- Benchmarking to measure current design properly
 
 These will help correct the domain concepts and start reading like English.
 
@@ -63,6 +64,9 @@ To:
 Define:
 - `MachineInstance` for execution
 - `MachineDefinition` to store the allowed transitions
+
+Also consider:
+- Performance/indexing changes only if benchmarks justify them.
 
 ### Phase 5 - API Freeze (v0.9)
 
