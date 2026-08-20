@@ -1,6 +1,4 @@
-use std::collections::{HashMap, HashSet};
-
-use crate::{Machine, StateError, StateName, Transition};
+use crate::{Machine, StateError, StateName, Transition, Transitions};
 
 /// A builder for constructing a [`Machine`].
 ///
@@ -14,7 +12,7 @@ use crate::{Machine, StateError, StateName, Transition};
 /// rejected. Cycles are allowed.
 #[derive(Debug, PartialEq, Default)]
 pub struct MachineBuilder {
-    transitions: HashMap<StateName, HashSet<StateName>>,
+    transitions: Transitions,
 }
 
 impl MachineBuilder {
@@ -59,13 +57,9 @@ impl MachineBuilder {
         let from = StateName::try_from(from.as_ref())?;
         let to = StateName::try_from(to.as_ref())?;
 
-        if from == to {
-            return Err(StateError::SelfTransition {
-                state: from.as_str().to_owned(),
-            });
-        }
+        let transition = Transition::new(from, to)?;
 
-        self.transitions.entry(from).or_default().insert(to);
+        self.transitions.add(transition);
 
         Ok(self)
     }
@@ -85,19 +79,12 @@ impl MachineBuilder {
 
     /// Returns the number of transitions added to the state machine.
     pub fn transition_count(&self) -> usize {
-        self.transitions.values().map(HashSet::len).sum()
+        self.transitions.len()
     }
 
     /// Returns the number of unique states used by the configured transitions.
     pub fn state_count(&self) -> usize {
-        let mut unique: HashSet<&StateName> = HashSet::new();
-
-        for (from, targets) in &self.transitions {
-            unique.insert(from);
-            unique.extend(targets);
-        }
-
-        unique.len()
+        self.transitions.state_count()
     }
 }
 

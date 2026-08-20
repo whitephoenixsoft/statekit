@@ -48,9 +48,12 @@ mod error;
 mod machine;
 mod state_name;
 mod transition;
+mod transitions;
 
 pub use builder::MachineBuilder;
 pub use error::StateError;
 pub use machine::Machine;
 pub use transition::Transition;
+
 pub(crate) use state_name::StateName;
+pub(crate) use transitions::Transitions;

@@ -1,6 +1,4 @@
-use std::collections::{HashMap, HashSet};
-
-use crate::{MachineBuilder, StateError, StateName};
+use crate::{MachineBuilder, StateError, Transition, Transitions};
 
 /// An immutable state-machine definition.
 ///
@@ -8,12 +6,12 @@ use crate::{MachineBuilder, StateError, StateName};
 /// transition has already been validated by the builder.
 #[derive(Debug, PartialEq, Eq)]
 pub struct Machine {
-    transitions: HashMap<StateName, HashSet<StateName>>,
+    transitions: Transitions,
 }
 
 impl Machine {
     /// Constructs a machine from a validated transition table.
-    pub(crate) fn new(transitions: HashMap<StateName, HashSet<StateName>>) -> Self {
+    pub(crate) fn new(transitions: Transitions) -> Self {
         Self { transitions }
     }
 
@@ -26,9 +24,9 @@ impl Machine {
 
     /// Returns whether the transition from `from` to `to` is allowed.
     pub fn can_transition(&self, from: &str, to: &str) -> bool {
-        self.transitions
-            .get(from)
-            .is_some_and(|targets| targets.contains(to))
+        let transition = Transition::new(from, to);
+
+        self.transitions.contains(transition)
     }
 
     /// Validates that the transition from `from` to `to` is allowed.
@@ -40,7 +38,9 @@ impl Machine {
     /// State names are matched exactly. This method does not trim, normalize,
     /// or otherwise modify the supplied names.
     pub fn validate_transition(&self, from: &str, to: &str) -> Result<(), StateError> {
-        if self.can_transition(from, to) {
+        let transition = Transition::new(from, to);
+
+        if self.transitions.contains(transition) {
             Ok(())
         } else {
             Err(StateError::InvalidTransition {
@@ -52,16 +52,12 @@ impl Machine {
 
     /// Returns the number of transitions in the state machine.
     pub fn transition_count(&self) -> usize {
-        self.transitions.values().map(HashSet::len).sum()
+        self.transitions.len()
     }
 
     /// Returns whether `state` appears as either endpoint of a transition.
     pub fn contains_state(&self, state: &str) -> bool {
-        self.transitions.contains_key(state)
-            || self
-                .transitions
-                .values()
-                .any(|targets| targets.contains(state))
+        self.transitions.contains_state(state)
     }
 
     /// Returns an iterator over states directly reachable from `from`.
@@ -82,28 +78,21 @@ impl Machine {
     ///
     /// The iteration order is unspecified.
     pub fn targets_from(&self, from: &str) -> Option<impl Iterator<Item = &str>> {
-        Some(self.transitions.get(from)?.iter().map(StateName::as_str))
+        self.transitions.targets_from(from)
     }
 
     /// Returns an iterator over all source states.
     ///
     /// The iteration order is unspecified.
     pub fn sources(&self) -> impl Iterator<Item = &str> {
-        self.transitions.keys().map(StateName::as_str)
+        self.transitions.sources()
     }
 
     /// Returns an iterator over all unique source and target states.
     ///
     /// The iteration order is unspecified.
     pub fn states(&self) -> impl Iterator<Item = &str> {
-        let mut unique: HashSet<&StateName> = HashSet::new();
-
-        for (from, target) in &self.transitions {
-            unique.insert(from);
-            unique.extend(target);
-        }
-
-        unique.into_iter().map(StateName::as_str)
+        self.transitions.states()
     }
 }
 
