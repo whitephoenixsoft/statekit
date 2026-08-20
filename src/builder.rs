@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
-use crate::{Machine, StateError, StateName};
+use crate::{Machine, StateError, StateName, Transition};
 
 /// A builder for constructing a [`Machine`].
 ///

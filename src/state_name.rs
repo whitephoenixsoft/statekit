@@ -13,6 +13,11 @@ impl StateName {
     pub fn as_str(&self) -> &str {
         &self.0
     }
+    
+    /// Convert the state to type String
+    pub fn to_string(&self) -> &String {
+        &self.0
+    }
 }
 
 impl TryFrom<&str> for StateName {
