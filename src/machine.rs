@@ -65,7 +65,7 @@ impl Machine {
     /// The iteration order is unspecified.
     #[deprecated(since = "0.2.0", note = "use `targets_from` instead")]
     pub fn targets(&self, from: &str) -> Option<impl Iterator<Item = &str>> {
-        self.targets_from(from)
+        Some(self.targets_from(from))
     }
 
     /// Returns an iterator over states directly reachable from `from`.
@@ -74,7 +74,7 @@ impl Machine {
     /// states that appear only as transition targets.
     ///
     /// The iteration order is unspecified.
-    pub fn targets_from(&self, from: &str) -> Option<impl Iterator<Item = &str>> {
+    pub fn targets_from(&self, from: &str) -> impl Iterator<Item = &str> {
         self.transitions.targets_from(from)
     }
 
@@ -241,9 +241,9 @@ mod tests {
             let builder = Machine::builder().try_allow("start", "finish")?;
 
             let m = builder.build()?;
-            let iter = m.targets_from("other");
+            let collected:Vec<_>  = m.targets_from("other").collect();
 
-            assert!(iter.is_none());
+            assert!(collected.is_empty());
 
             Ok(())
         }
@@ -253,7 +253,7 @@ mod tests {
             let builder = Machine::builder().try_allow("start", "finish")?;
 
             let m = builder.build()?;
-            let collected: Vec<_> = m.targets_from("start").into_iter().flatten().collect();
+            let collected: Vec<_> = m.targets_from("start").collect();
 
             assert_eq!(collected, vec!["finish"]);
 
@@ -267,7 +267,7 @@ mod tests {
                 .try_allow("start", "2")?;
 
             let m = builder.build()?;
-            let mut collected: Vec<_> = m.targets_from("start").into_iter().flatten().collect();
+            let mut collected: Vec<_> = m.targets_from("start").collect();
             collected.sort();
 
             assert_eq!(collected, vec!["1", "2"]);
@@ -283,7 +283,7 @@ mod tests {
                 .try_allow("start", "3")?;
 
             let m = builder.build()?;
-            let mut collected: Vec<_> = m.targets_from("start").into_iter().flatten().collect();
+            let mut collected: Vec<_> = m.targets_from("start").collect();
             collected.sort();
 
             assert_eq!(collected, vec!["1", "2", "3"]);
@@ -296,7 +296,7 @@ mod tests {
             let machine = Machine::builder().try_allow("start", "finish")?.build()?;
 
             assert!(machine.contains_state("finish"));
-            assert!(machine.targets_from("finish").is_none());
+            assert!(machine.targets_from("finish").collect::<Vec<_>>().is_empty());
 
             Ok(())
         }
@@ -310,7 +310,7 @@ mod tests {
 
             assert_eq!(machine.transition_count(), 1);
 
-            let targets: Vec<_> = machine.targets_from("start").unwrap().collect();
+            let targets: Vec<_> = machine.targets_from("start").collect();
             assert_eq!(targets, vec!["finish"]);
 
             Ok(())

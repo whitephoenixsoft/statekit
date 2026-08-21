@@ -72,7 +72,7 @@ fn exposes_machine_structure_for_inspection() -> Result<(), StateError> {
 
     assert_eq!(sources, vec!["queued", "running"]);
 
-    let targets: Vec<_> = machine.targets_from("queued").into_iter().flatten().collect();
+    let targets: Vec<_> = machine.targets_from("queued").collect();
 
     assert_eq!(targets, vec!["running"]);
 

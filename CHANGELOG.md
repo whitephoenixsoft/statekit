@@ -4,10 +4,19 @@ All notable changes to Statekit are documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- Added `Machine::transitions` for iterating over all transitions in the machine.
+
+### Changed
+
+- Changed internal storage changes for transitions.
+- Changed return type of `Machine::targets_from` from `Option<Iterator<&str>>` to `Iterator<&str>`. This makes the iterator act more in line with rust best practices.
+
 ### Documentation 
 
-- Updated specification to include Transitions domain model responsibilities.
-- Updated README to include new API for inspecting transitions.
+- Updated specification to include updated domain responsibilities.
+- Updated README to include new API changes.
 
 ## [0.2.0]
 

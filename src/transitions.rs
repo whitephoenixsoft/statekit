@@ -61,13 +61,18 @@ impl Transitions {
     pub(crate) fn targets_from(
         &self,
         source: &str
-    ) -> Option<impl Iterator<Item = &str>> {
-        Some(self.items.iter().filter(move |&item| item.source() == source).map(Transition::target))
+    ) -> impl Iterator<Item = &str> {
+        self.items.iter().filter(move |&item| item.source() == source).map(Transition::target)
     }
 
-
     pub(crate) fn sources(&self) -> impl Iterator<Item = &str> {
-        self.items.iter().map(Transition::source)
+        let mut unique: HashSet<&str> = HashSet::new();
+
+        for item in &self.items {
+            unique.insert(item.source());
+        }
+
+        unique.into_iter()
     }
 
     pub(crate) fn states(&self) -> impl Iterator<Item = &str> {
