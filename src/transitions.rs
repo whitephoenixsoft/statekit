@@ -8,10 +8,6 @@ pub(crate) struct Transitions {
 }
 
 impl Transitions {
-    pub(crate) fn new() -> Self {
-        Self::default()
-    }
-
     pub(crate) fn len(&self) -> usize {
         self.items.len()
     }

@@ -14,11 +14,7 @@ impl StateName {
         &self.0
     }
     
-    /// Convert the state to type String
-    pub fn to_string(&self) -> &String {
-        &self.0
-    }
-    
+    /// Consume the state into type String
     pub(crate) fn into_string(self) -> String {
         self.0
     }

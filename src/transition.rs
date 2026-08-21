@@ -20,7 +20,7 @@ impl Transition {
     ) -> Result<Self, StateError> {
         if source == target {
             return Err(StateError::SelfTransition{
-                state: source.as_str().to_owned(),
+                state: source.into_string(),
             });
         }
         

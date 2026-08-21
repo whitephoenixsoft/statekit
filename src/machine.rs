@@ -92,6 +92,9 @@ impl Machine {
         self.transitions.states()
     }
     
+    /// Returns an iterator over all the transitions in the state machine.
+    ///
+    /// The iteration order is unspecified.
     pub fn transitions(&self) -> impl Iterator<Item = &Transition> {
         self.transitions.iter()
     }
