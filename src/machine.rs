@@ -65,13 +65,17 @@ impl Machine {
     /// The iteration order is unspecified.
     #[deprecated(since = "0.2.0", note = "use `targets_from` instead")]
     pub fn targets(&self, from: &str) -> Option<impl Iterator<Item = &str>> {
+        if self.targets_from(from).collect::<Vec<_>>().is_empty() {
+            return None;
+        }
+
         Some(self.targets_from(from))
     }
 
     /// Returns an iterator over states directly reachable from `from`.
     ///
-    /// Returns `None` when `from` has no outgoing transitions. This includes
-    /// states that appear only as transition targets.
+    /// Returns an empty iterator when there are  no outgoing transitions. 
+    /// This includes states that appear only as transition targets.
     ///
     /// The iteration order is unspecified.
     pub fn targets_from(&self, from: &str) -> impl Iterator<Item = &str> {
@@ -391,5 +395,49 @@ mod tests {
 
             Ok(())
         }
+    }
+
+    mod transitions {
+        use super::*;
+
+        #[test]
+        fn one_transition_returns_matching_fields() -> Result<(), StateError> {
+            let machine = Machine::builder().try_allow("1", "2")?.build()?;
+
+            let transitions: Vec<_> = machine.transitions().collect();
+
+            assert_eq!(transitions[0].source(), "1");
+            assert_eq!(transitions[0].target(), "2");
+
+            Ok(())
+        }
+
+        #[test]
+        fn one_transition_returns_one_item() -> Result<(), StateError> {
+            let machine = Machine::builder().try_allow("1", "2")?.build()?;
+
+            let transitions: Vec<_> = machine.transitions().collect();
+
+            assert_eq!(transitions.len(), 1);
+
+            Ok(())
+        }
+
+        #[test]
+        fn multiple_transitions_returns_correct_count() -> Result<(), StateError> {
+            let machine = Machine::builder()
+                .try_allow("1", "2")?
+                .try_allow("2", "3")?
+                .try_allow("2", "1")?
+                .try_allow("5", "2")?
+                .build()?;
+
+            let transitions: Vec<_> = machine.transitions().collect();
+
+            assert_eq!(transitions.len(), 4);
+
+            Ok(())
+        }
+
     }
 }
