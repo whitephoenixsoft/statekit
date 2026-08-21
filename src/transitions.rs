@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 use crate::Transition;
 
-#[derive(Debug, Default, PartialEq)]
+#[derive(Debug, Default, PartialEq, Eq)]
 pub(crate) struct Transitions {
     items: HashSet<Transition>,
 }
@@ -25,6 +25,10 @@ impl Transitions {
 
         self
     }
+    
+    pub(crate) fn iter(&self) ->  impl Iterator<Item = &Transition> {
+        self.items.iter()
+    }
 
     pub(crate) fn state_count(&self) -> usize {
         let mut unique: HashSet<&str> = HashSet::new();
@@ -39,9 +43,13 @@ impl Transitions {
 
     pub(crate) fn contains(
         &self, 
-        transition: &Transition,
+        source: &str,
+        target: &str,
     ) -> bool {
-        self.items.get(transition).is_some()
+        self.items.iter().any(|item| 
+            item.source() == source &&
+            item.target() == target
+        )
     }
     
     pub(crate) fn contains_state(
@@ -58,7 +66,7 @@ impl Transitions {
         &self,
         source: &str
     ) -> Option<impl Iterator<Item = &str>> {
-        Some(self.items.iter().filter(|&item| item == source)?.map(Transition::target))
+        Some(self.items.iter().filter(move |&item| item.source() == source).map(Transition::target))
     }
 
 
@@ -74,6 +82,6 @@ impl Transitions {
             unique.insert(item.target());
         }
 
-        unique.iter()
+        unique.into_iter()
     }
 }

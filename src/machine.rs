@@ -1,4 +1,4 @@
-use crate::{MachineBuilder, StateError, Transition, Transitions};
+use crate::{MachineBuilder, StateError,  Transition, Transitions};
 
 /// An immutable state-machine definition.
 ///
@@ -24,9 +24,8 @@ impl Machine {
 
     /// Returns whether the transition from `from` to `to` is allowed.
     pub fn can_transition(&self, from: &str, to: &str) -> bool {
-        let transition = Transition::new(from, to);
 
-        self.transitions.contains(transition)
+        self.transitions.contains(from, to)
     }
 
     /// Validates that the transition from `from` to `to` is allowed.
@@ -38,9 +37,7 @@ impl Machine {
     /// State names are matched exactly. This method does not trim, normalize,
     /// or otherwise modify the supplied names.
     pub fn validate_transition(&self, from: &str, to: &str) -> Result<(), StateError> {
-        let transition = Transition::new(from, to);
-
-        if self.transitions.contains(transition) {
+        if self.transitions.contains(from, to) {
             Ok(())
         } else {
             Err(StateError::InvalidTransition {
@@ -93,6 +90,10 @@ impl Machine {
     /// The iteration order is unspecified.
     pub fn states(&self) -> impl Iterator<Item = &str> {
         self.transitions.states()
+    }
+    
+    pub fn transitions(&self) -> impl Iterator<Item = &Transition> {
+        self.transitions.iter()
     }
 }
 

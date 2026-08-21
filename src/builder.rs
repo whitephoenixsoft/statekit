@@ -57,7 +57,7 @@ impl MachineBuilder {
         let from = StateName::try_from(from.as_ref())?;
         let to = StateName::try_from(to.as_ref())?;
 
-        let transition = Transition::new(from, to)?;
+        let transition = Transition::try_new(from, to)?;
 
         self.transitions.add(transition);
 

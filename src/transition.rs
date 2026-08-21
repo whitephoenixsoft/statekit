@@ -14,7 +14,7 @@ pub struct Transition {
 
 impl Transition {
     /// Contruct a machine
-    pub(crate) fn new(
+    pub(crate) fn try_new(
         source: StateName,
         target: StateName,
     ) -> Result<Self, StateError> {
