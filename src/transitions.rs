@@ -9,6 +9,11 @@ pub(crate) struct Transitions {
 }
 
 impl Transitions {
+    /// Constructs a collection to hold transitions.
+    pub(crate) fn new() -> Self {
+         Self::default()
+     }
+
     /// Returns the length of the collection.
     pub(crate) fn len(&self) -> usize {
         self.items.len()
@@ -21,7 +26,7 @@ impl Transitions {
 
     /// Add a Transition to the collection.
     ///
-    /// Returns `&Self` so for convenience.
+    /// Returns `&Self` so for usability.
     pub(crate) fn add(&mut self, transition: Transition) -> &Self {
         self.items.insert(transition);
 
@@ -104,5 +109,56 @@ impl Transitions {
         }
 
         unique.into_iter()
+    }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::StateError;
+
+    mod len {
+        use super::*;
+
+        #[test]
+        fn len_returns_0_on_no_items() {
+            let transitions = Transitions::new();
+
+            assert_eq!(transitions.len(), 0);
+        }
+
+        #[test]
+        fn len_returns_number_of_transitions() -> Result<(), StateError> {
+            let transitions = Transitions::new();
+            transitions.add(Transition::try_new("1", "2")?) 
+                .add(Transition::try_new("3", "4")?)
+                .add(Transition::try_new("5", "6")?);
+
+            assert_eq!(transitions.len(), 3);
+
+            Ok(())
+        }
+    }
+
+    mod is_empty {
+        use super::*;
+
+        #[test]
+        fn is_empty_returns_true_on_no_items() {
+            let transitions = Transitions::new();
+
+            assert!(transitions.is_empty());
+        }
+
+        #[test]
+        fn is_empty_returns_false_with_an_item() -> Result<(), StateError> {
+            let transitions = Transitions::new();
+            transitions.add(Transition::try_new("1", "2")?);
+
+            assert_eq!(transitions.is_empty(), false);
+
+            Ok(())
+        }
     }
 }
