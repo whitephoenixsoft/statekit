@@ -15,9 +15,12 @@ pub struct Transition {
 impl Transition {
     /// Contruct a machine
     pub(crate) fn try_new(
-        source: StateName,
-        target: StateName,
+        source: impl AsRef<str>,
+        target: impl AsRef<str>,
     ) -> Result<Self, StateError> {
+        let source = StateName::try_from(source.as_ref())?;
+        let target = StateName::try_from(target.as_ref())?;
+        
         if source == target {
             return Err(StateError::SelfTransition{
                 state: source.into_string(),
