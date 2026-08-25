@@ -10,6 +10,7 @@ pub(crate) struct Transitions {
 
 impl Transitions {
     /// Constructs a collection to hold transitions.
+    #[allow(dead_code)]
     pub(crate) fn new() -> Self {
          Self::default()
      }
@@ -27,7 +28,7 @@ impl Transitions {
     /// Add a Transition to the collection.
     ///
     /// Returns `&Self` so for usability.
-    pub(crate) fn add(&mut self, transition: Transition) -> &Self {
+    pub(crate) fn add(&mut self, transition: Transition) -> &mut Self {
         self.items.insert(transition);
 
         self
@@ -130,7 +131,7 @@ mod tests {
 
         #[test]
         fn len_returns_number_of_transitions() -> Result<(), StateError> {
-            let transitions = Transitions::new();
+            let mut transitions = Transitions::new();
             transitions.add(Transition::try_new("1", "2")?) 
                 .add(Transition::try_new("3", "4")?)
                 .add(Transition::try_new("5", "6")?);
@@ -153,10 +154,66 @@ mod tests {
 
         #[test]
         fn is_empty_returns_false_with_an_item() -> Result<(), StateError> {
-            let transitions = Transitions::new();
+            let mut transitions = Transitions::new();
             transitions.add(Transition::try_new("1", "2")?);
 
             assert_eq!(transitions.is_empty(), false);
+
+            Ok(())
+        }
+    }
+    
+    mod iter {
+        use super::*;
+        
+        #[test]
+        fn iter_returns_empty_on_no_items() {
+            let items = Transitions::new();
+            
+            let transitions: Vec<_> = items.iter().collect();
+
+            assert!(transitions.is_empty());
+        }
+        
+        #[test]
+        fn iter_one_transition_returns_matching_fields() -> Result<(), StateError> {
+            let mut items = Transitions::new();
+            items.add(Transition::try_new("1", "2")?);
+
+            let transitions: Vec<_> = items.iter().collect();
+
+            assert_eq!(transitions[0].source(), "1");
+            assert_eq!(transitions[0].target(), "2");
+
+            Ok(())
+        }
+
+        #[test]
+        fn iter_one_transition_returns_one_item() -> Result<(), StateError> {
+            let mut items = Transitions::new();
+            
+            items.add(Transition::try_new("1", "2")?);
+
+            let transitions: Vec<_> = items.iter().collect();
+
+            assert_eq!(transitions.len(), 1);
+
+            Ok(())
+        }
+
+        #[test]
+        fn iter_multiple_transitions_returns_correct_count() -> Result<(), StateError> {
+            let mut items = Transitions::new();
+            
+            items
+                .add(Transition::try_new("1", "2")?)
+                .add(Transition::try_new("2", "3")?)
+                .add(Transition::try_new("2", "1")?)
+                .add(Transition::try_new("5", "2")?);
+
+            let transitions: Vec<_> = items.iter().collect();
+
+            assert_eq!(transitions.len(), 4);
 
             Ok(())
         }
