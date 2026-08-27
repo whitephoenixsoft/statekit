@@ -139,7 +139,7 @@ mod tests {
         }
     }
 
-    mod buid {
+    mod build {
         use super::*;
 
         #[test]
