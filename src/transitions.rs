@@ -218,4 +218,92 @@ mod tests {
             Ok(())
         }
     }
+
+    mod state_count {
+        use super::*;
+
+        #[test]
+        fn state_count_no_items_returns_0() {
+            let items = Transitions::new();
+
+            assert_eq!(items.state_count(), 0);
+        }
+
+        #[test]
+        fn state_count_one_transition_returns_2_states() -> Result<(), StateError> {
+            let mut items = Transitions::new();
+
+            items.add(Transition::try_new("1","2")?);
+
+            assert_eq!(items.state_count(), 2);
+
+            Ok(())
+        }
+
+        #[test]
+        fn state_count_two_shared_source_transitions_returns_3_states() -> Result<(), StateError> {
+            let mut items = Transitions::new();
+
+            items.add(Transition::try_new("1","2")?);
+            items.add(Transition::try_new("1","3")?);
+
+            assert_eq!(items.state_count(), 3);
+
+            Ok(())
+        }
+
+        #[test]
+        fn state_count_same_transition_twice_returns_2_states() -> Result<(), StateError> {
+            let mut items = Transitions::new();
+
+            items.add(Transition::try_new("1","2")?);
+            items.add(Transition::try_new("1","2")?);
+
+            assert_eq!(items.state_count(), 2);
+
+            Ok(())
+        }
+
+        #[test]
+        fn state_count_two_connected_transitions_returns_3_states() -> Result<(), StateError> {
+            let mut items = Transitions::new();
+
+            items.add(Transition::try_new("1","2")?);
+            items.add(Transition::try_new("2","3")?);
+
+            assert_eq!(items.state_count(), 3);
+
+            Ok(())
+        }
+
+        #[test]
+        fn state_count_two_shared_terminal_transitions_returns_3_states() -> Result<(), StateError> {
+            let mut items = Transitions::new();
+
+            items.add(Transition::try_new("1","2")?);
+            items.add(Transition::try_new("4","2")?);
+
+            assert_eq!(items.state_count(), 3);
+
+            Ok(())
+        }
+
+        #[test]
+        fn state_count_two_different_transitions_returns_4_states() -> Result<(), StateError> {
+            let mut items = Transitions::new();
+
+            items.add(Transition::try_new("1","2")?);
+            items.add(Transition::try_new("4","3")?);
+
+            assert_eq!(items.state_count(), 4);
+
+            Ok(())
+        }
+    }
+
+
+    mod contains {
+        //use super::*;
+
+    }
 }
