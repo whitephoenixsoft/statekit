@@ -303,7 +303,35 @@ mod tests {
 
 
     mod contains {
-        //use super::*;
+        use super::*;
 
+        #[test]
+        fn contains_exists_returns_true() -> Result<(), StateError> {
+            let mut items = Transitions::new();
+
+            items.add(Transition::try_new("1", "2")?);
+
+            assert!(items.contains("1", "2"));
+
+            Ok(())
+        }
+
+        #[test]
+        fn contains_not_exists_returns_false() -> Result<(), StateError> {
+            let mut items = Transitions::new();
+
+            items.add(Transition::try_new("1", "2")?);
+
+            assert!(!items.contains("1", "3"));
+
+            Ok(())
+        }
+
+        #[test]
+        fn contains_no_items_returns_false() {
+            let items = Transitions::new();
+
+            assert!(!items.contains("1", "2"));
+        }
     }
 }
