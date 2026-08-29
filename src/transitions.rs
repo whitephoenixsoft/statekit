@@ -334,4 +334,236 @@ mod tests {
             assert!(!items.contains("1", "2"));
         }
     }
+
+    mod contains_state {
+        use super::*;
+
+        #[test]
+        fn contains_state_no_items_returns_false() {
+            let items = Transitions::new();
+
+            assert!(!items.contains_state("1"));
+        }
+
+        #[test]
+        fn contains_state_finds_target_only_state() -> Result<(), StateError> {
+            let mut items = Transitions::new();
+
+            items.add(Transition::try_new("1", "2")?);
+
+            assert!(items.contains_state("2"));
+
+            Ok(())
+        }
+
+        #[test]
+        fn contains_state_finds_source_state() -> Result<(), StateError> {
+            let mut items = Transitions::new();
+
+            items.add(Transition::try_new("1", "2")?);
+
+            assert!(items.contains_state("1"));
+
+            Ok(())
+        }
+
+        #[test]
+        fn contains_state_rejects_unknown_state() -> Result<(), StateError> {
+            let mut items = Transitions::new();
+
+            items.add(Transition::try_new("1", "2")?);
+
+            assert!(!items.contains_state("3"));
+
+            Ok(())
+        }
+    }
+
+    mod targets_from {
+        use super::*;
+
+        #[test]
+        fn targets_from_no_items_returns_empty() {
+            let items = Transitions::new();
+
+            let collected:Vec<_> = items.targets_from("1").collect();
+
+            assert!(collected.is_empty());
+        }
+
+        #[test]
+        fn targets_from_source_does_not_exist_returns_empty() -> Result<(), StateError> {
+            let mut items = Transitions::new();
+
+            items.add(Transition::try_new("1", "2")?);
+
+            let collected:Vec<_> = items.targets_from("3").collect();
+
+            assert!(collected.is_empty());
+
+            Ok(())
+        }
+        
+        #[test]
+        fn targets_from_one_source_with_one_target() -> Result<(), StateError> {
+            let mut items = Transitions::new();
+
+            items.add(Transition::try_new("1", "2")?);
+
+            let collected:Vec<_> = items.targets_from("1").collect();
+
+            assert_eq!(collected, vec!["2"]);
+
+            Ok(())
+        }
+
+        #[test]
+        fn targets_from_target_only_returns_empty() -> Result<(), StateError> {
+            let mut items = Transitions::new();
+
+            items.add(Transition::try_new("1", "2")?);
+
+            let collected:Vec<_> = items.targets_from("2").collect();
+
+            assert!(items.contains_state("2"));
+            assert!(collected.is_empty());
+
+            Ok(())
+        }
+
+        #[test]
+        fn targets_from_one_source_multiple_targets() -> Result<(), StateError> {
+            let mut items = Transitions::new();
+
+            items.add(Transition::try_new("1", "2")?);
+            items.add(Transition::try_new("1", "3")?);
+            items.add(Transition::try_new("1", "4")?);
+
+            let mut collected:Vec<_> = items.targets_from("1").collect();
+            collected.sort();
+
+            assert_eq!(collected, vec!["2", "3", "4"]);
+
+            Ok(())
+        }
+
+        #[test]
+        fn targets_from_duplicate_transition_is_stored_once() -> Result<(), StateError> {
+            let mut items = Transitions::new();
+
+            items.add(Transition::try_new("1", "2")?);
+            items.add(Transition::try_new("1", "2")?);
+
+            let collected:Vec<_> = items.targets_from("1").collect();
+
+            assert_eq!(collected, vec!["2"]);
+
+            Ok(())
+        }
+    }
+
+    mod sources {
+        use super::*;
+
+        #[test]
+        fn sources_no_items_returns_empty() {
+            let items = Transitions::new();
+
+            let collected:Vec<_> = items.sources().collect();
+
+            assert!(collected.is_empty());
+        }
+
+        #[test]
+        fn sources_one_source_one_value() -> Result<(), StateError> {
+            let mut items = Transitions::new();
+
+            items.add(Transition::try_new("1", "2")?);
+
+            let collected:Vec<_> = items.sources().collect();
+
+            assert_eq!(collected, vec!["1"]);
+
+            Ok(())
+        }
+
+        #[test]
+        fn sources_returns_all_source_state() -> Result<(), StateError> {
+            let mut items = Transitions::new();
+
+            items.add(Transition::try_new("1", "0")?);
+            items.add(Transition::try_new("4", "0")?);
+            items.add(Transition::try_new("2", "0")?);
+            items.add(Transition::try_new("3", "0")?);
+            items.add(Transition::try_new("4", "1")?);
+
+            let mut collected:Vec<_> = items.sources().collect();
+            collected.sort();
+
+            assert_eq!(collected, vec!["1", "2", "3", "4"]);
+
+            Ok(())
+        }
+    }
+
+
+    mod states {
+        use super::*; 
+
+        #[test]
+        fn states_no_items_returns_empty() {
+            let items = Transitions::new();
+
+            let collected:Vec<_> = items.states().collect();
+
+            assert!(collected.is_empty());
+        }
+
+        #[test]
+        fn states_one_transition_returns_2_values() -> Result<(), StateError> {
+            let mut items = Transitions::new();
+
+            items.add(Transition::try_new("1", "2")?);
+
+            let mut collected:Vec<_> = items.states().collect();
+            collected.sort();
+
+            assert_eq!(collected, vec!["1", "2"]);
+
+            Ok(())
+        }
+
+        #[test]
+        fn returns_unique_source_and_target_states() -> Result<(), StateError> {
+            let mut items = Transitions::new();
+
+            items.add(Transition::try_new("1", "2")?);
+            items.add(Transition::try_new("1", "3")?);
+            items.add(Transition::try_new("2", "3")?);
+            items.add(Transition::try_new("3", "4")?);
+
+            let mut collected:Vec<_> = items.states().collect();
+            collected.sort();
+
+            assert_eq!(collected, vec!["1", "2", "3", "4"]);
+
+            Ok(())
+        }
+        
+        /// This one repeats for documenting invariant that needs to contain
+        /// target states.
+        #[test]
+        fn includes_target_only_states() -> Result<(), StateError> {
+            let mut items = Transitions::new();
+
+            items.add(Transition::try_new("1", "2")?);
+
+            let mut collected:Vec<_> = items.states().collect();
+            collected.sort();
+
+            assert_eq!(collected, vec!["1", "2"]);
+
+            Ok(())
+        }
+    }
 }

@@ -241,7 +241,7 @@ mod tests {
         use super::*;
 
         #[test]
-        fn targets_from_one_transition_key_does_not_exist_returns_none() -> Result<(), StateError> {
+        fn targets_from_one_transition_key_does_not_exist_returns_empty() -> Result<(), StateError> {
             let builder = Machine::builder().try_allow("start", "finish")?;
 
             let m = builder.build()?;
