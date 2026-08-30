@@ -60,7 +60,7 @@ fn rejects_a_self_transition() {
 fn rejects_ambiguous_state_names() {
     let result = Machine::builder().try_allow("queued ", "running");
 
-    assert_eq!(result, Err(StateError::AmbiguousStateName));
+    assert_eq!(result, Err(StateError::AmbiguousStateName { state: "queued ".to_owned() }));
 }
 
 #[test]

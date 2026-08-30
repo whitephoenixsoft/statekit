@@ -349,14 +349,14 @@ mod tests {
         fn try_allow_errors_for_ambiguous_target_state() {
             let result = MachineBuilder::new().try_allow("start", "running ");
 
-            assert_eq!(result, Err(StateError::AmbiguousStateName));
+            assert_eq!(result, Err(StateError::AmbiguousStateName { state: "running ".to_owned() }));
         }
 
         #[test]
         fn try_allow_errors_for_ambiguous_source_state() {
             let result = MachineBuilder::new().try_allow("start ", "running");
 
-            assert_eq!(result, Err(StateError::AmbiguousStateName));
+            assert_eq!(result, Err(StateError::AmbiguousStateName { state: "start ".to_owned() }));
         }
     }
 }

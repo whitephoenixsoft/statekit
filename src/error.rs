@@ -11,22 +11,25 @@ pub enum StateError {
     NoTransitions,
 
     /// A state name must not be empty.
-    #[error("state names must not be empty")]
+    #[error("state name \"\" cannot be empty")]
     EmptyState,
 
     /// A state name must not begin or end with Unicode whitespace.
-    #[error("state names must not begin or end with Unicode whitespace")]
-    AmbiguousStateName,
+    #[error("state name {state:?} must not begin or end with Unicode whitespace")]
+    AmbiguousStateName { 
+        /// The state that led or trailed with Unicode whitespaces.
+        state: String 
+    },
 
     /// A transition must connect two different states.
-    #[error("self-transitions are not allowed for state `{state}`")]
+    #[error("self-transitions are not allowed for state {state:?}")]
     SelfTransition {
         /// The state that was used as both the source and destination.
         state: String,
     },
 
     /// The requested transition must be present in the machine definition.
-    #[error("transition from `{from}` to `{to}` is not allowed")]
+    #[error("transition from {from:?} to {to:?} is not allowed")]
     InvalidTransition {
         /// The source state.
         from: String,
@@ -43,7 +46,7 @@ mod tests {
     fn empty_state_display_message() {
         let error = StateError::EmptyState;
 
-        assert_eq!(error.to_string(), "state names must not be empty");
+        assert_eq!(error.to_string(), "state name \"\" cannot be empty");
     }
 
     #[test]
@@ -64,7 +67,7 @@ mod tests {
 
         assert_eq!(
             error.to_string(),
-            "self-transitions are not allowed for state `start`"
+            "self-transitions are not allowed for state \"start\""
         );
     }
 
@@ -77,17 +80,19 @@ mod tests {
 
         assert_eq!(
             error.to_string(),
-            "transition from `start` to `finish` is not allowed"
+            "transition from \"start\" to \"finish\" is not allowed"
         );
     }
 
     #[test]
     fn ambiguous_state_name_display_message() {
-        let error = StateError::AmbiguousStateName;
+        let error = StateError::AmbiguousStateName {
+            state: " start ".to_owned()
+        };
 
         assert_eq!(
             error.to_string(),
-            "state names must not begin or end with Unicode whitespace"
+            "state name \" start \" must not begin or end with Unicode whitespace"
         );
     }
 }

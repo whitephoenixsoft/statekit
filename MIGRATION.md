@@ -30,6 +30,25 @@ for target in targets {
 }
 ```
 
+### `StateError:: AmbiguousStateName` contains field `state`
+
+In order to report the field containing `StateError::AmbiguousStateName`, the field `state` has been added.
+
+Version 0.2:
+```rust
+match err {
+    StateError::AmbiguousStateName => { println!("{err}"); }
+    _ => {}
+}
+```
+
+Version 0.3:
+```rust
+match err {
+    StateError::AmbiguousStateName { state } => { println!("{state}"); }
+    _ => {}
+}
+```
 
 ## 0.1 -> 0.2
 
