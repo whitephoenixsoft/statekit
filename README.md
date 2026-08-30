@@ -61,10 +61,8 @@ Machines can be inspected without exposing their internal storage.
 for source in machine.sources() {
     println!("{source}");
 
-    if let Some(targets) = machine.targets_from(source) {
-        for target in targets {
-            println!("  -> {target}");
-        }
+    for target in machine.targets_from(source) {
+        println!("  -> {target}");
     }
 }
 
@@ -82,6 +80,7 @@ for transition in machine.transitions() {
 ```
 
 Iteration order is unspecified.
+
 ## Invariants
 
 - State names must not be empty or consist entirely of whitespace.
