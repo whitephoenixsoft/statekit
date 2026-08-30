@@ -68,6 +68,13 @@ mod tests {
     use super::*;
 
     #[test]
+    fn as_ref_str_valid_state_succeeds() {
+        let state = StateName::try_from("queued").unwrap();
+
+        assert_eq!(state.as_ref(), "queued");
+    }
+
+    #[test]
     fn try_from_str_valid_state_succeeds() {
         let state = StateName::try_from("in progress").unwrap();
 
