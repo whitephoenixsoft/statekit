@@ -1,6 +1,6 @@
 # Statekit Implementation Roadmap
-State: Active (Locked)
-Current Version: v0.1
+State: Active (Review for v0.3 changes)
+Current Version: v0.3
 
 ## Purpose
 To define how statekit will evolve over next versions.
@@ -80,8 +80,7 @@ Answer questions:
 - Is this the API I'd be happy maintaining for five years?
 
 
-
-### Phase 5 - Production polish (v1.0)
+### Phase 6 - Production polish (v1.0)
 
 Only when the API seems acceptable.
 
