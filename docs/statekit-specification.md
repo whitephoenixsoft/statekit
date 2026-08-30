@@ -30,6 +30,7 @@ Holds the state transitions.
 - Verifies that a transition exists.
 - Machine must support querying allowed transitions.
 - Manages access to all transition functions in Transitions.
+
 #### Invariants and Constraints
 
 - Machine must be immutable.
@@ -42,8 +43,7 @@ The collection of transitions.
 
 - Manages storage for each transition.
 - Is internal to the Machine
-- Supports queries related to a individual transition or for the collection.
-- Transitions must be immutable.
+- Supports queries related to an individual transition or for the collection.
 
 ### Transition
 
@@ -53,6 +53,7 @@ Holds a unique state transitions.
 - A transition is unique.
 	- The source and target of a transition must be different.
 - Cycles between distinct states are permitted.
+- A transition is immutable.
 
 ### Machine Builder
 
@@ -74,15 +75,17 @@ Validates and holds the state.
 	- A state name must contain at least one non-whitespace character.
 - Must support actions related to the state domain. 
 - Must support UTF-8 strings.
+- Is internal to the Machine.
 
 
 ## Architecture
 
 ```
-[Machine] -- Contains --> [Transitions] -- Contains --> [States]
+[Machine] -- Contains --> [Transitions] -- Contains --> [Transition] -- Contains --> [States]
 
 [Machine Builder] -- Allows --> [Transition] -- Builds Upon --> [Source State Name, Target State Name]
-                  -- Builds --> [Machine] 
+		  -- Aggregates --> [Transitions] -- From --> [Transition] 
+                  -- Builds --> [Machine] -- Consumes --> [Transitions]
 ```
 
 ## Compatibility Principles
