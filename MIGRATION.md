@@ -4,7 +4,34 @@ This document describes breaking and behaviorally significant changes between St
 
 The newest migration information appears first.
 
-## 0.1 → 0.2
+## 0.2 -> 0.3
+
+Version 0.3 further stadardizes the interfaces.
+
+### `Machine::targets_from` returns Iterator only
+
+Version 0.3 now makes `Machine::targets_from` behave like other rust iterators.
+
+Version 0.2:
+```rust
+if let Some(targets) = machine.targets_from("source") {
+    for target in targets { 
+        println!("{target}");
+    }
+}
+```
+
+Version 0.3:
+```rust
+let targets = machine.targets_from("source");
+
+for target in targets { 
+    println!("{target}");
+}
+```
+
+
+## 0.1 -> 0.2
 
 Version 0.2 strengthens Statekit's domain invariants and moves validation closer to the point where state names and transitions are created.
 

@@ -6,6 +6,7 @@ All notable changes to Statekit are documented in this file.
 
 ### Added
 
+- Added `Transition` for storing the source and target transitions.
 - Added `Machine::transitions` for iterating over all transitions in the machine.
 
 ### Changed
