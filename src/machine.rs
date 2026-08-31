@@ -10,7 +10,7 @@ pub struct Machine {
 }
 
 impl Machine {
-    /// Constructs a machine from a validated transition table.
+    /// Constructs a machine from validated transitions.
     pub(crate) fn new(transitions: Transitions) -> Self {
         Self { transitions }
     }
@@ -24,7 +24,6 @@ impl Machine {
 
     /// Returns whether the transition from `from` to `to` is allowed.
     pub fn can_transition(&self, from: &str, to: &str) -> bool {
-
         self.transitions.contains(from, to)
     }
 
@@ -37,7 +36,7 @@ impl Machine {
     /// State names are matched exactly. This method does not trim, normalize,
     /// or otherwise modify the supplied names.
     pub fn validate_transition(&self, from: &str, to: &str) -> Result<(), StateError> {
-        if self.transitions.contains(from, to) {
+        if self.can_transition(from, to) {
             Ok(())
         } else {
             Err(StateError::InvalidTransition {
@@ -65,17 +64,19 @@ impl Machine {
     /// The iteration order is unspecified.
     #[deprecated(since = "0.2.0", note = "use `targets_from` instead")]
     pub fn targets(&self, from: &str) -> Option<impl Iterator<Item = &str>> {
-        if self.targets_from(from).collect::<Vec<_>>().is_empty() {
-            return None;
-        }
+        let mut targets = self.targets_from(from).peekable();
 
-        Some(self.targets_from(from))
+        if targets.peek().is_none() {
+            None
+        } else {
+            Some(targets)
+        }
     }
 
     /// Returns an iterator over states directly reachable from `from`.
     ///
-    /// Returns an empty iterator when there are  no outgoing transitions. 
-    /// This includes states that appear only as transition targets.
+    /// Returns an empty iterator when `from` has no outgoing transitions,
+    /// including when `from` is unknown or appears only as a transition target.
     ///
     /// The iteration order is unspecified.
     pub fn targets_from(&self, from: &str) -> impl Iterator<Item = &str> {
@@ -296,7 +297,7 @@ mod tests {
         }
 
         #[test]
-        fn targets_from_target_only_state_returns_none() -> Result<(), StateError> {
+        fn targets_from_target_only_state_returns_empty() -> Result<(), StateError> {
             let machine = Machine::builder().try_allow("start", "finish")?.build()?;
 
             assert!(machine.contains_state("finish"));
