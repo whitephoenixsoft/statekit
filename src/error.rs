@@ -11,13 +11,13 @@ pub enum StateError {
     NoTransitions,
 
     /// A state name must not be empty.
-    #[error("state name \"\" cannot be empty")]
+    #[error("state name cannot be empty or whitespace-only")]
     EmptyState,
 
     /// A state name must not begin or end with Unicode whitespace.
     #[error("state name {state:?} must not begin or end with Unicode whitespace")]
     AmbiguousStateName { 
-        /// The state that led or trailed with Unicode whitespaces.
+        /// The state containing leading or trailing Unicode whitespace.
         state: String 
     },
 
@@ -46,7 +46,7 @@ mod tests {
     fn empty_state_display_message() {
         let error = StateError::EmptyState;
 
-        assert_eq!(error.to_string(), "state name \"\" cannot be empty");
+        assert_eq!(error.to_string(), "state name cannot be empty or whitespace-only");
     }
 
     #[test]
@@ -93,6 +93,19 @@ mod tests {
         assert_eq!(
             error.to_string(),
             "state name \" start \" must not begin or end with Unicode whitespace"
+        );
+    }
+
+    #[test]
+    fn invalid_transition_display_escapes_white_space() {
+        let error = StateError::InvalidTransition {
+            from: "\nstart".to_owned(),
+            to: "finish\t".to_owned(),
+        };
+
+        assert_eq!(
+            error.to_string(),
+            "transition from \"\\nstart\" to \"finish\\t\" is not allowed"
         );
     }
 }
