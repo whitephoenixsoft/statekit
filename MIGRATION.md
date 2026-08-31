@@ -50,6 +50,11 @@ match err {
 }
 ```
 
+### `MachineBuilder` traits removed.
+
+`MachineBuilder` no longer implements trait `Default` due to it making the builder violate design restrictions.
+
+
 ## 0.1 -> 0.2
 
 Version 0.2 strengthens Statekit's domain invariants and moves validation closer to the point where state names and transitions are created.

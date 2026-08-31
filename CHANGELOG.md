@@ -15,6 +15,7 @@ All notable changes to Statekit are documented in this file.
 - Changed return type of `Machine::targets_from` from `Option<Iterator<&str>>` to `Iterator<&str>`. This makes the iterator act more in line with rust best practices.
 - Changed `StateError::AmbiguousStateName` to include field name `state`.
 - Changed StateError displayed errors to quote values with a double quote (\") instead of a back tick (\`)
+- Changed `MachineBuilder` to no longer implement unnecessary trait: `Default`.
 
 ### Documentation 
 

@@ -1,4 +1,4 @@
-use crate::{Machine, StateError, StateName, Transition, Transitions};
+use crate::{Machine, StateError, Transition, Transitions};
 
 /// A builder for constructing a [`Machine`].
 ///
@@ -8,9 +8,10 @@ use crate::{Machine, StateError, StateName, Transition, Transitions};
 /// [`MachineBuilder::build`] only succeeds when at least one valid transition
 /// has been configured.
 ///
-/// State names are case-sensitive. Empty state names and self-transitions are
-/// rejected. Cycles are allowed.
-#[derive(Debug, PartialEq, Default)]
+/// State names are case-sensitive. Empty or whitespace-only state names, 
+/// names with leading or trailing whitespace, and self-transitions are rejected. 
+/// Cycles are allowed.
+#[derive(Debug, PartialEq)]
 pub struct MachineBuilder {
     transitions: Transitions,
 }
@@ -18,7 +19,9 @@ pub struct MachineBuilder {
 impl MachineBuilder {
     /// Creates an empty builder.
     pub(crate) fn new() -> Self {
-        Self::default()
+        Self {
+            transitions: Transitions::new(),
+        }
     }
 
     /// Adds an allowed transition from one state to another.
@@ -54,9 +57,6 @@ impl MachineBuilder {
         from: impl AsRef<str>,
         to: impl AsRef<str>,
     ) -> Result<Self, StateError> {
-        let from = StateName::try_from(from.as_ref())?;
-        let to = StateName::try_from(to.as_ref())?;
-
         let transition = Transition::try_new(from, to)?;
 
         self.transitions.add(transition);

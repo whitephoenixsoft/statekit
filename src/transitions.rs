@@ -10,7 +10,6 @@ pub(crate) struct Transitions {
 
 impl Transitions {
     /// Constructs a collection to hold transitions.
-    #[allow(dead_code)]
     pub(crate) fn new() -> Self {
          Self::default()
      }
