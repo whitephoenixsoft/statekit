@@ -1,11 +1,10 @@
 use crate::StateError;
 use crate::StateName;
 
-/// A validated identifier for a transition within a state machine.
-/// 
-/// A `Transition` is guaranteed to have valid state names
-/// and that the source and target states are
-/// different.
+/// A validated directed transition between two states.
+///
+/// A `Transition` guarantees that both state names are valid
+/// and that the source and target states are different.
 #[derive(Debug, PartialEq, Clone, Hash, Eq)]
 pub struct Transition {
     source: StateName,
@@ -13,7 +12,7 @@ pub struct Transition {
 }
 
 impl Transition {
-    /// Contruct a machine
+    /// Creates a validated transition from `source` to `target`.
     pub(crate) fn try_new(
         source: impl AsRef<str>,
         target: impl AsRef<str>,
