@@ -8,15 +8,15 @@ Scope: Statekit domain definitions and invariants
 
 ## Purpose
 
-This document defines statekit and its components. 
+This document defines Statekit and its components.
 
 ## Core Principle
 
 Statekit is an immutable state transition validator for applications that model workflow as data.
 
-Its purpose is to become a foundation from which dynamic state transitions can be validated during runtime. 
+Its purpose is to provide a foundation for validating dynamic state transitions at runtime. 
 
-The method to fulfill this is to provide an immutable state-machine definition that validates whether a transition is permitted.
+Statekit fulfills this purpose by providing an immutable state-machine definition that determines whether a transition is permitted.
 
 ## Core Components
 
@@ -24,12 +24,13 @@ The components in this specification describe Statekit's domain model. A compone
 
 ### Machine
 
-Holds the state transitions.
+Represents an immutable definition of the allowed state transitions.
 
 - It is only valid if there is a transition.
 - Verifies that a transition exists.
 - Machine must support querying allowed transitions.
-- Manages access to all transition functions in Transitions.
+- Querying the transitions reachable from a state with no outgoing transitions produces an empty result. This includes states that appear only as transition targets and names that do not occur in the machine.
+- Provides access to queries over the machine's transitions.
 
 #### Invariants and Constraints
 
@@ -42,16 +43,18 @@ Holds the state transitions.
 The collection of transitions.
 
 - Manages storage for each transition.
-- Is internal to the Machine
+- `Transitions` is an internal component and is not part of Statekit's public API.
 - Supports queries related to an individual transition or for the collection.
+- Contains unique transitions.
+- Two transitions with the same source and target are treated as the same logical transition.
 
 ### Transition
 
-Holds a unique state transitions.
+Represents a directed transition from a source state to a target state.
 
 - A transition is defined by its source and target states.
-- A transition is unique.
-	- The source and target of a transition must be different.
+- The source and target states must be different.
+- Two transitions with the same source and target represent the same logical transition.
 - Cycles between distinct states are permitted.
 - A transition is immutable.
 
@@ -73,19 +76,41 @@ Validates and holds the state.
 	- Two states with the same state name represent the same logical state.
 	- A state name must not begin or end with Unicode whitespace.
 	- A state name must contain at least one non-whitespace character.
-- Must support actions related to the state domain. 
 - Must support UTF-8 strings.
-- Is internal to the Machine.
+- `State Name` is an internal component and is not part of Statekit's public API.
 
 
 ## Architecture
 
 ```
-[Machine] -- Contains --> [Transitions] -- Contains --> [Transition] -- Contains --> [States]
+[Machine] -- Contains --> [Transitions] -- Contains --> [Transition] -- Has Source --> [State Name]
+                             -- Has Target --> [State Name]
+```
+```
+[Machine Builder]
+      |
+      | defines
+      v
+[Transition]
+   |       |
+ source   target
+   |       |
+   v       v
+[State Name]
 
-[Machine Builder] -- Allows --> [Transition] -- Builds Upon --> [Source State Name, Target State Name]
-		  -- Aggregates --> [Transitions] -- From --> [Transition] 
-                  -- Builds --> [Machine] -- Consumes --> [Transitions]
+[Machine Builder]
+      |
+      | builds
+      v
+   [Machine]
+      |
+      | contains
+      v
+[Transitions]
+      |
+      | contains
+      v
+[Transition]
 ```
 
 ## Compatibility Principles
