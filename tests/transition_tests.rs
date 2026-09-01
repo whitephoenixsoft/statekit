@@ -80,6 +80,11 @@ fn exposes_machine_structure_for_inspection() -> Result<(), StateError> {
     states.sort();
 
     assert_eq!(states, vec!["completed", "failed", "queued", "running"]);
+    
+    let mut transitions: Vec<_> = machine.transitions().map(|item| (item.source(), item.target())).collect();
+    transitions.sort();
+    
+    assert_eq!(transitions, vec![("queued", "running"), ("running", "completed"), ("running", "failed")]);
 
     Ok(())
 }
