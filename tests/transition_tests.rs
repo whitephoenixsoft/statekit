@@ -88,3 +88,34 @@ fn exposes_machine_structure_for_inspection() -> Result<(), StateError> {
 
     Ok(())
 }
+
+#[test]
+fn targets_from_unknown_state_returns_empty_iterator() -> Result<(), StateError> {
+    let machine = workflow_machine()?;
+
+    let targets: Vec<_> = machine.targets_from("unknown").collect();
+
+    assert!(targets.is_empty());
+
+    Ok(())
+}
+
+#[test]
+fn targets_from_target_only_state_returns_empty_iterator() -> Result<(), StateError> {
+    let machine = workflow_machine()?;
+
+    assert!(machine.contains_state("completed"));
+
+    let targets: Vec<_> = machine.targets_from("completed").collect();
+
+    assert!(targets.is_empty());
+
+    Ok(())
+}
+
+#[test]
+fn rejects_whitespace_only_state_names() {
+    let result = Machine::builder().try_allow(" \n\t", "running");
+
+    assert_eq!(result, Err(StateError::EmptyState));
+}
