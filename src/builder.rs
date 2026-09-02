@@ -11,7 +11,7 @@ use crate::{Machine, StateError, Transition, Transitions};
 /// State names are case-sensitive. Empty or whitespace-only state names, 
 /// names with leading or trailing whitespace, and self-transitions are rejected. 
 /// Cycles are allowed.
-#[derive(Debug, PartialEq)]
+#[derive(Debug)]
 pub struct MachineBuilder {
     transitions: Transitions,
 }
@@ -145,8 +145,11 @@ mod tests {
         #[test]
         fn build_empty_build_invalid() {
             let builder = MachineBuilder::new();
-
-            assert_eq!(builder.build(), Err(StateError::NoTransitions));
+            
+            assert!(matches!(
+                builder.build(),
+                Err(StateError::NoTransitions)
+            ));
         }
 
         #[test]
@@ -323,11 +326,11 @@ mod tests {
             let builder = MachineBuilder::new();
             let result = builder.try_allow("start", "start");
 
-            assert_eq!(
+            assert_eq!(matches!(
                 result,
                 Err(StateError::SelfTransition {
-                    state: "start".to_string(),
-                })
+                    ref state }) if state == "start".to_string(),
+                )
             );
         }
 
@@ -335,21 +338,24 @@ mod tests {
         fn try_allow_error_for_empty_source_state() {
             let result = MachineBuilder::new().try_allow("", "running");
 
-            assert_eq!(result, Err(StateError::EmptyState));
+            assert_eq!(matches!(
+            result, Err(StateError::EmptyState)));
         }
 
         #[test]
         fn try_allow_error_for_empty_target_state() {
             let result = MachineBuilder::new().try_allow("running", "");
 
-            assert_eq!(result, Err(StateError::EmptyState));
+            assert_eq!(matches!(
+            result, Err(StateError::EmptyState)));
         }
 
         #[test]
         fn try_allow_errors_for_ambiguous_target_state() {
             let result = MachineBuilder::new().try_allow("start", "running ");
 
-            assert_eq!(result, Err(StateError::AmbiguousStateName { state: "running ".to_owned() }));
+            assert_eq!(matches!(
+            result, Err(StateError::AmbiguousStateName { ref state } if state == "running ".to_owned() }));
         }
 
         #[test]

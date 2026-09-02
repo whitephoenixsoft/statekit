@@ -19,7 +19,7 @@ For breaking changes, [Please see MIGRATION.md](MIGRATION.md) for details.
 - Changed `Machine::targets_from()` to return an iterator directly instead of an optional iterator. Sources with no outgoing transitions now produce an empty iterator. This is a breaking change.
 - Changed `StateError::AmbiguousStateName` to include the offending state name in a `state` field. This is a breaking change.
 - Changed `StateError` display messages to quote state values with double quotes instead of backticks.
-- Removed the `Default` implementation from `MachineBuilder`; machine construction should use `Machine::builder()`. This is a breaking change.
+- Removed the `Default` and `PartialEq` implementations from `MachineBuilder`. Machine construction should use `Machine::builder()`, and builder equality is no longer part of the public API. This is a breaking change.
 - Improved `StateError` display messages, including clearer reporting of whitespace-related state-name errors and double-quoted diagnostic values.
 
 ### Documentation

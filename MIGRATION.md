@@ -88,23 +88,27 @@ match err {
 }
 ```
 
+### `MachineBuilder` no longer implements `Default` or `PartialEq`
 
-### `MachineBuilder` no longer implements `Default`
+Version 0.3 removes the `Default` and `PartialEq` implementations from `MachineBuilder`.
 
-`MachineBuilder` no longer implements `Default`.
+Machine builders should be created through `Machine::builder()` rather than `MachineBuilder::default()`.
 
-Machine definitions should be constructed through:
+Version 0.2:
+
+```rust
+let builder = MachineBuilder::default();
+```
+
+Version 0.3:
 
 ```rust
 let builder = Machine::builder();
 ```
 
-Code using:
-```rust
-let builder = MachineBuilder::default();
-```
+`PartialEq` was also removed because equality between builders is not part of Statekit's public domain contract. Code that directly compares `MachineBuilder` values must be updated to verify the resulting machine or other observable behavior instead.
 
-must migrate to `Machine::builder()`.
+Both trait removals are breaking changes.
 
 ### Migration summary
 
@@ -114,6 +118,7 @@ Most 0.2 consumers need to update code that handles `Machine::targets_from` or e
   transitions are represented by an empty iterator.
 - `StateError::AmbiguousStateName` now contains the invalid state name.
 - `MachineBuilder::default()` is no longer available; use `Machine::builder()`.
+- `MachineBuilder` no longer implements `PartialEq`.
 - `Machine::transitions()` can be used to inspect transitions directly.
 ## 0.1 -> 0.2
 
