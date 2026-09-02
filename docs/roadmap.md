@@ -40,18 +40,24 @@ Expose Models:
 - add `sources()`
 - add `states()`
 
-### Phase 3 - Better domain model (v0.3)
+### Phase 3 - Better domain model (v0.3) -- COMPLETED
 
 **Goal:** Refactor for better maintenance
 
 Introduce:
 - `Transition`
 - `Transitions`
-- Benchmarking to measure current design properly
 
 These will help correct the domain concepts and start reading like English.
 
-### Phase 4 - Stateful execution (v0.4)
+### Phase 4 - Benchmarking
+**Goal:** Introduce benchmarking to see if it's worth adding indexing
+
+Introdec:
+- Benchmarking to measure current design properly
+- Property testing (maybe)
+
+### Phase 5 - Stateful execution (v0.4)
 
 **Goal** Add a machine instance for relative transitions.
 
@@ -68,7 +74,7 @@ Define:
 Also consider:
 - Performance/indexing changes only if benchmarks justify them.
 
-### Phase 5 - API Freeze (v0.9)
+### Phase 6 - API Freeze (v0.9)
 
 No new features.
 
@@ -80,7 +86,7 @@ Answer questions:
 - Is this the API I'd be happy maintaining for five years?
 
 
-### Phase 6 - Production polish (v1.0)
+### Phase 7 - Production polish (v1.0)
 
 Only when the API seems acceptable.
 
