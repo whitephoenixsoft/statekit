@@ -4,30 +4,35 @@ All notable changes to Statekit are documented in this file.
 
 ## [Unreleased]
 
+## [0.3.0]
+
+For breaking changes, [Please see MIGRATION.md](MIGRATION.md) for details.
+
 ### Added
 
-- Added `Transition` for storing the source and target transitions.
-- Added `Machine::transitions` for iterating over all transitions in the machine.
+- Added the public `Transition` type for representing directed transitions with `source()` and `target()` accessors.
+- Added `Machine::transitions()` for iterating over all transitions in the machine.
 
 ### Changed
 
-- Changed internal storage changes for transitions.
-- Changed return type of `Machine::targets_from` from `Option<Iterator<&str>>` to `Iterator<&str>`. This makes the iterator act more in line with rust best practices.
-- Changed `StateError::AmbiguousStateName` to include field name `state`.
-- Changed StateError displayed errors to quote values with a double quote (\") instead of a back tick (\`)
-- Changed `MachineBuilder` to no longer implement unnecessary trait: `Default`.
+- Refactored internal transition storage around validated `Transition` values.
+- Changed `Machine::targets_from()` to return an iterator directly instead of an optional iterator. Sources with no outgoing transitions now produce an empty iterator. This is a breaking change.
+- Changed `StateError::AmbiguousStateName` to include the offending state name in a `state` field. This is a breaking change.
+- Changed `StateError` display messages to quote state values with double quotes instead of backticks.
+- Removed the `Default` implementation from `MachineBuilder`; machine construction should use `Machine::builder()`. This is a breaking change.
+- Improved `StateError` display messages, including clearer reporting of whitespace-related state-name errors and double-quoted diagnostic values.
 
-### Documentation 
+### Documentation
 
 - Updated specification to include updated domain responsibilities.
-- Updated README to include new API changes.
+- Updated README examples and API documentation for transition inspection.
 
 ## [0.2.0]
 
 ### Added
 
 - Added `MachineBuilder::try_allow` for fallible transition construction.
--  Added validation that rejects state names with leading or trailing Unicode whitespace.
+- Added validation that rejects state names with leading or trailing Unicode whitespace.
 - Added `StateError::AmbiguousStateName`.
 - Added `Machine::sources` for iterating states with outgoing transitions.
 - Added `Machine::states` for iterating over all unique states in the machine.
