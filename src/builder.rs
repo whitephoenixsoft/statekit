@@ -326,43 +326,50 @@ mod tests {
             let builder = MachineBuilder::new();
             let result = builder.try_allow("start", "start");
 
-            assert_eq!(matches!(
+            assert!(matches!(
                 result,
-                Err(StateError::SelfTransition {
-                    ref state }) if state == "start".to_string(),
-                )
-            );
+                Err(StateError::SelfTransition { ref state }) if state == "start"
+            ));
         }
 
         #[test]
         fn try_allow_error_for_empty_source_state() {
             let result = MachineBuilder::new().try_allow("", "running");
 
-            assert_eq!(matches!(
-            result, Err(StateError::EmptyState)));
+            assert!(matches!(
+                result, 
+                Err(StateError::EmptyState)
+            ));
         }
 
         #[test]
         fn try_allow_error_for_empty_target_state() {
             let result = MachineBuilder::new().try_allow("running", "");
 
-            assert_eq!(matches!(
-            result, Err(StateError::EmptyState)));
+            assert!(matches!(
+                result,
+                Err(StateError::EmptyState) 
+            ));
         }
 
         #[test]
         fn try_allow_errors_for_ambiguous_target_state() {
             let result = MachineBuilder::new().try_allow("start", "running ");
 
-            assert_eq!(matches!(
-            result, Err(StateError::AmbiguousStateName { ref state } if state == "running ".to_owned() }));
+            assert!(matches!(
+                result, 
+                Err(StateError::AmbiguousStateName { ref state }) if state == "running "
+            ));
         }
 
         #[test]
         fn try_allow_errors_for_ambiguous_source_state() {
             let result = MachineBuilder::new().try_allow("start ", "running");
 
-            assert_eq!(result, Err(StateError::AmbiguousStateName { state: "start ".to_owned() }));
+            assert!(matches!(
+                    result, 
+                    Err(StateError::AmbiguousStateName { ref state }) if state == "start "
+            ));
         }
     }
 }

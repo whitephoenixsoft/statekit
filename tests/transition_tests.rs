@@ -26,13 +26,13 @@ fn rejects_transition_not_defined_by_the_workflow() -> Result<(), StateError> {
 
     let result = machine.validate_transition("running", "invalid");
 
-    assert_eq!(
+    assert!(matches!(
         result,
         Err(StateError::InvalidTransition {
-            from: "running".to_owned(),
-            to: "invalid".to_owned(),
-        })
-    );
+            ref from,
+            ref to
+        }) if from == "running" && to == "invalid"
+    ));
 
     Ok(())
 }
@@ -41,26 +41,26 @@ fn rejects_transition_not_defined_by_the_workflow() -> Result<(), StateError> {
 fn rejects_an_empty_machine_definition() {
     let result = Machine::builder().build();
 
-    assert_eq!(result, Err(StateError::NoTransitions));
+    assert!(matches!(result, Err(StateError::NoTransitions)));
 }
 
 #[test]
 fn rejects_a_self_transition() {
     let result = Machine::builder().try_allow("running", "running");
 
-    assert_eq!(
+    assert!(matches!(
         result,
         Err(StateError::SelfTransition {
-            state: "running".to_owned(),
-        })
-    );
+            ref state
+        }) if state == "running"
+    ));
 }
 
 #[test]
 fn rejects_ambiguous_state_names() {
     let result = Machine::builder().try_allow("queued ", "running");
 
-    assert_eq!(result, Err(StateError::AmbiguousStateName { state: "queued ".to_owned() }));
+    assert!(matches!(result, Err(StateError::AmbiguousStateName { ref state }) if state ==  "queued " ));
 }
 
 #[test]
@@ -117,5 +117,5 @@ fn targets_from_target_only_state_returns_empty_iterator() -> Result<(), StateEr
 fn rejects_whitespace_only_state_names() {
     let result = Machine::builder().try_allow(" \n\t", "running");
 
-    assert_eq!(result, Err(StateError::EmptyState));
+    assert!(matches!(result, Err(StateError::EmptyState)));
 }
