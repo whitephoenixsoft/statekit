@@ -19,19 +19,16 @@ impl Transition {
     ) -> Result<Self, StateError> {
         let source = StateName::try_from(source.as_ref())?;
         let target = StateName::try_from(target.as_ref())?;
-        
+
         if source == target {
-            return Err(StateError::SelfTransition{
+            return Err(StateError::SelfTransition {
                 state: source.into_string(),
             });
         }
-        
-        Ok(Self {
-            source,
-            target,
-        })
+
+        Ok(Self { source, target })
     }
-    
+
     /// Return the source state of the transition.
     pub fn source(&self) -> &str {
         self.source.as_str()

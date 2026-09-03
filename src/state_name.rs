@@ -12,7 +12,7 @@ impl StateName {
     pub(crate) fn as_str(&self) -> &str {
         &self.0
     }
-    
+
     /// Consumes the state name and returns its owned string.
     pub(crate) fn into_string(self) -> String {
         self.0
@@ -39,7 +39,7 @@ impl TryFrom<String> for StateName {
 
 /// Validates a state name against the crate's naming invariants.
 fn validate_state_name(value: &str) -> Result<(), StateError> {
-    let trimmed = value.trim(); 
+    let trimmed = value.trim();
 
     if trimmed.is_empty() {
         return Err(StateError::EmptyState);
@@ -47,7 +47,7 @@ fn validate_state_name(value: &str) -> Result<(), StateError> {
 
     if value != trimmed {
         return Err(StateError::AmbiguousStateName {
-            state: value.to_owned()
+            state: value.to_owned(),
         });
     }
 
@@ -76,7 +76,12 @@ mod tests {
     fn try_from_rejects_leading_whitespace() {
         let result = StateName::try_from(" queued");
 
-        assert_eq!(result, Err(StateError::AmbiguousStateName { state: " queued".to_owned() }));
+        assert_eq!(
+            result,
+            Err(StateError::AmbiguousStateName {
+                state: " queued".to_owned()
+            })
+        );
     }
 
     #[test]
@@ -111,13 +116,23 @@ mod tests {
     fn validate_state_name_whitespace_before_name_returns_error() {
         let result = validate_state_name("\n\t something");
 
-        assert_eq!(result, Err(StateError::AmbiguousStateName { state: "\n\t something".to_owned() }));
+        assert_eq!(
+            result,
+            Err(StateError::AmbiguousStateName {
+                state: "\n\t something".to_owned()
+            })
+        );
     }
 
     #[test]
     fn validate_state_name_whitespace_after_name_returns_error() {
         let result = validate_state_name("something\n\t ");
 
-        assert_eq!(result, Err(StateError::AmbiguousStateName { state: "something\n\t ".to_owned() }));
+        assert_eq!(
+            result,
+            Err(StateError::AmbiguousStateName {
+                state: "something\n\t ".to_owned()
+            })
+        );
     }
 }

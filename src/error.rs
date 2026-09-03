@@ -16,9 +16,9 @@ pub enum StateError {
 
     /// A state name must not begin or end with Unicode whitespace.
     #[error("state name {state:?} must not begin or end with Unicode whitespace")]
-    AmbiguousStateName { 
+    AmbiguousStateName {
         /// The state containing leading or trailing Unicode whitespace.
-        state: String 
+        state: String,
     },
 
     /// A transition must connect two different states.
@@ -46,7 +46,10 @@ mod tests {
     fn empty_state_display_message() {
         let error = StateError::EmptyState;
 
-        assert_eq!(error.to_string(), "state name cannot be empty or whitespace-only");
+        assert_eq!(
+            error.to_string(),
+            "state name cannot be empty or whitespace-only"
+        );
     }
 
     #[test]
@@ -87,7 +90,7 @@ mod tests {
     #[test]
     fn ambiguous_state_name_display_message() {
         let error = StateError::AmbiguousStateName {
-            state: " start ".to_owned()
+            state: " start ".to_owned(),
         };
 
         assert_eq!(

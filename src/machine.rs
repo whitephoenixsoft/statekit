@@ -1,4 +1,4 @@
-use crate::{MachineBuilder, StateError,  Transition, Transitions};
+use crate::{MachineBuilder, StateError, Transition, Transitions};
 
 /// An immutable state-machine definition.
 ///
@@ -96,7 +96,7 @@ impl Machine {
     pub fn states(&self) -> impl Iterator<Item = &str> {
         self.transitions.states()
     }
-    
+
     /// Returns an iterator over all the transitions in the state machine.
     ///
     /// The iteration order is unspecified.
@@ -235,7 +235,6 @@ mod tests {
             Ok(())
         }
 
-
         #[test]
         fn contains_state_finds_source_state() -> Result<(), StateError> {
             let builder = Machine::builder()
@@ -254,11 +253,12 @@ mod tests {
         use super::*;
 
         #[test]
-        fn targets_from_one_transition_key_does_not_exist_returns_empty() -> Result<(), StateError> {
+        fn targets_from_one_transition_key_does_not_exist_returns_empty() -> Result<(), StateError>
+        {
             let builder = Machine::builder().try_allow("start", "finish")?;
 
             let m = builder.build()?;
-            let collected:Vec<_>  = m.targets_from("other").collect();
+            let collected: Vec<_> = m.targets_from("other").collect();
 
             assert!(collected.is_empty());
 
@@ -313,7 +313,12 @@ mod tests {
             let machine = Machine::builder().try_allow("start", "finish")?.build()?;
 
             assert!(machine.contains_state("finish"));
-            assert!(machine.targets_from("finish").collect::<Vec<_>>().is_empty());
+            assert!(
+                machine
+                    .targets_from("finish")
+                    .collect::<Vec<_>>()
+                    .is_empty()
+            );
 
             Ok(())
         }
@@ -451,6 +456,5 @@ mod tests {
 
             Ok(())
         }
-
     }
 }

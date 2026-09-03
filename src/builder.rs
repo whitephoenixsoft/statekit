@@ -8,8 +8,8 @@ use crate::{Machine, StateError, Transition, Transitions};
 /// [`MachineBuilder::build`] only succeeds when at least one valid transition
 /// has been configured.
 ///
-/// State names are case-sensitive. Empty or whitespace-only state names, 
-/// names with leading or trailing whitespace, and self-transitions are rejected. 
+/// State names are case-sensitive. Empty or whitespace-only state names,
+/// names with leading or trailing whitespace, and self-transitions are rejected.
 /// Cycles are allowed.
 #[derive(Debug)]
 pub struct MachineBuilder {
@@ -145,11 +145,8 @@ mod tests {
         #[test]
         fn build_empty_build_invalid() {
             let builder = MachineBuilder::new();
-            
-            assert!(matches!(
-                builder.build(),
-                Err(StateError::NoTransitions)
-            ));
+
+            assert!(matches!(builder.build(), Err(StateError::NoTransitions)));
         }
 
         #[test]
@@ -336,20 +333,14 @@ mod tests {
         fn try_allow_error_for_empty_source_state() {
             let result = MachineBuilder::new().try_allow("", "running");
 
-            assert!(matches!(
-                result, 
-                Err(StateError::EmptyState)
-            ));
+            assert!(matches!(result, Err(StateError::EmptyState)));
         }
 
         #[test]
         fn try_allow_error_for_empty_target_state() {
             let result = MachineBuilder::new().try_allow("running", "");
 
-            assert!(matches!(
-                result,
-                Err(StateError::EmptyState) 
-            ));
+            assert!(matches!(result, Err(StateError::EmptyState)));
         }
 
         #[test]
@@ -357,7 +348,7 @@ mod tests {
             let result = MachineBuilder::new().try_allow("start", "running ");
 
             assert!(matches!(
-                result, 
+                result,
                 Err(StateError::AmbiguousStateName { ref state }) if state == "running "
             ));
         }
@@ -367,7 +358,7 @@ mod tests {
             let result = MachineBuilder::new().try_allow("start ", "running");
 
             assert!(matches!(
-                    result, 
+                    result,
                     Err(StateError::AmbiguousStateName { ref state }) if state == "start "
             ));
         }

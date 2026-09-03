@@ -60,7 +60,9 @@ fn rejects_a_self_transition() {
 fn rejects_ambiguous_state_names() {
     let result = Machine::builder().try_allow("queued ", "running");
 
-    assert!(matches!(result, Err(StateError::AmbiguousStateName { ref state }) if state ==  "queued " ));
+    assert!(
+        matches!(result, Err(StateError::AmbiguousStateName { ref state }) if state ==  "queued " )
+    );
 }
 
 #[test]
@@ -80,11 +82,21 @@ fn exposes_machine_structure_for_inspection() -> Result<(), StateError> {
     states.sort();
 
     assert_eq!(states, vec!["completed", "failed", "queued", "running"]);
-    
-    let mut transitions: Vec<_> = machine.transitions().map(|item| (item.source(), item.target())).collect();
+
+    let mut transitions: Vec<_> = machine
+        .transitions()
+        .map(|item| (item.source(), item.target()))
+        .collect();
     transitions.sort();
-    
-    assert_eq!(transitions, vec![("queued", "running"), ("running", "completed"), ("running", "failed")]);
+
+    assert_eq!(
+        transitions,
+        vec![
+            ("queued", "running"),
+            ("running", "completed"),
+            ("running", "failed")
+        ]
+    );
 
     Ok(())
 }
