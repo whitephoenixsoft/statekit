@@ -225,6 +225,18 @@ mod tests {
         }
 
         #[test]
+        fn contains_state_rejects_ambiguous_state() -> Result<(), StateError> {
+            let builder = Machine::builder().try_allow("start", "finish")?;
+
+            let m = builder.build()?;
+
+            assert!(!m.contains_state(" start"));
+
+            Ok(())
+        }
+
+
+        #[test]
         fn contains_state_finds_source_state() -> Result<(), StateError> {
             let builder = Machine::builder()
                 .try_allow("start", "end")?
