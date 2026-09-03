@@ -1,5 +1,5 @@
 # Statekit Implementation Roadmap
-State: Active (Review for v0.3 changes)
+State: Active 
 Current Version: v0.3
 
 ## Purpose
