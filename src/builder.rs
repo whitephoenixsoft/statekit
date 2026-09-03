@@ -1,6 +1,4 @@
-use std::collections::{HashMap, HashSet};
-
-use crate::{Machine, StateError, StateName};
+use crate::{Machine, StateError, Transition, Transitions};
 
 /// A builder for constructing a [`Machine`].
 ///
@@ -10,17 +8,20 @@ use crate::{Machine, StateError, StateName};
 /// [`MachineBuilder::build`] only succeeds when at least one valid transition
 /// has been configured.
 ///
-/// State names are case-sensitive. Empty state names and self-transitions are
-/// rejected. Cycles are allowed.
-#[derive(Debug, PartialEq, Default)]
+/// State names are case-sensitive. Empty or whitespace-only state names,
+/// names with leading or trailing whitespace, and self-transitions are rejected.
+/// Cycles are allowed.
+#[derive(Debug)]
 pub struct MachineBuilder {
-    transitions: HashMap<StateName, HashSet<StateName>>,
+    transitions: Transitions,
 }
 
 impl MachineBuilder {
     /// Creates an empty builder.
     pub(crate) fn new() -> Self {
-        Self::default()
+        Self {
+            transitions: Transitions::new(),
+        }
     }
 
     /// Adds an allowed transition from one state to another.
@@ -56,16 +57,9 @@ impl MachineBuilder {
         from: impl AsRef<str>,
         to: impl AsRef<str>,
     ) -> Result<Self, StateError> {
-        let from = StateName::try_from(from.as_ref())?;
-        let to = StateName::try_from(to.as_ref())?;
+        let transition = Transition::try_new(from, to)?;
 
-        if from == to {
-            return Err(StateError::SelfTransition {
-                state: from.as_str().to_owned(),
-            });
-        }
-
-        self.transitions.entry(from).or_default().insert(to);
+        self.transitions.add(transition);
 
         Ok(self)
     }
@@ -85,19 +79,12 @@ impl MachineBuilder {
 
     /// Returns the number of transitions added to the state machine.
     pub fn transition_count(&self) -> usize {
-        self.transitions.values().map(HashSet::len).sum()
+        self.transitions.len()
     }
 
     /// Returns the number of unique states used by the configured transitions.
     pub fn state_count(&self) -> usize {
-        let mut unique: HashSet<&StateName> = HashSet::new();
-
-        for (from, targets) in &self.transitions {
-            unique.insert(from);
-            unique.extend(targets);
-        }
-
-        unique.len()
+        self.transitions.state_count()
     }
 }
 
@@ -152,14 +139,14 @@ mod tests {
         }
     }
 
-    mod buid {
+    mod build {
         use super::*;
 
         #[test]
         fn build_empty_build_invalid() {
             let builder = MachineBuilder::new();
 
-            assert_eq!(builder.build(), Err(StateError::NoTransitions));
+            assert!(matches!(builder.build(), Err(StateError::NoTransitions)));
         }
 
         #[test]
@@ -336,40 +323,44 @@ mod tests {
             let builder = MachineBuilder::new();
             let result = builder.try_allow("start", "start");
 
-            assert_eq!(
+            assert!(matches!(
                 result,
-                Err(StateError::SelfTransition {
-                    state: "start".to_string(),
-                })
-            );
+                Err(StateError::SelfTransition { ref state }) if state == "start"
+            ));
         }
 
         #[test]
         fn try_allow_error_for_empty_source_state() {
             let result = MachineBuilder::new().try_allow("", "running");
 
-            assert_eq!(result, Err(StateError::EmptyState));
+            assert!(matches!(result, Err(StateError::EmptyState)));
         }
 
         #[test]
         fn try_allow_error_for_empty_target_state() {
             let result = MachineBuilder::new().try_allow("running", "");
 
-            assert_eq!(result, Err(StateError::EmptyState));
+            assert!(matches!(result, Err(StateError::EmptyState)));
         }
 
         #[test]
         fn try_allow_errors_for_ambiguous_target_state() {
             let result = MachineBuilder::new().try_allow("start", "running ");
 
-            assert_eq!(result, Err(StateError::AmbiguousStateName));
+            assert!(matches!(
+                result,
+                Err(StateError::AmbiguousStateName { ref state }) if state == "running "
+            ));
         }
 
         #[test]
         fn try_allow_errors_for_ambiguous_source_state() {
             let result = MachineBuilder::new().try_allow("start ", "running");
 
-            assert_eq!(result, Err(StateError::AmbiguousStateName));
+            assert!(matches!(
+                    result,
+                    Err(StateError::AmbiguousStateName { ref state }) if state == "start "
+            ));
         }
     }
 }

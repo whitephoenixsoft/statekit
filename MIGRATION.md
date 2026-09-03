@@ -4,7 +4,123 @@ This document describes breaking and behaviorally significant changes between St
 
 The newest migration information appears first.
 
-## 0.1 → 0.2
+## 0.2 -> 0.3
+
+Version 0.3 introduces first-class transition inspection and simplifies transition-target queries.
+
+### Transitions can be enumerated directly
+
+Version 0.3 introduces the public `Transition` type and `Machine::transitions`, allowing callers to inspect the directed transitions in a machine directly.
+
+```rust
+for transition in machine.transitions() {
+    println!("{} -> {}", transition.source(), transition.target());
+}
+```
+
+A `Transition` exposes its source and target state names through `source()` and `target()`.
+
+Transitions are immutable and cannot be constructed directly by callers. Machine definitions continue to be constructed through `MachineBuilder`.
+
+### `Machine::targets_from` now returns an iterator directly
+
+Version 0.3 changes `Machine::targets_from` to return an iterator directly rather than `Option<impl Iterator>`.
+
+When the source has no outgoing transitions, the returned iterator is empty. This includes unknown states and states that appear only as transition targets.
+
+Version 0.2:
+```rust
+if let Some(targets) = machine.targets_from("source") {
+    for target in targets { 
+        println!("{target}");
+    }
+}
+```
+
+```rust
+if machine.targets_from("completed").is_none() {
+    // ...
+}
+```
+
+Version 0.3:
+```rust
+let targets = machine.targets_from("source");
+
+for target in targets { 
+    println!("{target}");
+}
+```
+
+```rust
+let mut targets = machine.targets_from("source");
+
+if targets.next().is_none() {
+    println!("no outgoing transitions");
+}
+```
+
+```rust
+let targets: Vec<_> = machine.targets_from("source").collect();
+
+if targets.is_empty() {
+    println!("no outgoing transitions");
+}
+```
+
+### `StateError:: AmbiguousStateName` contains a `state` field
+ 
+`StateError::AmbiguousStateName` now preserves the invalid state name in a `state` field, allowing callers to report the exact value that contained leading or trailing Unicode whitespace.
+
+Version 0.2:
+```rust
+match err {
+    StateError::AmbiguousStateName => { println!("{err}"); }
+    _ => {}
+}
+```
+
+Version 0.3:
+```rust
+match err {
+    StateError::AmbiguousStateName { state } => { println!("{state}"); }
+    _ => {}
+}
+```
+
+### `MachineBuilder` no longer implements `Default` or `PartialEq`
+
+Version 0.3 removes the `Default` and `PartialEq` implementations from `MachineBuilder`.
+
+Machine builders should be created through `Machine::builder()` rather than `MachineBuilder::default()`.
+
+Version 0.2:
+
+```rust
+let builder = MachineBuilder::default();
+```
+
+Version 0.3:
+
+```rust
+let builder = Machine::builder();
+```
+
+`PartialEq` was also removed because equality between builders is not part of Statekit's public domain contract. Code that directly compares `MachineBuilder` values must be updated to verify the resulting machine or other observable behavior instead.
+
+Both trait removals are breaking changes.
+
+### Migration summary
+
+Most 0.2 consumers need to update code that handles `Machine::targets_from` or exhaustively matches `StateError::AmbiguousStateName`.
+
+- `Machine::targets_from` now returns an iterator directly. No outgoing
+  transitions are represented by an empty iterator.
+- `StateError::AmbiguousStateName` now contains the invalid state name.
+- `MachineBuilder::default()` is no longer available; use `Machine::builder()`.
+- `MachineBuilder` no longer implements `PartialEq`.
+- `Machine::transitions()` can be used to inspect transitions directly.
+## 0.1 -> 0.2
 
 Version 0.2 strengthens Statekit's domain invariants and moves validation closer to the point where state names and transitions are created.
 

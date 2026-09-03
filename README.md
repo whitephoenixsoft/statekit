@@ -21,18 +21,23 @@ Examples include:
 
 ## Status
 
-Current release: v0.2.0.
+Statekit is under active development.
 
-Statekit follows semantic versioning.
+Current release: v0.3.0.
+
+Statekit follows semantic versioning. As a pre-1.0 crate, its public API may evolve between minor releases.
 
 ## Installation
 
 ```toml
 [dependencies]
-statekit = "0.2.0"
+statekit = "0.3"
 ```
 
 ## Examples
+
+### Validation Example
+
 ```rust
 use statekit::{Machine, StateError};
 
@@ -43,15 +48,16 @@ fn main() -> Result<(), StateError> {
         .try_allow("running", "failed")?
         .build()?;
 
-    let result = machine.validate_transition("queued", "running");
+    let result = machine.validate_transition("queued", "running")?;
 
-    assert!(result.is_ok());
+    assert!(machine.can_transition("queued", "running"));
+    assert!(!machine.can_transition("queued", "completed"));
 
     Ok(())
 }
 ```
 
-## Inspecting a Machine
+### Inspecting a Machine
 
 Machines can be inspected without exposing their internal storage.
 
@@ -59,19 +65,35 @@ Machines can be inspected without exposing their internal storage.
 for source in machine.sources() {
     println!("{source}");
 
-    if let Some(targets) = machine.targets_from(source) {
-        for target in targets {
-            println!("  -> {target}");
-        }
+    for target in machine.targets_from(source) {
+        println!("  -> {target}");
     }
 }
+```
 
+`targets_from()` returns an empty iterator when a state has no outgoing transitions, including unknown states and states that appear only as transition targets.
+
+```rust
 for state in machine.states() {
     println!("{state}");
 }
 ```
 
+`Machine::transitions()` exposes immutable `Transition` values with source and target state names.
+
+```rust
+for transition in machine.transitions() {
+    println!(
+        "{} -> {}",
+        transition.source(),
+        transition.target()
+    );
+}
+```
+
 Iteration order is unspecified.
+
+
 ## Invariants
 
 - State names must not be empty or consist entirely of whitespace.
@@ -80,6 +102,7 @@ Iteration order is unspecified.
 - Self-transitions are rejected.
 - Cycles between distinct states are permitted.
 - A machine must contain at least one transition.
+- Duplicate transitions between the same source and target are stored as a single logical transition.
 
 ## Validation
 
@@ -104,8 +127,8 @@ This allows a machine definition to be reused safely without callers mutating it
 Statekit is not:
 - a process engine
 - a policy engine
-- pathfinding code
-- workflow engine
+- a pathfinding library
+- a workflow engine
 
 Statekit can be used as a building block for these kinds of systems, but intentionally does not implement them.
 

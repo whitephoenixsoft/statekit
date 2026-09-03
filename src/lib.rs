@@ -26,6 +26,10 @@
 //!
 //!     machine.validate_transition("queued", "running")?;
 //!
+//!     for transition in machine.transitions() {
+//!         println!("{} -> {}", transition.source(), transition.target());
+//!     }
+//!
 //!     Ok(())
 //! }
 //! ```
@@ -33,7 +37,7 @@
 //! # Invariants
 //!
 //! - A machine contains at least one transition.
-//! - State names are non-empty.
+//! - State names may not be empty or whitespace-only.
 //! - State names may not begin or end with Unicode whitespace.
 //! - Self-transitions are rejected.
 //! - Cycles between distinct states are permitted.
@@ -46,9 +50,15 @@
 mod builder;
 mod error;
 mod machine;
+mod transition;
+
 mod state_name;
+mod transitions;
 
 pub use builder::MachineBuilder;
 pub use error::StateError;
 pub use machine::Machine;
+pub use transition::Transition;
+
 pub(crate) use state_name::StateName;
+pub(crate) use transitions::Transitions;

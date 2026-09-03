@@ -1,7 +1,6 @@
 use crate::StateError;
-use std::borrow::Borrow;
 
-/// A validated identifier for a state within a machine.
+/// A validated state name within a machine.
 ///
 /// A `StateName` is guaranteed to be non-empty and to contain no
 /// leading or trailing whitespace.
@@ -9,9 +8,14 @@ use std::borrow::Borrow;
 pub(crate) struct StateName(String);
 
 impl StateName {
-    /// Convert the state to type &str.
-    pub fn as_str(&self) -> &str {
+    /// Returns the state name as a string slice.
+    pub(crate) fn as_str(&self) -> &str {
         &self.0
+    }
+
+    /// Consumes the state name and returns its owned string.
+    pub(crate) fn into_string(self) -> String {
+        self.0
     }
 }
 
@@ -33,20 +37,18 @@ impl TryFrom<String> for StateName {
     }
 }
 
-impl Borrow<str> for StateName {
-    fn borrow(&self) -> &str {
-        self.as_str()
-    }
-}
-
 /// Validates a state name against the crate's naming invariants.
 fn validate_state_name(value: &str) -> Result<(), StateError> {
-    if value.trim().is_empty() {
+    let trimmed = value.trim();
+
+    if trimmed.is_empty() {
         return Err(StateError::EmptyState);
     }
 
-    if value != value.trim() {
-        return Err(StateError::AmbiguousStateName);
+    if value != trimmed {
+        return Err(StateError::AmbiguousStateName {
+            state: value.to_owned(),
+        });
     }
 
     Ok(())
@@ -64,7 +66,7 @@ mod tests {
     }
 
     #[test]
-    fn try_from_string_reuses_valid_input() {
+    fn try_from_string_valid_state_succeeds() {
         let state = StateName::try_from(String::from("queued")).unwrap();
 
         assert_eq!(state.as_str(), "queued");
@@ -74,7 +76,12 @@ mod tests {
     fn try_from_rejects_leading_whitespace() {
         let result = StateName::try_from(" queued");
 
-        assert_eq!(result, Err(StateError::AmbiguousStateName));
+        assert_eq!(
+            result,
+            Err(StateError::AmbiguousStateName {
+                state: " queued".to_owned()
+            })
+        );
     }
 
     #[test]
@@ -109,13 +116,23 @@ mod tests {
     fn validate_state_name_whitespace_before_name_returns_error() {
         let result = validate_state_name("\n\t something");
 
-        assert_eq!(result, Err(StateError::AmbiguousStateName));
+        assert_eq!(
+            result,
+            Err(StateError::AmbiguousStateName {
+                state: "\n\t something".to_owned()
+            })
+        );
     }
 
     #[test]
     fn validate_state_name_whitespace_after_name_returns_error() {
         let result = validate_state_name("something\n\t ");
 
-        assert_eq!(result, Err(StateError::AmbiguousStateName));
+        assert_eq!(
+            result,
+            Err(StateError::AmbiguousStateName {
+                state: "something\n\t ".to_owned()
+            })
+        );
     }
 }
