@@ -26,9 +26,9 @@
 //!
 //!     machine.validate_transition("queued", "running")?;
 //!
-//! for transition in machine.transitions() {
-//!     println!("{} -> {}", transition.source(), transition.target());
-//! }
+//!     for transition in machine.transitions() {
+//!         println!("{} -> {}", transition.source(), transition.target());
+//!     }
 //!
 //!     Ok(())
 //! }
