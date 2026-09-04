@@ -87,10 +87,12 @@ proptest! {
         let result = Machine::builder()
             .try_allow(&source, &target);
 
-        prop_assert!(matches!(
+        let is_ambiguous = matches!(
             result,
             Err(StateError::AmbiguousStateName { .. })
-        ));
+        );
+
+        prop_assert!(is_ambiguous);
     }
 
     #[test]
