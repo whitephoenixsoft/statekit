@@ -332,7 +332,11 @@ proptest! {
             .expect("at least one transition was generated");
 
         for source in machine.sources() {
-            prop_assert!(machine.targets_from(source).all(|target| machine.can_transition(source, target)));
+            let mut targets = machine.targets_from(source).peekable();
+
+            prop_assert!(targets.peek().is_some());
+
+            prop_assert!(targets.all(|target| machine.can_transition(source, target)));
         }
     }
 }
