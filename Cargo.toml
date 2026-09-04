@@ -17,5 +17,8 @@ exclude = [
 	".gitignore"
 ]
 
+[dev-dependencies]
+proptest = "1.11"
+
 [dependencies]
 thiserror = "2"
