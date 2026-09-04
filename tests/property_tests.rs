@@ -1,3 +1,4 @@
+#[allow(unused_imports)]
 use proptest::prelude::*;
 use statekit::{Machine, StateError};
 
@@ -5,6 +6,24 @@ use proptest::prelude::*;
 
 fn valid_state_name() -> impl Strategy<Value = String> {
     "[A-Za-z]{1,16}"
+}
+
+
+fn valid_transition_pair() -> impl Strategy<Value = (String, String)> {
+    (valid_state_name(), valid_state_name())
+        .prop_filter(
+            "source and target must be different",
+            |(source, target)| source != target,
+        )
+}
+
+fn valid_transition_pairs()
+    -> impl Strategy<Value = Vec<(String, String)>>
+{
+    proptest::collection::vec(
+        valid_transition_pair(),
+        1..20,
+    )
 }
 
 fn whitespace_only_state_name() -> impl Strategy<Value = String> {
@@ -34,11 +53,8 @@ fn trailing_whitespace_state_name() -> impl Strategy<Value = String> {
 proptest! {
     #[test]
     fn added_transition_is_allowed(
-        source in valid_state_name(),
-        target in valid_state_name(),
+        (source, target) in valid_transition_pair(),
     ) {
-        prop_assume!(source != target);
-
         let machine = Machine::builder()
             .try_allow(&source, &target)
             .and_then(|builder| builder.build());
@@ -203,5 +219,77 @@ proptest! {
                 );
             }
         }
+    }
+    
+    #[test]
+    fn transition_count_matches_iteration(
+        transitions in valid_transition_pairs(),
+    ) {
+        let mut builder = Machine::builder();
+
+        for (source, target) in &transitions {
+            builder = builder
+                .try_allow(source, target)
+                .expect("generated transitions are valid");
+        }
+
+        let machine = builder
+            .build()
+            .expect("at least one transition was generated");
+
+        prop_assert_eq!(
+            machine.transition_count(),
+            machine.transitions().count(),
+        );
+    }
+
+    #[test]
+    fn every_exposed_transition_is_queryable(
+        transitions in valid_transition_pairs(),
+    ) {
+        let mut builder = Machine::builder();
+
+        for (source, target) in &transitions {
+            builder = builder
+                .try_allow(source, target)
+                .expect("generated transitions are valid");
+        }
+
+        let machine = builder
+            .build()
+            .expect("at least one transition was generated");
+
+        for transition in machine.transitions() {
+            prop_assert!(
+                machine.can_transition(
+                    transition.source(),
+                    transition.target(),
+                )
+            );
+        }
+    }
+    
+    #[test]
+    fn every_exposed_source_is_an_existing_state(
+        transitions in valid_transition_pairs(),
+    ) {
+        let mut builder = Machine::builder();
+
+        for (source, target) in &transitions {
+            builder = builder
+                .try_allow(source, target)
+                .expect("generated transitions are valid");
+        }
+
+        let machine = builder
+            .build()
+            .expect("at least one transition was generated");
+        
+        let states: Vec<_> = machine.states().collect();
+
+        for source in machine.sources() {
+            prop_assert!(states.contains(&source));
+        }
+
     }
 }
