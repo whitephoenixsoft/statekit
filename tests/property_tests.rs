@@ -1,5 +1,6 @@
-#[allow(unused_imports)]
+#[allow(unused)]
 use proptest::prelude::*;
+
 use statekit::{Machine, StateError};
 
 use proptest::prelude::*;
@@ -289,6 +290,30 @@ proptest! {
 
         for source in machine.sources() {
             prop_assert!(states.contains(&source));
+        }
+
+    }
+
+    #[test]
+    fn every_transition_target_is_in_targets_from(
+        transitions in valid_transition_pairs(),
+    ) {
+        let mut builder = Machine::builder();
+
+        for (source, target) in &transitions {
+            builder = builder
+                .try_allow(source, target)
+                .expect("generated transitions are valid");
+        }
+
+        let machine = builder
+            .build()
+            .expect("at least one transition was generated");
+        
+
+        for transition in machine.transitions() {
+            let targets: Vec<_> = machine.targets_from(transition.source()).collect();
+            prop_assert!(targets.contains(&transition.target()));
         }
 
     }
