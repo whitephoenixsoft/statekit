@@ -309,12 +309,30 @@ proptest! {
         let machine = builder
             .build()
             .expect("at least one transition was generated");
-        
 
         for transition in machine.transitions() {
-            let targets: Vec<_> = machine.targets_from(transition.source()).collect();
-            prop_assert!(targets.contains(&transition.target()));
+            prop_assert!(machine.targets_from(transition.source()).any(|target| target == transition.target()));
+        }
+    }
+
+    #[test]
+    fn every_target_in_targets_from_is_a_valid_transition(
+        transitions in valid_transition_pairs(),
+    ) {
+        let mut builder = Machine::builder();
+
+        for (source, target) in &transitions {
+            builder = builder
+                .try_allow(source, target)
+                .expect("generated transitions are valid");
         }
 
+        let machine = builder
+            .build()
+            .expect("at least one transition was generated");
+
+        for source in machine.sources() {
+            prop_assert!(machine.targets_from(source).all(|target| machine.can_transition(source, target)));
+        }
     }
 }
