@@ -1,14 +1,13 @@
-#[allow(unused)]
+use std::collections::HashSet;
 use proptest::prelude::*;
 
 use statekit::{Machine, StateError};
 
-use proptest::prelude::*;
+type Model = HashSet<(String, String)>;
 
 fn valid_state_name() -> impl Strategy<Value = String> {
     "[A-Za-z]{1,16}"
 }
-
 
 fn valid_transition_pair() -> impl Strategy<Value = (String, String)> {
     (valid_state_name(), valid_state_name())
@@ -338,5 +337,26 @@ proptest! {
 
             prop_assert!(targets.all(|target| machine.can_transition(source, target)));
         }
+    }
+
+    #[test]
+    fn model_based_valid_transactions_yields_equivalent_transition_count(
+        transitions in valid_transition_pairs(),
+    ) {
+        let mut builder = Machine::builder();
+
+        for (source, target) in &transitions {
+            builder = builder
+                .try_allow(source, target)
+                .expect("generated transitions are valid");
+        }
+
+        let machine = builder
+            .build()
+            .expect("at lease one transition was generated");
+
+        let model: Model = transitions.iter().cloned().collect();
+
+        prop_assert_eq!(machine.transition_count(), model.len());
     }
 }
