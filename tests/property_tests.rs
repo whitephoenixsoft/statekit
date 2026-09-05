@@ -340,7 +340,7 @@ proptest! {
     }
 
     #[test]
-    fn model_based_valid_transactions_yields_equivalent_transition_count(
+    fn model_based_valid_transitions_yields_equivalent_transition_count(
         transitions in valid_transition_pairs(),
     ) {
         let mut builder = Machine::builder();
@@ -353,7 +353,7 @@ proptest! {
 
         let machine = builder
             .build()
-            .expect("at lease one transition was generated");
+            .expect("at least one transition was generated");
 
         let model: Model = transitions.iter().cloned().collect();
 
