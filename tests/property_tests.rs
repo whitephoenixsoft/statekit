@@ -359,4 +359,29 @@ proptest! {
 
         prop_assert_eq!(machine.transition_count(), model.len());
     }
+
+    #[test]
+    fn model_and_machine_agree_on_transition_membership(
+        transitions in valid_transition_pairs(),
+        probe in valid_transition_pairs(),
+    ) {
+        let mut builder = Machine::builder();
+
+        for (source, target) in &transitions {
+            builder = builder
+                .try_allow(source, target)
+                .expect("generated transitions are valid");
+        }
+
+        let machine = builder
+            .build()
+            .expect("at least one transition was generated");
+
+        let model: Model = transitions.iter().cloned().collect();
+
+        for sample in &probe {
+            let (source, target) = &sample;
+            prop_assert_eq!(machine.can_transition(source, target), model.contains(&sample));
+        }
+    }
 }
