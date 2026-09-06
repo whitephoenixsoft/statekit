@@ -494,4 +494,64 @@ proptest! {
 
         prop_assert_eq!(machine_states, model_states);
     }
+
+    #[test]
+    fn model_and_machine_agree_on_sources(
+        transitions in valid_transition_pairs(),
+    ) {
+        let mut builder = Machine::builder();
+
+        for (source, target) in &transitions {
+            builder = builder
+                .try_allow(source, target)
+                .expect("generated transitions are valid");
+        }
+
+        let machine = builder
+            .build()
+            .expect("at least one transition was generated");
+
+        let model: Model = transitions.iter().cloned().collect();
+
+        let model_sources: HashSet<&str> = model
+            .iter()
+            .map(|(source, _)| source.as_str())
+            .collect();
+
+        let machine_sources: HashSet<&str> =
+            machine.sources().collect();
+
+        prop_assert_eq!(machine_sources, model_sources);
+    }
+
+    #[test]
+    fn model_and_machine_agree_on_targets_from(
+        transitions in valid_transition_pairs(),
+        source in valid_state_name(),
+    ) {
+        let mut builder = Machine::builder();
+
+        for (from, to) in &transitions {
+            builder = builder
+                .try_allow(from, to)
+                .expect("generated transitions are valid");
+        }
+
+        let machine = builder
+            .build()
+            .expect("at least one transition was generated");
+
+        let model: Model = transitions.iter().cloned().collect();
+
+        let model_targets: HashSet<&str> = model
+            .iter()
+            .filter(|(candidate_source, _)| candidate_source == &source)
+            .map(|(_, target)| target.as_str())
+            .collect();
+
+        let machine_targets: HashSet<&str> =
+            machine.targets_from(&source).collect();
+
+        prop_assert_eq!(machine_targets, model_targets);
+    }
 }
