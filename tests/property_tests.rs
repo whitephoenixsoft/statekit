@@ -64,6 +64,20 @@ fn transitions_with_existing_probe() -> impl Strategy<Value = (Vec<(String, Stri
         })
 }
 
+fn transitions_with_missing_probe() -> impl Strategy<Value = (Vec<(String, String)>, (String, String))> {
+    valid_transition_pairs()
+        .prop_flat_map(|transitions| {
+            (
+                Just(transitions),
+                valid_transition_pair(),
+            )
+        })
+        .prop_filter(
+            "probe must not already exist",
+            |(transitions, probe)| !transitions.contains(probe),
+        )
+}
+
 proptest! {
     #[test]
     fn added_transition_is_allowed(
@@ -420,6 +434,31 @@ proptest! {
         let (source, target) = &probe;
 
         prop_assert!(model.contains(&probe));
+
+        prop_assert_eq!(machine.can_transition(source, target), model.contains(&probe));
+    }
+
+    #[test]
+    fn model_and_machine_agree_on_missing_transition(
+        (transitions, probe) in transitions_with_missing_probe(),
+    ) {
+        let mut builder = Machine::builder();
+
+        for (source, target) in &transitions {
+            builder = builder
+                .try_allow(source, target)
+                .expect("generated transitions are valid");
+        }
+
+        let machine = builder
+            .build()
+            .expect("at least one transitions was generated");
+
+        let model: Model = transitions.iter().cloned().collect();
+
+        let (source, target) = &probe;
+
+        prop_assert!(!model.contains(&probe));
 
         prop_assert_eq!(machine.can_transition(source, target), model.contains(&probe));
     }
