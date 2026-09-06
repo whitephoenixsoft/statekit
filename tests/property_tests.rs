@@ -462,4 +462,36 @@ proptest! {
 
         prop_assert_eq!(machine.can_transition(source, target), model.contains(&probe));
     }
+
+    #[test]
+    fn model_and_machine_agree_on_states(
+        transitions in valid_transition_pairs(),
+    ) {
+        let mut builder = Machine::builder();
+
+        for (source, target) in &transitions {
+            builder = builder
+                .try_allow(source, target)
+                .expect("generated transitions are valid");
+        }
+
+        let machine = builder
+            .build()
+            .expect("at least one transition was generated");
+
+        let model: Model =
+            transitions.iter().cloned().collect();
+
+        let model_states: HashSet<&str> = model
+            .iter()
+            .flat_map(|(source, target)| {
+                [source.as_str(), target.as_str()]
+            })
+            .collect();
+
+        let machine_states: HashSet<&str> =
+            machine.states().collect();
+
+        prop_assert_eq!(machine_states, model_states);
+    }
 }
