@@ -50,6 +50,20 @@ fn trailing_whitespace_state_name() -> impl Strategy<Value = String> {
     })
 }
 
+fn transitions_with_existing_probe() -> impl Strategy<Value = (Vec<(String, String)>, (String, String))> {
+    valid_transition_pairs()
+        .prop_flat_map(|transitions| {
+            let len = transitions.len();
+
+            (Just(transitions), 0..len)
+        })
+        .prop_map(|(transitions, index)| {
+            let probe = transitions[index].clone();
+
+            (transitions, probe)
+        })
+}
+
 proptest! {
     #[test]
     fn added_transition_is_allowed(
@@ -383,5 +397,30 @@ proptest! {
             let (source, target) = &sample;
             prop_assert_eq!(machine.can_transition(source, target), model.contains(&sample));
         }
+    }
+
+    #[test]
+    fn model_and_machine_agree_on_existing_transition(
+        (transitions, probe) in transitions_with_existing_probe(),
+    ) {
+        let mut builder = Machine::builder();
+
+        for (source, target) in &transitions {
+            builder = builder
+                .try_allow(source, target)
+                .expect("generated transitions are valid");
+        }
+
+        let machine = builder
+            .build()
+            .expect("at least one transitions was generated");
+
+        let model: Model = transitions.iter().cloned().collect();
+
+        let (source, target) = &probe;
+
+        prop_assert!(model.contains(&probe));
+
+        prop_assert_eq!(machine.can_transition(source, target), model.contains(&probe));
     }
 }
