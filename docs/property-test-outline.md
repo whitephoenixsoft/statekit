@@ -36,7 +36,11 @@ Edge semantics
 ├── unknown source gives empty targets_from()
 └── iteration order is not assumed
 
-## Testing Layer Relationship
+Arbitrary Input
+
+## Testing Relationships
+
+### Structural Layers as a Whole
 
 ```
    ┌───────────────────────┐
@@ -54,3 +58,57 @@ Edge semantics
 └───────────────────────────────────┘
               
 ```
+
+### Structural Significance 
+
+Example tests
+    → "this particular scenario works"
+
+Targeted property tests
+    → "this entire semantic category works"
+
+Arbitrary-input properties
+    → "accepted values can never violate invariants"
+
+Model-based properties
+    → "the whole public graph API agrees with
+       an independent specification"
+       
+## Property Test Input Types
+
+```
+valid-input property
+────────────────────
+Known valid input
+      ↓
+MUST be accepted
+
+
+arbitrary-input property
+────────────────────────
+Any input
+      ↓
+IF accepted
+      ↓
+MUST satisfy invariants
+```
+
+Together:
+```
+             INPUT SPACE
+        ┌───────────────────┐
+        │                   │
+        │   valid inputs    │──── must accept
+        │                   │
+        ├───────────────────┤
+        │                   │
+        │ arbitrary inputs  │──── if accepted,
+        │                   │     invariants hold
+        └───────────────────┘
+```
+
+## Definitions 
+
+### Arbitrary Input 
+
+> If Statekit accepts arbitrary input and constructs a machine, the resulting transition must satisfy Statekit's invariants.
