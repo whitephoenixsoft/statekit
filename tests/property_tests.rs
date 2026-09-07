@@ -5,6 +5,30 @@ use statekit::{Machine, StateError};
 
 type Model = HashSet<(String, String)>;
 
+/*todo refactor
+let machine = build_machine(&transitions);
+let model = build_model(&transitions);
+
+prop_assert_eq!(machine.transition_count(), model.len());
+ */
+fn build_machine(transitions: &[(String, String)]) -> Machine {
+    let mut builder = Machine::builder();
+
+    for (source, target) in transitions {
+        builder = builder
+            .try_allow(source, target)
+            .expect("generated transitions are valid");
+    }
+
+    builder
+        .build()
+        .expect("at least one transition was generated")
+}
+
+fn build_model(transitions: &[(String, String)]) -> Model {
+    transitions.iter().cloned().collect()
+}
+
 fn valid_state_name() -> impl Strategy<Value = String> {
     "[A-Za-z]{1,16}"
 }
