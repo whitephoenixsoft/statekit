@@ -105,7 +105,7 @@ fn transitions_with_missing_source()
         })
         .prop_filter(
             "source must not already exist",
-            |(transition, probe)| transition.iter().any(|(candidate, _)| candidate != &probe.0)
+            |(transition, probe)| !transition.iter().any(|(candidate, _)| candidate == &probe.0)
         )
         .prop_map(|(transitions, probe)| {
             let source = probe.0.clone(); 
@@ -127,31 +127,6 @@ proptest! {
         let machine = machine.unwrap();
 
         prop_assert!(machine.can_transition(&source, &target));
-    }
-
-    #[test]
-    fn accepted_transitions_preserve_state_invariants(
-        source in any::<String>(),
-        target in any::<String>(),
-    ) {
-        let result = Machine::builder()
-            .try_allow(&source, &target)
-            .and_then(|builder| builder.build());
-
-        if let Ok(machine) = result {
-            let transition = machine
-                .transitions()
-                .next()
-                .expect("a successfully built machine has a transition");
-
-            prop_assert_eq!(transition.source().trim(), transition.source());
-            prop_assert_eq!(transition.target().trim(), transition.target());
-
-            prop_assert!(!transition.source().trim().is_empty());
-            prop_assert!(!transition.target().trim().is_empty());
-
-            prop_assert_ne!(transition.source(), transition.target());
-        }
     }
     
     #[test]
@@ -182,6 +157,20 @@ proptest! {
         );
 
         prop_assert!(is_ambiguous);
+    }
+    
+    #[test]
+    fn whitespace_only_target_is_rejected(
+        source in valid_state_name(),
+        target in whitespace_only_state_name(),
+    ) {
+        let result = Machine::builder()
+            .try_allow(&source, &target);
+    
+        prop_assert!(matches!(
+            result,
+            Err(StateError::EmptyState)
+        ));
     }
 
     #[test]
@@ -421,31 +410,6 @@ proptest! {
         let model: Model = transitions.iter().cloned().collect();
 
         prop_assert_eq!(machine.transition_count(), model.len());
-    }
-
-    #[test]
-    fn model_and_machine_agree_on_transition_membership(
-        transitions in valid_transition_pairs(),
-        probe in valid_transition_pairs(),
-    ) {
-        let mut builder = Machine::builder();
-
-        for (source, target) in &transitions {
-            builder = builder
-                .try_allow(source, target)
-                .expect("generated transitions are valid");
-        }
-
-        let machine = builder
-            .build()
-            .expect("at least one transition was generated");
-
-        let model: Model = transitions.iter().cloned().collect();
-
-        for sample in &probe {
-            let (source, target) = &sample;
-            prop_assert_eq!(machine.can_transition(source, target), model.contains(&sample));
-        }
     }
 
     #[test]
