@@ -672,4 +672,39 @@ proptest! {
         prop_assert_eq!(machine.transition_count(), 1);
         prop_assert!(machine.can_transition(&source, &target));
     }
+
+    #[test]
+    fn accepted_arbitrary_transitions_preserve_invariants(
+        source in any::<String>(),
+        target in any::<String>(),
+    ) {
+        let result = Machine::builder()
+            .try_allow(&source, &target)
+            .and_then(|builder| builder.build());
+
+        if let Ok(machine) = result {
+            let transition = machine
+                .transitions()
+                .next()
+                .expect("successful construction contains a transition");
+
+            prop_assert!(!transition.source().trim().is_empty());
+            prop_assert!(!transition.target().trim().is_empty());
+
+            prop_assert_eq!(
+                transition.source(),
+                transition.source().trim(),
+            );
+
+            prop_assert_eq!(
+                transition.target(),
+                transition.target().trim(),
+            );
+
+            prop_assert_ne!(
+                transition.source(),
+                transition.target(),
+            );
+        }
+    }
 }
