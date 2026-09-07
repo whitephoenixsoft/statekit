@@ -1,42 +1,44 @@
 # Property Test Outline 
 
-## Outline 
+## Goal
 
-Construction / validation
-├── valid state names accepted
-├── empty / whitespace-only rejected
-├── leading whitespace rejected
-├── trailing whitespace rejected
-├── self-transition rejected
-└── non-empty machine required
+> Every important invariant and public graph operation has strong behavioral coverage, and the graph projections are checked against an independent model.
 
-Graph membership
-├── added transition is queryable
-├── missing transition is not queryable
-└── model membership == can_transition
+## Outline
 
-Graph projection APIs
-├── transition_count == model edge count
-├── transitions() == model edges
-├── sources() == model sources
-├── states() == model vertices
-└── targets_from(source) == model outgoing targets
+VALIDATION
+✔ known-valid transitions accepted
+✔ arbitrary accepted values preserve invariants
+✔ whitespace-only rejected
+✔ leading whitespace rejected
+✔ trailing whitespace rejected
+✔ source/target validation symmetry
+✔ offending ambiguous value preserved
 
-Cross-API consistency
-├── every exposed transition passes can_transition
-├── every exposed source is a state
-├── every targets_from result is a valid transition
-└── each source has at least one outgoing target
+EDGE SEMANTICS
+✔ exposed transition is queryable
+✔ duplicate edges collapse
+✔ positive membership
+✔ negative membership
 
-Edge semantics
-├── directionality
-├── duplicate transitions collapse
-├── target-only states exist in states()
-├── target-only states are not necessarily sources()
-├── unknown source gives empty targets_from()
-└── iteration order is not assumed
+REFERENCE MODEL
+✔ transition count == edge-set cardinality
+✔ states == model vertices
+✔ sources == model sources
+✔ targets_from == model outgoing targets
+✔ can_transition == model membership
 
-Arbitrary Input
+CROSS-API CONSISTENCY
+✔ transitions ↔ can_transition
+✔ sources ⊆ states
+✔ transition targets ↔ targets_from
+✔ targets_from results ↔ can_transition
+
+SEMANTIC DISTRIBUTION
+✔ known-existing transition probe
+✔ known-missing transition probe
+✔ known-existing source
+✔ known-missing source 
 
 ## Testing Relationships
 
