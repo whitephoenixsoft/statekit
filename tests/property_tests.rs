@@ -78,6 +78,41 @@ fn transitions_with_missing_probe() -> impl Strategy<Value = (Vec<(String, Strin
         )
 }
 
+fn transitions_with_existing_source()
+    -> impl Strategy<Value = (Vec<(String, String)>, String)>
+{
+    valid_transition_pairs()
+        .prop_flat_map(|transitions| {
+            let len = transitions.len();
+
+            (Just(transitions), 0..len)
+        })
+        .prop_map(|(transitions, index)| {
+            let source = transitions[index].0.clone();
+            (transitions, source)
+        })
+}
+
+fn transitions_with_missing_source()
+    -> impl Strategy<Value = (Vec<(String, String)>, String)>
+{
+    valid_transition_pairs()
+        .prop_flat_map(|transitions| {
+            (
+                Just(transitions),   
+                valid_transition_pair()
+            )
+        })
+        .prop_filter(
+            "source must not already exist",
+            |(transition, probe)| transition.iter().any(|(candidate, _)| candidate != &probe.0)
+        )
+        .prop_map(|(transitions, probe)| {
+            let source = probe.0.clone(); 
+            (transitions, source)
+        })
+}
+
 proptest! {
     #[test]
     fn added_transition_is_allowed(
@@ -553,5 +588,88 @@ proptest! {
             machine.targets_from(&source).collect();
 
         prop_assert_eq!(machine_targets, model_targets);
+    }
+
+    #[test]
+    fn model_and_machine_agree_on_targets_for_existing_source(
+        (transitions, source) in transitions_with_existing_source(),
+    ) {
+        let mut builder = Machine::builder();
+
+        for (from, to) in &transitions {
+            builder = builder
+                .try_allow(from, to)
+                .expect("generated transitions are valid");
+        }
+
+        let machine = builder
+            .build()
+            .expect("at least one transition was generated");
+
+        let model: Model = transitions.iter().cloned().collect();
+
+        let model_targets: HashSet<&str> = model
+            .iter()
+            .filter(|(candidate_source, _)| candidate_source == &source)
+            .map(|(_, target)| target.as_str())
+            .collect();
+
+        let machine_targets: HashSet<&str> =
+            machine.targets_from(&source).collect();
+
+        prop_assert!(!model_targets.is_empty());
+        prop_assert_eq!(machine_targets, model_targets);
+    }
+
+    #[test]
+    fn model_and_machine_agree_on_targets_for_missing_source(
+        (transitions, source) in transitions_with_missing_source(),
+    ) {
+        let mut builder = Machine::builder();
+
+        for (from, to) in &transitions {
+            builder = builder
+                .try_allow(from, to)
+                .expect("generated transitions are valid");
+        }
+
+        let machine = builder
+            .build()
+            .expect("at least one transition was generated");
+
+        let model: Model = transitions.iter().cloned().collect();
+
+        let model_targets: HashSet<&str> = model
+            .iter()
+            .filter(|(candidate_source, _)| candidate_source == &source)
+            .map(|(_, target)| target.as_str())
+            .collect();
+
+        let machine_targets: HashSet<&str> =
+            machine.targets_from(&source).collect();
+
+        prop_assert!(model_targets.is_empty());
+        prop_assert_eq!(machine_targets, model_targets);
+    }
+
+    #[test]
+    fn duplicate_transitions_collapse(
+        (source, target) in valid_transition_pair(),
+        repetitions in 2usize..20,
+    ) {
+        let mut builder = Machine::builder();
+
+        for _ in 0..repetitions {
+            builder = builder
+                .try_allow(&source, &target)
+                .expect("generated transition is valid");
+        }
+
+        let machine = builder
+            .build()
+            .expect("at least one transition was generated");
+
+        prop_assert_eq!(machine.transition_count(), 1);
+        prop_assert!(machine.can_transition(&source, &target));
     }
 }
