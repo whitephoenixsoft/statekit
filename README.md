@@ -29,6 +29,8 @@ Statekit follows semantic versioning. As a pre-1.0 crate, its public API may evo
 
 ## Installation
 
+Add this to your `Cargo.toml`:
+
 ```toml
 [dependencies]
 statekit = "0.3"
