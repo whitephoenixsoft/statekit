@@ -1,6 +1,10 @@
 # Property Test Outline 
 
-## Goal
+## Purpose
+
+The purpose of this document is to outline what property tests have been defined and how they work together as a whole within the complete test harness.
+
+## Property Test Goal
 
 > Every important invariant and public graph operation has strong behavioral coverage, and the graph projections are checked against an independent model.
 
@@ -56,7 +60,7 @@ SEMANTIC DISTRIBUTION
                 │
 ┌─────────────────▼─────────────────┐  │  independent model equivalence    │
 │  edges / states / sources /       │
-   targets / membership             │
+|   targets / membership            │
 └───────────────────────────────────┘
               
 ```
@@ -97,20 +101,26 @@ MUST satisfy invariants
 
 Together:
 ```
-             INPUT SPACE
-        ┌───────────────────┐
-        │                   │
-        │   valid inputs    │──── must accept
-        │                   │
-        ├───────────────────┤
-        │                   │
-        │ arbitrary inputs  │──── if accepted,
-        │                   │     invariants hold
-        └───────────────────┘
+    INPUT SPACE
+┌───────────────────┐
+│                   │
+│   valid inputs    │──── must accept
+│                   │
+├───────────────────┤
+│                   │
+│ arbitrary inputs  │──── if accepted,
+│                   │    invariants hold
+└───────────────────┘
 ```
 
-## Definitions 
+### Valid Input
+
+> These are the invariants that Statekit must adhere to.
 
 ### Arbitrary Input 
 
 > If Statekit accepts arbitrary input and constructs a machine, the resulting transition must satisfy Statekit's invariants.
+
+## Summary 
+
+All the tests in Statekit work as a complimentary test harness. Unit and Integration tests validate known examples while Property tests validate invariants from the specification. Model property tests validate from an external data set and Arbitrary property tests validates with a wide distribution of data.
