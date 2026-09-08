@@ -31,6 +31,7 @@ REFERENCE MODEL
 ✔ sources == model sources
 ✔ targets_from == model outgoing targets
 ✔ can_transition == model membership
+✔ all transition values == all model values
 
 CROSS-API CONSISTENCY
 ✔ transitions ↔ can_transition

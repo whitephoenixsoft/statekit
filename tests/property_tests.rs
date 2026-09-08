@@ -500,6 +500,26 @@ proptest! {
         prop_assert!(model_targets.is_empty());
         prop_assert_eq!(machine_targets, model_targets);
     }
+    
+    #[test]
+    fn model_and_machine_agree_on_transitions(
+        transitions in valid_transition_pairs(),
+    ) {
+        let machine = build_machine(&transitions);
+        let model = build_model(&transitions);
+    
+        let machine_transitions: Model = machine
+            .transitions()
+            .map(|transition| {
+                (
+                    transition.source().to_owned(),
+                    transition.target().to_owned(),
+                )
+            })
+            .collect();
+    
+        prop_assert_eq!(machine_transitions, model);
+    }
 
     #[test]
     fn duplicate_transitions_collapse(
