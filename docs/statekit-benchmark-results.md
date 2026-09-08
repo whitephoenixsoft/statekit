@@ -262,7 +262,7 @@ An earlier missing-source probe looked substantially different from real state n
 For example:
 
 ```text
-missing_sou torce
+missing_source
 ```
 
 while real states looked like:
