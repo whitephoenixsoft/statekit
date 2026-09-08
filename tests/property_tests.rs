@@ -301,17 +301,7 @@ proptest! {
     fn transition_count_matches_iteration(
         transitions in valid_transition_pairs(),
     ) {
-        let mut builder = Machine::builder();
-
-        for (source, target) in &transitions {
-            builder = builder
-                .try_allow(source, target)
-                .expect("generated transitions are valid");
-        }
-
-        let machine = builder
-            .build()
-            .expect("at least one transition was generated");
+        let machine = build_machine(&transitions);
 
         prop_assert_eq!(
             machine.transition_count(),
@@ -323,17 +313,7 @@ proptest! {
     fn every_exposed_transition_is_queryable(
         transitions in valid_transition_pairs(),
     ) {
-        let mut builder = Machine::builder();
-
-        for (source, target) in &transitions {
-            builder = builder
-                .try_allow(source, target)
-                .expect("generated transitions are valid");
-        }
-
-        let machine = builder
-            .build()
-            .expect("at least one transition was generated");
+        let machine = build_machine(&transitions);
 
         for transition in machine.transitions() {
             prop_assert!(
@@ -349,18 +329,8 @@ proptest! {
     fn every_exposed_source_is_an_existing_state(
         transitions in valid_transition_pairs(),
     ) {
-        let mut builder = Machine::builder();
+        let machine = build_machine(&transitions);
 
-        for (source, target) in &transitions {
-            builder = builder
-                .try_allow(source, target)
-                .expect("generated transitions are valid");
-        }
-
-        let machine = builder
-            .build()
-            .expect("at least one transition was generated");
-        
         let states: Vec<_> = machine.states().collect();
 
         for source in machine.sources() {
@@ -373,17 +343,7 @@ proptest! {
     fn every_transition_target_is_in_targets_from(
         transitions in valid_transition_pairs(),
     ) {
-        let mut builder = Machine::builder();
-
-        for (source, target) in &transitions {
-            builder = builder
-                .try_allow(source, target)
-                .expect("generated transitions are valid");
-        }
-
-        let machine = builder
-            .build()
-            .expect("at least one transition was generated");
+        let machine = build_machine(&transitions);
 
         for transition in machine.transitions() {
             prop_assert!(machine.targets_from(transition.source()).any(|target| target == transition.target()));
@@ -394,17 +354,7 @@ proptest! {
     fn every_target_in_targets_from_is_a_valid_transition(
         transitions in valid_transition_pairs(),
     ) {
-        let mut builder = Machine::builder();
-
-        for (source, target) in &transitions {
-            builder = builder
-                .try_allow(source, target)
-                .expect("generated transitions are valid");
-        }
-
-        let machine = builder
-            .build()
-            .expect("at least one transition was generated");
+        let machine = build_machine(&transitions);
 
         for source in machine.sources() {
             let mut targets = machine.targets_from(source).peekable();
@@ -419,19 +369,8 @@ proptest! {
     fn model_based_valid_transitions_yields_equivalent_transition_count(
         transitions in valid_transition_pairs(),
     ) {
-        let mut builder = Machine::builder();
-
-        for (source, target) in &transitions {
-            builder = builder
-                .try_allow(source, target)
-                .expect("generated transitions are valid");
-        }
-
-        let machine = builder
-            .build()
-            .expect("at least one transition was generated");
-
-        let model: Model = transitions.iter().cloned().collect();
+        let machine = build_machine(&transitions);
+        let model = build_model(&transitions);
 
         prop_assert_eq!(machine.transition_count(), model.len());
     }
@@ -440,19 +379,8 @@ proptest! {
     fn model_and_machine_agree_on_existing_transition(
         (transitions, probe) in transitions_with_existing_probe(),
     ) {
-        let mut builder = Machine::builder();
-
-        for (source, target) in &transitions {
-            builder = builder
-                .try_allow(source, target)
-                .expect("generated transitions are valid");
-        }
-
-        let machine = builder
-            .build()
-            .expect("at least one transitions was generated");
-
-        let model: Model = transitions.iter().cloned().collect();
+        let machine = build_machine(&transitions);
+        let model = build_model(&transitions);
 
         let (source, target) = &probe;
 
@@ -465,19 +393,8 @@ proptest! {
     fn model_and_machine_agree_on_missing_transition(
         (transitions, probe) in transitions_with_missing_probe(),
     ) {
-        let mut builder = Machine::builder();
-
-        for (source, target) in &transitions {
-            builder = builder
-                .try_allow(source, target)
-                .expect("generated transitions are valid");
-        }
-
-        let machine = builder
-            .build()
-            .expect("at least one transitions was generated");
-
-        let model: Model = transitions.iter().cloned().collect();
+        let machine = build_machine(&transitions);
+        let model = build_model(&transitions);
 
         let (source, target) = &probe;
 
@@ -490,20 +407,8 @@ proptest! {
     fn model_and_machine_agree_on_states(
         transitions in valid_transition_pairs(),
     ) {
-        let mut builder = Machine::builder();
-
-        for (source, target) in &transitions {
-            builder = builder
-                .try_allow(source, target)
-                .expect("generated transitions are valid");
-        }
-
-        let machine = builder
-            .build()
-            .expect("at least one transition was generated");
-
-        let model: Model =
-            transitions.iter().cloned().collect();
+        let machine = build_machine(&transitions);
+        let model = build_model(&transitions);
 
         let model_states: HashSet<&str> = model
             .iter()
@@ -522,19 +427,8 @@ proptest! {
     fn model_and_machine_agree_on_sources(
         transitions in valid_transition_pairs(),
     ) {
-        let mut builder = Machine::builder();
-
-        for (source, target) in &transitions {
-            builder = builder
-                .try_allow(source, target)
-                .expect("generated transitions are valid");
-        }
-
-        let machine = builder
-            .build()
-            .expect("at least one transition was generated");
-
-        let model: Model = transitions.iter().cloned().collect();
+        let machine = build_machine(&transitions);
+        let model = build_model(&transitions);
 
         let model_sources: HashSet<&str> = model
             .iter()
@@ -552,19 +446,8 @@ proptest! {
         transitions in valid_transition_pairs(),
         source in valid_state_name(),
     ) {
-        let mut builder = Machine::builder();
-
-        for (from, to) in &transitions {
-            builder = builder
-                .try_allow(from, to)
-                .expect("generated transitions are valid");
-        }
-
-        let machine = builder
-            .build()
-            .expect("at least one transition was generated");
-
-        let model: Model = transitions.iter().cloned().collect();
+        let machine = build_machine(&transitions);
+        let model = build_model(&transitions);
 
         let model_targets: HashSet<&str> = model
             .iter()
@@ -582,19 +465,8 @@ proptest! {
     fn model_and_machine_agree_on_targets_for_existing_source(
         (transitions, source) in transitions_with_existing_source(),
     ) {
-        let mut builder = Machine::builder();
-
-        for (from, to) in &transitions {
-            builder = builder
-                .try_allow(from, to)
-                .expect("generated transitions are valid");
-        }
-
-        let machine = builder
-            .build()
-            .expect("at least one transition was generated");
-
-        let model: Model = transitions.iter().cloned().collect();
+        let machine = build_machine(&transitions);
+        let model = build_model(&transitions);
 
         let model_targets: HashSet<&str> = model
             .iter()
@@ -613,19 +485,8 @@ proptest! {
     fn model_and_machine_agree_on_targets_for_missing_source(
         (transitions, source) in transitions_with_missing_source(),
     ) {
-        let mut builder = Machine::builder();
-
-        for (from, to) in &transitions {
-            builder = builder
-                .try_allow(from, to)
-                .expect("generated transitions are valid");
-        }
-
-        let machine = builder
-            .build()
-            .expect("at least one transition was generated");
-
-        let model: Model = transitions.iter().cloned().collect();
+        let machine = build_machine(&transitions);
+        let model = build_model(&transitions);
 
         let model_targets: HashSet<&str> = model
             .iter()
