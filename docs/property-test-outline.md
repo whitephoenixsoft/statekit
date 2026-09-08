@@ -31,7 +31,9 @@ REFERENCE MODEL
 ✔ sources == model sources
 ✔ targets_from == model outgoing targets
 ✔ can_transition == model membership
-✔ all transition values == all model values
+✔ contains_state(s) == model contains vertex s
+✔ transitions() == model edge set
+✔ validate_transition(a, b).is_ok() == model.contains((a, b))
 
 CROSS-API CONSISTENCY
 ✔ transitions ↔ can_transition
@@ -40,30 +42,36 @@ CROSS-API CONSISTENCY
 ✔ targets_from results ↔ can_transition
 
 SEMANTIC DISTRIBUTION
-✔ known-existing transition probe
-✔ known-missing transition probe
+✔ known-existing transition
+✔ known-missing transition
 ✔ known-existing source
-✔ known-missing source 
+✔ source with no outgoing transition
+✔ known-existing state
+✔ known-missing state
+
+Random generation provides variation, but generators should deliberately produce important semantic categories such as existing and missing transitions rather than relying on chance.
 
 ## Testing Relationships
 
 ### Structural Layers as a Whole
 
 ```
-   ┌───────────────────────┐
-     targeted edge cases                               │
-       unit/integration                                │
-   └───────────┬───────────┘
+┌─────────────────────────────┐
+│ Unit / Integration Tests    │
+│ targeted known scenarios    │
+└──────────────┬──────────────┘
                │
-┌──────────────▼──────────────┐
-│ property tests              │
-│ construction + invariants   │  └──────────────┬──────────────┘
-                │
-┌─────────────────▼─────────────────┐  │  independent model equivalence    │
-│  edges / states / sources /       │
-|   targets / membership            │
-└───────────────────────────────────┘
-              
+               ▼
+┌─────────────────────────────┐
+│ Property Tests              │
+│ invariants + input classes  │
+└──────────────┬──────────────┘
+               │
+               ▼
+┌─────────────────────────────┐
+│ Reference-Model Properties  │
+│ graph semantic equivalence  │
+└─────────────────────────────┘
 ```
 
 ### Structural Significance 
@@ -116,12 +124,14 @@ Together:
 
 ### Valid Input
 
-> These are the invariants that Statekit must adhere to.
+Known-valid generated inputs exercise the acceptance side of the contract:
+
+Statekit must accept them, and the resulting machine must exhibit the expected behavior.
 
 ### Arbitrary Input 
 
-> If Statekit accepts arbitrary input and constructs a machine, the resulting transition must satisfy Statekit's invariants.
+If Statekit accepts arbitrary input and constructs a machine, the resulting transition must satisfy Statekit's invariants.
 
 ## Summary 
 
-All the tests in Statekit work as a complimentary test harness. Unit and Integration tests validate known examples while Property tests validate invariants from the specification. Model property tests validate from an external data set and Arbitrary property tests validates with a wide distribution of data.
+All the tests in Statekit work as a complementary test harness. Unit and Integration tests validate known examples while Property tests validate invariants from the specification. Model-based property tests compare Statekit against an independent reference model, while arbitrary-input properties exercise a broad input space and verify that accepted values preserve the documented invariants.

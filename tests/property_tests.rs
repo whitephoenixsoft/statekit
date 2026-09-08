@@ -5,12 +5,6 @@ use statekit::{Machine, StateError};
 
 type Model = HashSet<(String, String)>;
 
-/*todo refactor
-let machine = build_machine(&transitions);
-let model = build_model(&transitions);
-
-prop_assert_eq!(machine.transition_count(), model.len());
- */
 fn build_machine(transitions: &[(String, String)]) -> Machine {
     let mut builder = Machine::builder();
 
@@ -135,6 +129,29 @@ fn transitions_with_missing_source()
             let source = probe.0.clone(); 
             (transitions, source)
         })
+}
+
+fn transitions_with_missing_state()
+    -> impl Strategy<Value = (Vec<(String, String)>, (String, String))>
+{
+    valid_transition_pairs()
+        .prop_flat_map(|transitions| {
+            (
+                Just(transitions),   
+                valid_transition_pair()
+            )
+        })
+        .prop_filter(
+            "states must not already exist",
+            |(transitions, probe)| {
+                !transitions.iter().any(|(source, target)| {
+                    source == &probe.0
+                        || target == &probe.0
+                        || source == &probe.1
+                        || target == &probe.1
+                })
+            }
+        )
 }
 
 proptest! {
@@ -520,6 +537,61 @@ proptest! {
     
         prop_assert_eq!(machine_transitions, model);
     }
+    
+    #[test]
+    fn model_and_machine_agree_valid_transition(
+        (transitions, probe) in transitions_with_existing_probe(),
+    ) {
+        let machine = build_machine(&transitions);
+        let model = build_model(&transitions);
+        let (source, target) = &probe;
+    
+        prop_assert_eq!(
+            machine.validate_transition(source, target).is_ok(),
+            model.contains(&probe),
+        );
+    }
+    
+    #[test]
+    fn model_and_machine_agree_on_invalid_transition(
+        (transitions, probe) in transitions_with_missing_probe(),
+    ) {
+        let machine = build_machine(&transitions);
+        let model = build_model(&transitions);
+    
+        let (source, target) = &probe;
+    
+        prop_assert!(!model.contains(&probe));
+    
+        prop_assert_eq!(
+            machine.validate_transition(source, target).is_ok(),
+            model.contains(&probe),
+        );
+    }
+    
+    #[test]
+    fn contains_state_recognizes_existing_endpoint(
+        (transitions, probe) in transitions_with_existing_probe(),
+    ) {
+        let machine = build_machine(&transitions);
+    
+        let (source, target) = &probe;
+    
+        prop_assert!(machine.contains_state(source));
+        prop_assert!(machine.contains_state(target));
+    }
+    
+    #[test]
+    fn contains_state_recognizes_missing_endpoint(
+        (transitions, probe) in transitions_with_missing_state(),
+    ) {
+        let machine = build_machine(&transitions);
+    
+        let (source, target) = &probe;
+    
+        prop_assert!(!machine.contains_state(source));
+        prop_assert!(!machine.contains_state(target));
+    }
 
     #[test]
     fn duplicate_transitions_collapse(
@@ -542,6 +614,7 @@ proptest! {
         prop_assert!(machine.can_transition(&source, &target));
     }
 
+    
     #[test]
     fn accepted_arbitrary_transitions_preserve_invariants(
         source in any::<String>(),
