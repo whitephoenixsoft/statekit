@@ -160,12 +160,66 @@ fn benchmark_targets_from_missing(c: &mut Criterion) {
     group.finish();
 }
 
+fn benchmark_sources(c: &mut Criterion) {
+    let mut group = c.benchmark_group("sources");
+
+    for transition_count in [100, 1_000, 10_000, 100_000] {
+        let machine = build_linear_machine(transition_count);      
+        
+        group.throughput(
+            Throughput::Elements(transition_count as u64)
+        );
+        
+        group.bench_with_input(
+            BenchmarkId::from_parameter(transition_count),
+            &transition_count,
+            |b, _| {
+                b.iter(|| {
+                    black_box(
+                        machine.sources().count()
+                    );
+                });
+            },
+        );
+    }
+
+    group.finish();
+}
+
+fn benchmark_states(c: &mut Criterion) {
+    let mut group = c.benchmark_group("states");
+
+    for transition_count in [100, 1_000, 10_000, 100_000] {
+        let machine = build_linear_machine(transition_count);      
+        
+        group.throughput(
+            Throughput::Elements(transition_count as u64)
+        );
+        
+        group.bench_with_input(
+            BenchmarkId::from_parameter(transition_count),
+            &transition_count,
+            |b, _| {
+                b.iter(|| {
+                    black_box(
+                        machine.states().count()
+                    );
+                });
+            },
+        );
+    }
+
+    group.finish();
+} 
+
 criterion_group!(
     benches,
     benchmark_can_transition_existing,
     benchmark_can_transition_missing,
     benchmark_targets_from_existing,
-    benchmark_targets_from_missing
+    benchmark_targets_from_missing,
+    benchmark_sources,
+    benchmark_states
 );
 
 criterion_main!(benches);
