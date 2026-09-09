@@ -245,6 +245,87 @@ fn benchmark_transitions(c: &mut Criterion) {
     group.finish();
 }
 
+fn benchmark_contains_state_existing_source(c: &mut Criterion) {
+    let mut group = c.benchmark_group("contains_state");
+
+    for transition_count in [100, 1_000, 10_000, 100_000] {
+        let machine = build_linear_machine(transition_count);
+
+        let state = "state_0";
+
+        group.bench_with_input(
+            BenchmarkId::new("existing_source", transition_count),
+            &transition_count,
+            |b, _| {
+                b.iter(|| {
+                    black_box(
+                        machine.contains_state(
+                            black_box(&state),
+                        )
+                    );
+                });
+            },
+        );
+    }
+
+    group.finish();
+} 
+
+fn benchmark_contains_state_target_only(c: &mut Criterion) {
+    let mut group = c.benchmark_group("contains_state");
+
+    for transition_count in [100, 1_000, 10_000, 100_000] {
+        let machine = build_linear_machine(transition_count);
+
+        let state = format!("state_{}", transition_count);
+
+        group.bench_with_input(
+            BenchmarkId::new("target_only", transition_count),
+            &transition_count,
+            |b, _| {
+                b.iter(|| {
+                    black_box(
+                        machine.contains_state(
+                            black_box(&state),
+                        )
+                    );
+                });
+            },
+        );
+    }
+
+    group.finish();
+} 
+
+fn benchmark_contains_state_missing(c: &mut Criterion) {
+    let mut group = c.benchmark_group("contains_state");
+
+    for transition_count in [100, 1_000, 10_000, 100_000] {
+        let machine = build_linear_machine(transition_count);
+
+        let state = missing_state_like_existing(transition_count);
+
+        group.throughput(
+            Throughput::Elements(transition_count as u64)
+        );
+        group.bench_with_input(
+            BenchmarkId::new("missing", transition_count),
+            &transition_count,
+            |b, _| {
+                b.iter(|| {
+                    black_box(
+                        machine.contains_state(
+                            black_box(&state),
+                        )
+                    );
+                });
+            },
+        );
+    }
+
+    group.finish();
+} 
+
 criterion_group!(
     benches,
     benchmark_can_transition_existing,
@@ -253,7 +334,10 @@ criterion_group!(
     benchmark_targets_from_missing,
     benchmark_sources,
     benchmark_states,
-    benchmark_transitions
+    benchmark_transitions,
+    benchmark_contains_state_existing_source,
+    benchmark_contains_state_target_only,
+    benchmark_contains_state_missing
 );
 
 criterion_main!(benches);
