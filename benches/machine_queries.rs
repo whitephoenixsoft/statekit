@@ -1,11 +1,11 @@
 use criterion::{
-    black_box,
     criterion_group,
     criterion_main,
     BenchmarkId,
     Criterion,
     Throughput,
 };
+use std::hint::black_box;
 use std::time::Duration;
 use statekit::Machine;
 
@@ -39,6 +39,17 @@ fn missing_source_like_existing(transition_count: usize) -> String {
         "state_{}x",
         "9".repeat(digits.saturating_sub(1)),
     )
+}
+
+fn build_linear_inputs(transition_count: usize) -> Vec<(String, String)> {
+    (0..transition_count)
+        .map(|index| {
+            (
+                format!("state_{index}"),
+                format!("state_{}", index + 1),
+            )
+        })
+        .collect()
 }
 
 fn benchmark_can_transition_existing(c: &mut Criterion) {
@@ -326,6 +337,46 @@ fn benchmark_contains_state_missing(c: &mut Criterion) {
     group.finish();
 } 
 
+fn benchmark_build_and_drop(c: &mut Criterion) {
+    let mut group = c.benchmark_group("build_and_drop");
+    //group.measurement_time(Duration::from_secs(10));
+
+    for transition_count in [100, 1_000, 10_000, 100_000] {
+        let inputs = build_linear_inputs(transition_count);      
+        
+        group.throughput(
+            Throughput::Elements(transition_count as u64)
+        );
+        
+        group.bench_with_input(
+            BenchmarkId::from_parameter(transition_count),
+            &transition_count,
+            |b, _| {
+                b.iter(|| {
+                    let mut builder = Machine::builder();
+
+                    for (source, target) in &inputs {
+                        builder = builder
+                            .try_allow(
+                                black_box(source),
+                                black_box(target),
+                            )
+                            .expect("benchmark inputs should be valid");
+                    }
+
+                    let machine = builder
+                        .build()
+                        .expect("benchmark machine should contain transitions");
+
+                    black_box(machine);
+                });
+            },
+        );
+    }
+
+    group.finish();
+} 
+
 criterion_group!(
     benches,
     benchmark_can_transition_existing,
@@ -337,7 +388,8 @@ criterion_group!(
     benchmark_transitions,
     benchmark_contains_state_existing_source,
     benchmark_contains_state_target_only,
-    benchmark_contains_state_missing
+    benchmark_contains_state_missing,
+    benchmark_build_and_drop
 );
 
 criterion_main!(benches);
