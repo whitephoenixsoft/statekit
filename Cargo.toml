@@ -13,7 +13,7 @@ keywords = ["state-machine", "fsm", "workflow", "state"]
 categories = ["data-structures"]
 
 exclude = [
-	"docs/internal-docs/**",
+	"docs/development/**",
 	".gitignore"
 ]
 

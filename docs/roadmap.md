@@ -50,12 +50,12 @@ Introduce:
 
 These will help correct the domain concepts and start reading like English.
 
-### Phase 4 - Benchmarking
+### Phase 4 - Benchmarking -- COMPLETED
 **Goal:** Introduce benchmarking to see if it's worth adding indexing
 
-Introdec:
+Introduce:
 - Benchmarking to measure current design properly
-- Property testing (maybe)
+- Property testing 
 
 ### Phase 5 - Stateful execution (v0.4)
 
