@@ -6,6 +6,7 @@ use criterion::{
     Criterion,
     Throughput,
 };
+use std::time::Duration;
 use statekit::Machine;
 
 fn build_linear_machine(transition_count: usize) -> Machine {
@@ -102,7 +103,8 @@ fn benchmark_can_transition_missing(c: &mut Criterion) {
 
 fn benchmark_targets_from_existing(c: &mut Criterion) {
     let mut group = c.benchmark_group("targets_from");
-
+    group.measurement_time(Duration::from_secs(10));
+    
     for transition_count in [100, 1_000, 10_000, 100_000] {
         let machine = build_linear_machine(transition_count);
 
@@ -132,6 +134,7 @@ fn benchmark_targets_from_existing(c: &mut Criterion) {
 
 fn benchmark_targets_from_missing(c: &mut Criterion) {
     let mut group = c.benchmark_group("targets_from");
+    group.measurement_time(Duration::from_secs(10));
 
     for transition_count in [100, 1_000, 10_000, 100_000] {
         let machine = build_linear_machine(transition_count);
@@ -162,6 +165,7 @@ fn benchmark_targets_from_missing(c: &mut Criterion) {
 
 fn benchmark_sources(c: &mut Criterion) {
     let mut group = c.benchmark_group("sources");
+    group.measurement_time(Duration::from_secs(10));
 
     for transition_count in [100, 1_000, 10_000, 100_000] {
         let machine = build_linear_machine(transition_count);      
@@ -188,6 +192,7 @@ fn benchmark_sources(c: &mut Criterion) {
 
 fn benchmark_states(c: &mut Criterion) {
     let mut group = c.benchmark_group("states");
+    group.measurement_time(Duration::from_secs(10));
 
     for transition_count in [100, 1_000, 10_000, 100_000] {
         let machine = build_linear_machine(transition_count);      
@@ -212,6 +217,34 @@ fn benchmark_states(c: &mut Criterion) {
     group.finish();
 } 
 
+fn benchmark_transitions(c: &mut Criterion) {
+    let mut group = c.benchmark_group("transitions");
+
+    for transition_count in [100, 1_000, 10_000, 100_000] {
+        let machine = build_linear_machine(transition_count);
+
+        group.throughput(
+            Throughput::Elements(transition_count as u64)
+        );
+
+        group.bench_with_input(
+            BenchmarkId::from_parameter(transition_count),
+            &transition_count,
+            |b, _| {
+                b.iter(|| {
+                    machine
+                        .transitions()
+                        .for_each(|transition| {
+                            black_box(transition);
+                        });
+                });
+            },
+        );
+    }
+
+    group.finish();
+}
+
 criterion_group!(
     benches,
     benchmark_can_transition_existing,
@@ -219,7 +252,8 @@ criterion_group!(
     benchmark_targets_from_existing,
     benchmark_targets_from_missing,
     benchmark_sources,
-    benchmark_states
+    benchmark_states,
+    benchmark_transitions
 );
 
 criterion_main!(benches);
