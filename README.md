@@ -33,7 +33,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-statekit = "0.3"
+statekit = "0.3.1"
 ```
 
 ## Examples
@@ -139,6 +139,17 @@ Statekit can be used as a building block for these kinds of systems, but intenti
 - [Statekit Specification](docs/statekit-specification.md) — domain definitions and invariants
 - [Migration Guide](MIGRATION.md) — guidance for upgrading between releases
 - [Changelog](CHANGELOG.md) — notable changes by release
+- [Benchmark Baseline](docs/benchmarks/baseline-v0.3.md) — performance measurements and methodology for Statekit v0.3
+
+## Acknowledgements
+
+Statekit is built with help from the Rust ecosystem and uses the following crates:
+
+- [`thiserror`](https://crates.io/crates/thiserror) — ergonomic error definitions
+- [`proptest`](https://crates.io/crates/proptest) — property-based testing
+- [`criterion`](https://crates.io/crates/criterion) — benchmarking
+
+Thank you to the maintainers and contributors of these projects.
 
 ## License
 MIT
