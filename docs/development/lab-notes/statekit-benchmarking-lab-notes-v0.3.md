@@ -1,4 +1,4 @@
-# Statekit Benchmarking Lab Notes for Version 0.3
+# Statekit Benchmarking Lab Notes for v0.3
 
 These notes record the process used to design, validate, and refine the `statekit` benchmark suite.
 
@@ -20,7 +20,7 @@ The goal is to make the reasoning recoverable for future maintainers and useful 
 
 ---
 
-# Benchmarking Goals
+## 1. Benchmarking Goals
 
 The benchmark work started with three questions:
 
@@ -46,7 +46,94 @@ This matters because changing implementation and benchmark methodology at the sa
 
 ---
 
-# Benchmark Graph
+## 2. Benchmark Environment
+
+The v0.3 baseline benchmarks were executed directly on a Google Pixel 10 Pro under Android using a native AArch64 Rust toolchain.
+
+### 2.1 Hardware
+
+| Component | Configuration |
+|---|---|
+| Device | Google Pixel 10 Pro |
+| SoC | Google Tensor G5 |
+| Architecture | AArch64 / ARMv8 |
+| Logical CPUs | 8 |
+| CPU frequency topology | 2 × 2.246 GHz, 5 × 3.052 GHz, 1 × 3.782 GHz |
+| Memory | 15,949,248 KiB reported (~15.21 GiB) |
+| Nominal memory class | 16 GB |
+| Device codename | `blazer` |
+| Board platform | `laguna` |
+
+The CPU frequency topology was obtained from Linux sysfs using each CPU's `cpuinfo_max_freq`.
+
+The kernel exposed logical CPUs `0-7`.
+
+CPU topology observed by `/proc/cpuinfo`:
+
+| CPUs | ARM CPU part | Maximum frequency |
+|---|---:|---:|
+| 0-1 | `0xd80` | 2.246 GHz |
+| 2-6 | `0xd87` | 3.052 GHz |
+| 7 | `0xd82` | 3.782 GHz |
+
+The ARM part identifiers are recorded as reported by the device rather than being mapped to marketing core names.
+
+### 2.2 Operating System
+
+| Component | Configuration |
+|---|---|
+| Android version | Android 16 |
+| Android API level | 36 |
+| Kernel | Linux 6.6.102 |
+| Kernel architecture | AArch64 |
+| Execution environment | Termux |
+| Build fingerprint | `google/blazer/blazer:16/CP1A.260505.005/15081906:user/release-keys` |
+
+Kernel information reported by `uname`:
+
+    Linux localhost 6.6.102-android15-8-g6eb5b2a8c46b-ab14739656-4k
+    #1 SMP PREEMPT Mon Jan 19 02:06:09 UTC 2026 aarch64 Toybox
+
+The `android15` string appearing in the kernel build identifier does not represent the Android userspace release. The device reports Android 16 through Android system properties.
+
+### 2.3 Rust Toolchain
+
+| Component | Version |
+|---|---|
+| rustc | 1.90.0 |
+| Cargo | 1.90.0 |
+| LLVM | 20.1.8 |
+| Rust host | `aarch64-linux-android` |
+| rustc commit | `1159e78c4747b02ef996e55082b704c09b970588` |
+| rustc commit date | 2025-09-14 |
+
+`rustc --version --verbose` reported:
+
+    rustc 1.90.0 (1159e78c4 2025-09-14)
+    binary: rustc
+    commit-hash: 1159e78c4747b02ef996e55082b704c09b970588
+    commit-date: 2025-09-14
+    host: aarch64-linux-android
+    release: 1.90.0
+    LLVM version: 20.1.8
+
+`cargo --version` reported:
+
+    cargo 1.90.0 (840b83a10 2025-07-30)
+
+Both Rust and Cargo were built from source tarballs.
+
+### 2.4 Mobile Benchmarking Caveat
+
+These measurements were performed on a mobile device rather than a dedicated benchmark host.
+
+Mobile systems can dynamically change CPU frequency and scheduling behavior because of thermal state, battery state, background activity, and operating-system power-management decisions.
+
+The measurements should therefore be interpreted primarily as a reproducible Statekit v0.3 baseline on this specific environment and as a basis for relative before-and-after comparisons, rather than as universal absolute performance figures.
+
+---
+
+## 3. Benchmark Graph
 
 Most query benchmarks use a deterministic linear machine:
 
@@ -55,7 +142,7 @@ Most query benchmarks use a deterministic linear machine:
     state_2 -> state_3
     ...
 
-For n transitions, this produces:
+For `n` transitions, this produces:
 
     n transitions
     n + 1 states
@@ -70,11 +157,11 @@ Benchmark sizes were standardized at:
 
 The linear topology was chosen because it is simple, deterministic at the logical level, and easy to reason about.
 
-The internal transition collection is currently backed by a HashSet, so physical iteration order remains unspecified and randomized even though the logical graph is deterministic.
+The internal transition collection is currently backed by a `HashSet`, so physical iteration order remains unspecified and randomized even though the logical graph is deterministic.
 
 ---
 
-# Query Benchmarks and Construction Benchmarks
+## 4. Query Benchmarks and Construction Benchmarks
 
 Query benchmarks construct the machine outside Criterion's timed loop.
 
@@ -92,17 +179,15 @@ Conceptually:
 
 Construction benchmarks are different.
 
-For those, transition input strings are generated before the timed loop, but MachineBuilder work happens inside the timed loop.
+For those, transition input strings are generated before the timed loop, but `MachineBuilder` work happens inside the timed loop.
 
 This isolates Statekit construction from unrelated benchmark-data generation such as integer formatting.
 
 ---
 
-# Pre-Generating Construction Inputs
+## 5. Pre-Generating Construction Inputs
 
-The construction benchmark originally needed a decision about where input generation belonged.
-
-Generating states inside the timed loop would have measured:
+Generating states inside the timed loop would measure:
 
     integer formatting
     String allocation for benchmark data
@@ -115,7 +200,7 @@ Generating states inside the timed loop would have measured:
 
 That would answer a broader application-level question, but not the intended Statekit construction question.
 
-Instead, inputs were generated before timing.
+Instead, inputs are generated before timing.
 
 The timed workload therefore asks:
 
@@ -125,7 +210,7 @@ This makes the construction benchmark substantially easier to interpret.
 
 ---
 
-# Why `black_box` Matters
+## 6. Why `black_box` Matters
 
 Benchmark code is still optimized Rust code.
 
@@ -137,13 +222,13 @@ However, an important lesson emerged:
 
 > Applying `black_box` only to the final result does not necessarily force all intermediate work to occur.
 
-This became very clear in the transition-iteration benchmark.
+This became particularly clear in the transition-iteration benchmark.
 
 ---
 
-# The `transitions().count()` Mistake
+## 7. The `transitions().count()` Mistake
 
-The first attempt to benchmark raw transition traversal used the equivalent of:
+The first attempt to benchmark raw transition traversal used:
 
     machine.transitions().count()
 
@@ -176,17 +261,17 @@ This was corrected by forcing each transition to be observed individually:
 
 The resulting timings became realistic.
 
-This was one of the most important lessons from the benchmarking work:
+This produced one of the most important lessons from the benchmarking work:
 
 > An iterator expression that looks like traversal does not guarantee that traversal actually occurs.
 
-And more generally:
+More generally:
 
 > A benchmark producing numbers does not mean it is measuring what its author intended.
 
 ---
 
-# Lazy Iterators Must Be Consumed
+## 8. Lazy Iterators Must Be Consumed
 
 `targets_from(source)` returns a lazy iterator.
 
@@ -208,21 +293,11 @@ This forces traversal and predicate evaluation.
 
 ---
 
-# Probe Design Matters
+## 9. Probe Design Matters
 
 One of the strongest lessons was that lookup values are part of the benchmark workload.
 
-An early missing-source probe looked very different from real generated states.
-
-For example:
-
-    missing_source
-
-while actual states looked like:
-
-    state_1234
-
-This accidentally made negative string equality comparisons unusually cheap.
+An early missing-source probe looked substantially different from real generated states.
 
 Rust string equality can reject mismatched strings quickly, including based on length.
 
@@ -240,18 +315,16 @@ A missing query should be missing because of its semantic value, not because it 
 
 ---
 
-# Short-Circuit Evaluation Changes Workload Cost
+## 10. Short-Circuit Evaluation Changes Workload Cost
 
 Some Statekit queries use compound predicates.
 
-For example, edge lookup is effectively shaped like:
+Transition membership is effectively shaped like:
 
     transition.source() == source
         && transition.target() == target
 
 If the source comparison is false, the target comparison is not evaluated.
-
-That makes a missing transition whose source is itself absent relatively cheap per transition.
 
 By contrast, state membership is effectively shaped like:
 
@@ -260,17 +333,15 @@ By contrast, state membership is effectively shaped like:
 
 For a missing state, the source comparison is false and the target comparison must also be evaluated.
 
-So two algorithms may both be O(n) while performing different amounts of string comparison per element.
+Two algorithms may therefore both be O(n) while performing different amounts of string comparison per element.
 
 The benchmarks made this visible.
-
-This was a useful reminder that:
 
 > Big-O describes scaling structure, not the complete per-element cost.
 
 ---
 
-# Existing and Missing Lookup Workloads
+## 11. Existing and Missing Lookup Workloads
 
 Benchmarks were intentionally divided into semantic categories.
 
@@ -292,17 +363,17 @@ For source projection:
 
 These cases serve different purposes.
 
-Missing lookups are often especially useful for complexity analysis because they guarantee a full scan.
+Missing lookups are especially useful for complexity analysis because they guarantee a full scan.
 
 Successful lookups may terminate early.
 
 ---
 
-# HashSet Iteration Order and Successful Lookups
+## 12. HashSet Iteration Order and Successful Lookups
 
-The current internal transition store is a HashSet.
+The current internal transition store is a `HashSet`.
 
-HashSet iteration order is unspecified and affected by randomized hashing.
+`HashSet` iteration order is unspecified and affected by randomized hashing.
 
 That means a successful scan-based lookup does not have a stable logical position.
 
@@ -314,27 +385,27 @@ For example, successful lookups at 100,000 transitions sometimes took tens of mi
 
 No algorithmic improvement had occurred.
 
-The matching item had simply appeared much earlier in that run's HashSet traversal.
+The matching item had simply appeared much earlier in that run's `HashSet` traversal.
 
-This led to a key classification.
+This led to a key classification:
 
-Successful lookup benchmarks are useful for representing real workloads, but they are poor complexity baselines when iteration order is randomized.
+> Successful lookup benchmarks are useful for representing real workloads, but they are poor complexity baselines when iteration order is randomized.
 
 Missing lookups are cleaner because they are guaranteed to scan the entire collection.
 
 ---
 
-# Target-Only States Are Not Worst-Case Lookups
+## 13. Target-Only States Are Not Worst-Case Lookups
 
 The linear benchmark graph has one state that is target-only:
 
     state_n
 
-where n is the number of transitions.
+where `n` is the number of transitions.
 
 It might be tempting to think this creates a worst-case state lookup because the state appears at the logical end of the graph.
 
-That is not true with HashSet storage.
+That is not true with `HashSet` storage.
 
 The transition containing that target can appear anywhere in iteration order.
 
@@ -344,28 +415,17 @@ Therefore:
 
 is still an early-exit successful workload.
 
-It should not be assigned throughput metadata claiming all n transitions were examined.
-
-This resulted in a throughput policy:
-
-    existing successful lookup
-        no Elements(n) throughput
-
-    target-only successful lookup
-        no Elements(n) throughput
-
-    guaranteed missing lookup
-        Elements(n) throughput is valid
+It should not be assigned throughput metadata claiming all `n` transitions were examined.
 
 ---
 
-# Throughput Must Describe Guaranteed Work
+## 14. Throughput Must Describe Guaranteed Work
 
-Criterion throughput was reported using:
+Criterion throughput using:
 
     Throughput::Elements(transition_count as u64)
 
-only when the timed operation was guaranteed to process all transitions.
+was retained only when the timed operation was guaranteed to process all transitions.
 
 This is appropriate for workloads such as:
 
@@ -382,15 +442,11 @@ It is not appropriate for successful early-exit lookups.
 
 Input size is not the same thing as work performed.
 
-A benchmark over a 100,000-element collection does not necessarily examine 100,000 elements.
-
-The rule became:
-
 > Throughput metadata should describe work that is guaranteed to occur, not merely the size of the input data structure.
 
 ---
 
-# `targets_from` Existing vs Missing
+## 15. `targets_from` Existing vs Missing
 
 After controlling probe shape, the existing-source and missing-source `targets_from` results became very similar.
 
@@ -405,11 +461,9 @@ The source may match zero times, once, or multiple times, but the entire transit
 
 This provided strong evidence that the operation is currently dominated by full traversal plus string comparison.
 
-It also validated the corrected probe design.
-
 ---
 
-# Raw Transition Traversal as a Reference
+## 16. Raw Transition Traversal as a Reference
 
 After fixing the `.count()` mistake, a raw traversal benchmark was retained as a controlled reference workload.
 
@@ -423,8 +477,6 @@ Instead, it answers:
 
 This makes it useful for comparing heavier operations.
 
-For example:
-
     raw traversal
         ↓
     source filtering
@@ -433,11 +485,9 @@ For example:
         ↓
     temporary set construction
 
-The reference helps decompose where additional cost comes from.
-
 ---
 
-# Raw Traversal Is Not a Strict Lower Bound
+## 17. Raw Traversal Is Not a Strict Lower Bound
 
 At some sizes, `can_transition(missing)` measured slightly faster than the forced raw traversal benchmark.
 
@@ -459,11 +509,9 @@ rather than:
 
     an absolute physical minimum
 
-This distinction is important when interpreting small differences.
-
 ---
 
-# `sources()` and `states()` Are Different Kinds of Work
+## 18. `sources()` and `states()` Are Different Kinds of Work
 
 Unlike simple scans, `sources()` and `states()` construct temporary sets.
 
@@ -476,19 +524,11 @@ Their cost includes:
     duplicate detection
     possible reallocation
 
-For the linear graph:
+For the linear graph, `sources()` processes one source endpoint per transition and produces `n` unique source states.
 
-    sources()
+`states()` processes both endpoints and produces `n + 1` unique states.
 
-processes one source endpoint per transition and produces n unique source states.
-
-    states()
-
-processes both endpoints and produces n + 1 unique states.
-
-The endpoint pattern for `states()` also creates repeated insert attempts.
-
-Conceptually:
+The endpoint pattern for `states()` also creates repeated insert attempts:
 
     state_0   new
     state_1   new
@@ -505,7 +545,7 @@ This explains why `states()` performs more temporary-set work than `sources()`.
 
 ---
 
-# Repeated Runs Matter
+## 19. Repeated Runs Matter
 
 Early `states()` measurements showed substantial variation between runs.
 
@@ -526,15 +566,13 @@ Possible contributors include:
 
 Those are hypotheses, not proven causes.
 
-The broader lesson was:
-
 > Do not cherry-pick the benchmark run that best matches the hypothesis.
 
 Repeated measurements are useful both for confirming stable behavior and for discovering unstable workloads.
 
 ---
 
-# Graph Topology Can Affect Allocation-Heavy Benchmarks
+## 20. Graph Topology Can Affect Allocation-Heavy Benchmarks
 
 The current benchmark graph is linear.
 
@@ -554,13 +592,13 @@ Future benchmark suites could compare:
     fan-in
     duplicate-heavy definitions
 
-However, those were intentionally deferred.
+These were intentionally deferred.
 
 The goal of the v0.3 baseline was to establish one trustworthy reference workload before expanding the benchmark matrix.
 
 ---
 
-# Criterion Change Reports Are Contextual
+## 21. Criterion Change Reports Are Contextual
 
 Criterion prints messages such as:
 
@@ -582,9 +620,7 @@ During benchmark development, several things changed:
 
 If the workload changes while retaining the same benchmark ID, Criterion is comparing two different experiments.
 
-Randomized HashSet layout can also cause large changes in successful early-exit scans without any source-code change.
-
-Therefore:
+Randomized `HashSet` layout can also cause large changes in successful early-exit scans without any source-code change.
 
 > Criterion change reports are only meaningful as regression evidence when the benchmark definition and environment are sufficiently stable.
 
@@ -594,7 +630,7 @@ This produced another rule:
 
 ---
 
-# Outliers Are Not Automatically Problems
+## 22. Outliers Are Not Automatically Problems
 
 Criterion frequently reported outliers, sometimes at noticeable percentages.
 
@@ -618,19 +654,11 @@ Outliers become important when they are part of a larger pattern suggesting unst
 
 ---
 
-# Criterion Measurement-Time Warnings
+## 23. Criterion Measurement-Time Warnings
 
 Expensive workloads such as 100,000-transition construction sometimes produced warnings that Criterion could not complete the requested sample count within the default measurement window.
 
 This is expected when one iteration itself is expensive.
-
-For example:
-
-    one operation ≈ tens of milliseconds
-    100 requested samples
-    default measurement target ≈ several seconds
-
-Those requirements can become incompatible.
 
 The lesson was not simply to silence the warning.
 
@@ -640,17 +668,17 @@ Instead, expensive benchmark groups should eventually use a deliberate, document
     lower sample count
     possibly different sampling configuration
 
-The final benchmark configuration should be standardized rather than adjusted opportunistically benchmark by benchmark.
+The benchmark configuration should be standardized rather than adjusted opportunistically benchmark by benchmark.
 
 ---
 
-# Construction Benchmark Design
+## 24. Construction Benchmark Design
 
 Construction benchmarking introduced a different ownership problem from query benchmarks.
 
 Every timed iteration creates a fresh builder and inserts all transitions.
 
-The source inputs are borrowed from pre-generated Strings.
+The source inputs are borrowed from pre-generated `String`s.
 
 Statekit then performs the ownership work required by its own data structures.
 
@@ -670,7 +698,7 @@ This is therefore an end-to-end build-and-drop workload.
 
 ---
 
-# Why `build_and_drop` Is a Better Name
+## 25. Why `build_and_drop` Is a Better Name
 
 The construction benchmark was initially called `build_linear`.
 
@@ -692,21 +720,17 @@ while retaining a helper such as:
 
 for workload generation.
 
-This makes future expansion cleaner.
-
-For example:
+This separates the measured operation from the workload topology and leaves room for future benchmark organization such as:
 
     build_and_drop/linear
     build_and_drop/fan_out
     build_and_drop/fan_in
 
-The benchmark name should primarily describe the operation being measured.
-
 ---
 
-# Construction Currently Includes Destruction
+## 26. Construction Currently Includes Destruction
 
-An important detail of the current benchmark is that the resulting Machine is dropped before the Criterion iteration completes.
+An important detail of the current benchmark is that the resulting `Machine` is dropped before the Criterion iteration completes.
 
 So the measurement is not pure construction.
 
@@ -718,118 +742,84 @@ It is:
 
 This is acceptable as long as the benchmark is named and documented accordingly.
 
-A construction-only benchmark could theoretically defer destruction, but that introduces its own complications.
-
-Retaining many large Machines can cause significant memory pressure and distort the workload.
+A construction-only benchmark could theoretically defer destruction, but retaining many large Machines can introduce significant memory pressure and distort the workload.
 
 For the v0.3 baseline, build-and-drop was retained as the simpler and more honest lifecycle measurement.
 
 ---
 
-# Construction Throughput
+## 27. Construction Throughput
 
 Construction uses:
 
     Throughput::Elements(transition_count)
 
-because every timed iteration attempts exactly n transition additions.
+because every timed iteration attempts exactly `n` transition additions.
 
-The benchmark therefore reports transitions processed per second during the complete build-and-drop workload.  
-  
-The measurements showed relatively similar throughput through moderate graph sizes and a noticeable decline at 100,000 transitions.  
-  
-Likely contributors could include:  
-  
-    allocation  
-    HashSet resizing  
-    cache pressure  
-    allocator behavior  
-    larger working set  
-    destruction cost  
-  
-These remain hypotheses until separately isolated.  
-  
----  
-  
-# Complexity and Hardware Effects  
-  
-Several full-scan benchmarks showed approximately linear scaling at smaller and medium graph sizes, followed by reduced throughput at 100,000 transitions.  
-  
-This does not imply that the algorithm changed complexity.  
-  
-For an O(n) traversal:  
-  
-    total time = n × cost per examined element  
-  
-Big-O discusses how the number of operations grows.  
-  
-It does not require the cost of each operation to remain constant across all working-set sizes.  
-  
-As data grows, effects such as cache behavior, memory access patterns, allocator behavior, and hash-table layout can change the constant factor.  
-  
-The benchmark report should therefore distinguish:  
-  
-    algorithmic complexity  
-        from  
-    observed hardware-level throughput  
-  
----  
-  
-# Do Not Overstate Hardware Causes  
-  
-It is tempting to explain every 100,000-transition slowdown as:  
-  
-    cache misses  
-  
-That is plausible but not proven by Criterion timing alone.  
-  
-Without profiling or hardware performance counters, the defensible observation is:  
-  
-> Per-element throughput decreases at larger graph sizes.  
-  
-Potential explanations can be listed as hypotheses, but they should not be presented as established causes.  
-  
-This distinction matters between lab notes and the public report.  
-  
-The lab notes may preserve hypotheses.  
-  
+The benchmark therefore reports transitions processed per second during the complete build-and-drop workload.
+
+The measurements showed relatively similar throughput through moderate graph sizes and a noticeable decline at 100,000 transitions.
+
+Possible contributors include:
+
+    allocation
+    HashSet resizing
+    cache pressure
+    allocator behavior
+    larger working set
+    destruction cost
+
+These remain hypotheses until separately isolated.
+
+---
+
+## 28. Complexity and Hardware Effects
+
+Several full-scan benchmarks showed approximately linear scaling at smaller and medium graph sizes, followed by reduced throughput at 100,000 transitions.
+
+This does not imply that the algorithm changed complexity.
+
+For an O(n) traversal:
+
+    total time = n × cost per examined element
+
+Big-O discusses how the number of operations grows.
+
+It does not require the cost of each operation to remain constant across all working-set sizes.
+
+As data grows, effects such as cache behavior, memory access patterns, allocator behavior, and hash-table layout can change the constant factor.
+
+The benchmark report should therefore distinguish:
+
+    algorithmic complexity
+
+from:
+
+    observed hardware-level throughput
+
+---
+
+## 29. Do Not Overstate Hardware Causes
+
+It is tempting to explain every 100,000-transition slowdown as cache misses.
+
+That is plausible but not proven by Criterion timing alone.
+
+Without profiling or hardware performance counters, the defensible observation is:
+
+> Per-element throughput decreases at larger graph sizes.
+
+Potential explanations can be listed as hypotheses, but they should not be presented as established causes.
+
+This distinction matters between lab notes and the public report.
+
+The lab notes may preserve hypotheses.
+
 The public benchmark report should state only what the measurements support directly.
 
 ---
 
-# Performance Cost Ladder
-
-By the end of the benchmark work, the API operations formed a useful conceptual hierarchy.
-
-At a high level:
-
-    transitions()
-        controlled raw traversal reference
-
-    can_transition(missing)
-        traversal + transition membership predicate
-
-    contains_state(missing)
-        traversal + two-endpoint state predicate
-
-    targets_from(...).count()
-        traversal + source filtering across all transitions
-
-    sources().count()
-        traversal + hashing + temporary set + deduplication
-
-    states().count()
-        traversal + hashing both endpoints + larger temporary-set workload
-
-    build_and_drop()
-        validation + ownership + allocation + hashing + insertion
-        + machine construction + destruction
-
-This is more useful than looking at isolated benchmark numbers because it explains how additional work layers accumulate.
-
----
-
-# Final Full-Suite Run
+## 30. Final Full-Suite Run
 
 The final v0.3 benchmark run covered:
 
@@ -862,7 +852,152 @@ This completed the initial API-performance baseline.
 
 ---
 
-# Final 100,000-Transition Cost Snapshot
+## 31. Final Full-Scan Measurements
+
+### `can_transition(missing)`
+
+| Transitions | Time | Throughput |
+|---:|---:|---:|
+| 100 | ~63.1 ns | ~1.58 Gelem/s |
+| 1,000 | ~723 ns | ~1.38 Gelem/s |
+| 10,000 | ~7.25 µs | ~1.38 Gelem/s |
+| 100,000 | ~149 µs | ~673 Melem/s |
+
+The first three sizes show a particularly clear approximately linear relationship between input size and latency.
+
+At 100,000 transitions, per-element throughput decreases.
+
+### `targets_from(existing)`
+
+| Transitions | Time | Throughput |
+|---:|---:|---:|
+| 100 | ~179 ns | ~557 Melem/s |
+| 1,000 | ~2.46 µs | ~407 Melem/s |
+| 10,000 | ~25.7 µs | ~390 Melem/s |
+| 100,000 | ~610 µs | ~164 Melem/s |
+
+### `targets_from(missing)`
+
+| Transitions | Time | Throughput |
+|---:|---:|---:|
+| 100 | ~181 ns | ~551 Melem/s |
+| 1,000 | ~2.85 µs | ~351 Melem/s |
+| 10,000 | ~26.2 µs | ~382 Melem/s |
+| 100,000 | ~617 µs | ~162 Melem/s |
+
+Existing and realistic missing probes converge closely at larger sizes, supporting the interpretation that both workloads are dominated by full traversal and source comparison.
+
+### `transitions()`
+
+| Transitions | Time | Throughput |
+|---:|---:|---:|
+| 100 | ~62.1 ns | ~1.61 Gelem/s |
+| 1,000 | ~631 ns | ~1.58 Gelem/s |
+| 10,000 | ~6.42 µs | ~1.56 Gelem/s |
+| 100,000 | ~102 µs | ~982 Melem/s |
+
+This benchmark forces every transition to be observed and acts as the controlled raw-traversal reference.
+
+### `contains_state(missing)`
+
+| Transitions | Time | Throughput |
+|---:|---:|---:|
+| 100 | ~98.1 ns | ~1.02 Gelem/s |
+| 1,000 | ~1.08 µs | ~930 Melem/s |
+| 10,000 | ~10.7 µs | ~934 Melem/s |
+| 100,000 | ~164 µs | ~609 Melem/s |
+
+The first three sizes show a particularly clean scaling relationship.
+
+The missing-state workload requires the full transition collection to be examined and both source and target membership comparisons to fail.
+
+---
+
+## 32. Projection Measurements
+
+### `sources()`
+
+| Transitions | Time | Throughput |
+|---:|---:|---:|
+| 100 | ~3.65 µs | ~27.4 Melem/s |
+| 1,000 | ~49.6 µs | ~20.2 Melem/s |
+| 10,000 | ~517 µs | ~19.3 Melem/s |
+| 100,000 | ~8.76 ms | ~11.4 Melem/s |
+
+### `states()`
+
+| Transitions | Time | Throughput |
+|---:|---:|---:|
+| 100 | ~5.29 µs | ~18.9 Melem/s |
+| 1,000 | ~70.9 µs | ~14.1 Melem/s |
+| 10,000 | ~770 µs | ~13.0 Melem/s |
+| 100,000 | ~20.9 ms | ~4.78 Melem/s |
+
+The final run gives a coherent picture in which `states()` is more expensive than `sources()`, with the difference becoming increasingly significant at larger graph sizes.
+
+Both operations are substantially more expensive than scan-only queries because they construct and populate temporary `HashSet`s.
+
+---
+
+## 33. Build-and-Drop Measurements
+
+| Transitions | Time | Throughput |
+|---:|---:|---:|
+| 100 | ~15.0 µs | ~6.66 Melem/s |
+| 1,000 | ~194 µs | ~5.16 Melem/s |
+| 10,000 | ~2.23 ms | ~4.48 Melem/s |
+| 100,000 | ~55.1 ms | ~1.81 Melem/s |
+
+The 100,000-transition case shows a substantial reduction in throughput compared with the smaller machines.
+
+The benchmark includes both construction and destruction.
+
+The exact cause of the larger-size throughput decline has not been isolated.
+
+---
+
+## 34. Successful Lookup Measurements
+
+Successful lookup benchmarks remain useful as representative workloads, but they should not be interpreted as stable complexity curves.
+
+### `can_transition(existing)`
+
+The final run produced approximately:
+
+| Transitions | Time |
+|---:|---:|
+| 100 | ~4.97 ns |
+| 1,000 | ~1.95 µs |
+| 10,000 | ~15.2 µs |
+| 100,000 | ~2.52 µs |
+
+The non-monotonic shape is expected from a successful scan over randomized `HashSet` iteration order.
+
+### `contains_state(existing_source)`
+
+| Transitions | Time |
+|---:|---:|
+| 100 | ~110 ns |
+| 1,000 | ~28.6 ns |
+| 10,000 | ~3.53 µs |
+| 100,000 | ~1.68 µs |
+
+### `contains_state(target_only)`
+
+| Transitions | Time |
+|---:|---:|
+| 100 | ~71.9 ns |
+| 1,000 | ~463 ns |
+| 10,000 | ~2.33 µs |
+| 100,000 | ~12.8 µs |
+
+These successful workloads demonstrate why collection size alone does not determine work performed.
+
+No full-scan throughput is assigned to these cases.
+
+---
+
+## 35. Final 100,000-Transition Cost Snapshot
 
 The final run produced approximately:
 
@@ -874,17 +1009,19 @@ The final run produced approximately:
     states()                     ~20.9 ms
     build_and_drop               ~55.1 ms
 
-This snapshot gives a useful summary of the relative cost of the current API families.
+This gives a useful summary of the relative cost of the current API families.
 
 It should not be interpreted as a universal performance guarantee.
 
-Absolute timings depend on:
+Absolute timings depend on factors including:
 
     hardware
     compiler version
     Rust toolchain
     allocator
     system load
+    thermal state
+    CPU frequency policy
     hash-table layout
     benchmark configuration
 
@@ -892,11 +1029,41 @@ Its primary value is comparative.
 
 ---
 
-# Stable and Unstable Benchmark Classes
+## 36. Performance Cost Ladder
+
+The API operations form a useful conceptual hierarchy:
+
+    transitions()
+        controlled raw traversal reference
+
+    can_transition(missing)
+        traversal + transition membership predicate
+
+    contains_state(missing)
+        traversal + two-endpoint state predicate
+
+    targets_from(...).count()
+        traversal + source filtering across all transitions
+
+    sources().count()
+        traversal + hashing + temporary set + deduplication
+
+    states().count()
+        traversal + hashing both endpoints + larger temporary-set workload
+
+    build_and_drop()
+        validation + ownership + allocation + hashing + insertion
+        + machine construction + destruction
+
+This is more informative than isolated benchmark numbers because it explains how additional layers of work accumulate.
+
+---
+
+## 37. Stable and Position-Sensitive Benchmark Classes
 
 The final suite naturally divides into two categories.
 
-## Stronger Scaling Baselines
+### Stronger Scaling Baselines
 
 These workloads perform guaranteed full work and are therefore better suited to complexity and throughput analysis:
 
@@ -909,9 +1076,9 @@ These workloads perform guaranteed full work and are therefore better suited to 
     states()
     build_and_drop()
 
-## Position-Sensitive Workload Samples
+### Position-Sensitive Workload Samples
 
-These can terminate early and depend strongly on HashSet iteration order:
+These can terminate early and depend strongly on `HashSet` iteration order:
 
     can_transition(existing)
     contains_state(existing_source)
@@ -923,13 +1090,13 @@ However, they should not be treated as stable complexity curves.
 
 ---
 
-# Current Optimization Implications
+## 38. Current Optimization Implications
 
 The benchmarks show that several query APIs currently scan the transition collection.
 
-They also show that projection APIs using temporary HashSets are much more expensive than scan-only operations.
+They also show that projection APIs using temporary `HashSet`s are much more expensive than scan-only operations.
 
-This suggests obvious possible future optimizations such as:
+This suggests possible future optimizations such as:
 
     source index
     target index
@@ -946,63 +1113,44 @@ Indexes would introduce tradeoffs:
     more complex internal invariants
     potentially faster repeated queries
 
-The existing immutable Machine design makes build-once/query-many indexing attractive, but benchmark evidence should drive the decision.
+The existing immutable `Machine` design makes build-once/query-many indexing attractive, but benchmark evidence should drive the decision.
 
 The v0.3 baseline exists specifically so those future tradeoffs can be measured.
 
 ---
 
-# Benchmarking Lessons
+## 39. Benchmarking Lessons
 
 The main lessons from this work were:
 
 1. Benchmark code must be validated just like production code.
-
 2. A benchmark can execute successfully while measuring the wrong thing.
-
 3. Lazy iterators must be deliberately consumed.
-
 4. Exact-size iterator metadata can eliminate apparent traversal.
-
 5. `black_box` is useful, but placing it only around a final result does not guarantee every expected intermediate operation occurs.
-
 6. Input values are part of the benchmark workload.
-
 7. Missing probes should resemble realistic values when comparison cost matters.
-
 8. Short-circuit evaluation can materially change per-element work.
-
-9. Successful HashSet scans are sensitive to randomized iteration position.
-
+9. Successful `HashSet` scans are sensitive to randomized iteration position.
 10. Missing queries are often better full-scan complexity benchmarks.
-
 11. Throughput metadata should represent guaranteed work, not input size alone.
-
 12. Big-O and real throughput describe different aspects of performance.
-
 13. Allocation-heavy operations can behave differently from scan-only queries.
-
 14. Graph topology can affect hashing and deduplication workloads.
-
 15. Repeated runs can reveal unstable benchmarks.
-
 16. Do not cherry-pick the run that matches expectations.
-
 17. Criterion's "improved" and "regressed" messages require a stable benchmark definition to be meaningful.
-
 18. Benchmark definitions should be treated as versioned experimental contracts.
-
 19. Hardware explanations should remain hypotheses unless profiling supports them.
-
 20. Establish a baseline before optimizing.
 
 ---
 
-# Documentation Strategy
+## 40. Documentation Strategy
 
 The benchmarking documentation is intentionally split into three artifacts.
 
-## Benchmarking Lab Notes
+### Benchmarking Lab Notes
 
 Purpose:
 
@@ -1014,7 +1162,7 @@ Purpose:
 
 This document is expected to evolve as new benchmark work is performed.
 
-## Current Benchmark Report
+### Current Benchmark Report
 
 Purpose:
 
@@ -1026,7 +1174,7 @@ Purpose:
 
 This document can be updated as Statekit evolves.
 
-## Versioned Baselines
+### Versioned Baselines
 
 Purpose:
 
@@ -1040,24 +1188,4 @@ For example:
 A frozen baseline should not be silently rewritten when later versions are benchmarked.
 
 This provides an auditable performance history.
-
----
-
-# Next Step
-
-With the initial API benchmark suite complete, the next step is to convert the final v0.3 measurements into a clean, frozen baseline report.
-
-That report should omit most of the chronological experimentation preserved here.
-
-It should contain:
-
-    benchmark environment
-    benchmark methodology
-    benchmark graph
-    final workloads
-    final measurements
-    supported scaling conclusions
-    known limitations
-    interpretation of successful vs full-scan workloads
-
-Only after the v0.3 baseline is frozen should internal performance optimization begin. 
+ 
