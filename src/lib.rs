@@ -44,9 +44,9 @@
 //!
 //! # Additional documentation
 //!
-//! - [Statekit Specification](https://github.com/whitephoenixsoft/statekit/blob/main/docs/statekit-specification.md)
-//! - [Migration Guide](https://github.com/whitephoenixsoft/statekit/blob/main/MIGRATION.md)
-//! - [Change Log](https://github.com/whitephoenixsoft/statekit/blob/main/CHANGELOG.md)
+//! - [Statekit Specification](https://github.com/whitephoenixsoft/statekit/blob/v0.3.0/docs/statekit-specification.md)
+//! - [Migration Guide](https://github.com/whitephoenixsoft/statekit/blob/v0.3.0/MIGRATION.md)
+//! - [Change Log](https://github.com/whitephoenixsoft/statekit/blob/v0.3.0/CHANGELOG.md)
 mod builder;
 mod error;
 mod machine;
