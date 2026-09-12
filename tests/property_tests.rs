@@ -101,17 +101,22 @@ fn transitions_with_existing_source()
 {
     valid_transition_pairs()
         .prop_flat_map(|transitions| {
-            let len = transitions.len();
-
-            (Just(transitions), 0..len)
+            (
+                Just(transitions),
+                valid_state_name(),
+            )
         })
-        .prop_map(|(transitions, index)| {
-            let source = transitions[index].0.clone();
-            (transitions, source)
-        })
+        .prop_filter(
+            "source must have no outgoing transitions",
+            |(transitions, source)| {
+                !transitions
+                    .iter()
+                    .any(|(candidate, _)| candidate == source)
+            },
+        )
 }
 
-fn transitions_with_missing_source()
+fn transitions_with_source_without_outgoing_transitions()
     -> impl Strategy<Value = (Vec<(String, String)>, String)>
 {
     valid_transition_pairs()
@@ -499,8 +504,8 @@ proptest! {
     }
 
     #[test]
-    fn model_and_machine_agree_on_targets_for_missing_source(
-        (transitions, source) in transitions_with_missing_source(),
+    fn model_and_machine_agree_on_targets_for_source_without_outgoing_transitions(
+        (transitions, source) in transitions_with_source_without_outgoing_transitions(),
     ) {
         let machine = build_machine(&transitions);
         let model = build_model(&transitions);
@@ -539,7 +544,7 @@ proptest! {
     }
     
     #[test]
-    fn model_and_machine_agree_valid_transition(
+    fn model_and_machine_agree_on_valid_transition(
         (transitions, probe) in transitions_with_existing_probe(),
     ) {
         let machine = build_machine(&transitions);

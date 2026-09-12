@@ -44,9 +44,8 @@
 //!
 //! # Additional documentation
 //!
-//! - [Statekit Specification](https://github.com/whitephoenixsoft/statekit/blob/v0.3.0/docs/statekit-specification.md)
-//! - [Migration Guide](https://github.com/whitephoenixsoft/statekit/blob/v0.3.0/MIGRATION.md)
-//! - [Change Log](https://github.com/whitephoenixsoft/statekit/blob/v0.3.0/CHANGELOG.md)
+//! See the project README for the specification, migration guide, changelog,
+//! and benchmark documentation.
 mod builder;
 mod error;
 mod machine;

@@ -48,10 +48,10 @@ impl MachineBuilder {
     ///
     /// Returns:
     ///
-    /// - [`StateError::AmbiguousStateName`] if an endpoint contains whitespace before or after
-    ///   the name.
-    /// - [`StateError::EmptyState`] if an endpoint is empty.
+    /// - [`StateError::AmbiguousStateName`] if an endpoint has leading or trailing
+///   Unicode whitespace.
     /// - [`StateError::SelfTransition`] if a transition has identical endpoints.
+    /// - [`StateError::EmptyState`] if an endpoint is empty or whitespace-only.
     pub fn try_allow(
         mut self,
         from: impl AsRef<str>,
@@ -143,7 +143,7 @@ mod tests {
         use super::*;
 
         #[test]
-        fn build_empty_build_invalid() {
+        fn build_empty_returns_no_transitions() {
             let builder = MachineBuilder::new();
 
             assert!(matches!(builder.build(), Err(StateError::NoTransitions)));
@@ -197,7 +197,7 @@ mod tests {
         }
 
         #[test]
-        fn try_allow_twice_same_from_state_has_two_transition() -> Result<(), StateError> {
+        fn try_allow_twice_same_from_state_has_two_transitions() -> Result<(), StateError> {
             let builder = MachineBuilder::new();
             let builder = builder.try_allow("start", "finish")?;
             let builder = builder.try_allow("start", "finish2")?;

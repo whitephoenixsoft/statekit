@@ -12,9 +12,7 @@ fn workflow_machine() -> Result<Machine, StateError> {
 fn validates_configured_workflow_transitions() -> Result<(), StateError> {
     let machine = workflow_machine()?;
     machine.validate_transition("queued", "running")?;
-
     machine.validate_transition("running", "completed")?;
-
     machine.validate_transition("running", "failed")?;
 
     Ok(())

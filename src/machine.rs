@@ -21,8 +21,11 @@ impl Machine {
     pub fn builder() -> MachineBuilder {
         MachineBuilder::new()
     }
-
+    
     /// Returns whether the transition from `from` to `to` is allowed.
+    ///
+    /// State names are matched exactly. This method does not trim, normalize,
+    /// or otherwise modify the supplied names.
     pub fn can_transition(&self, from: &str, to: &str) -> bool {
         self.transitions.contains(from, to)
     }
@@ -58,8 +61,8 @@ impl Machine {
 
     /// Returns an iterator over states directly reachable from `from`.
     ///
-    /// Returns `None` when `from` has no outgoing transitions. This includes
-    /// states that appear only as transition targets.
+    /// Returns `None` when `from` has no outgoing transitions, including when
+    /// `from` is unknown or appears only as a transition target.
     ///
     /// The iteration order is unspecified.
     #[deprecated(since = "0.2.0", note = "use `targets_from` instead")]
@@ -278,7 +281,7 @@ mod tests {
         }
 
         #[test]
-        fn targets_from_one_transition_two_values() -> Result<(), StateError> {
+        fn targets_from_one_source_returns_two_targets() -> Result<(), StateError> {
             let builder = Machine::builder()
                 .try_allow("start", "1")?
                 .try_allow("start", "2")?;
@@ -293,7 +296,7 @@ mod tests {
         }
 
         #[test]
-        fn targets_from_one_transition_three_values() -> Result<(), StateError> {
+        fn targets_from_one_source_returns_three_targets() -> Result<(), StateError> {
             let builder = Machine::builder()
                 .try_allow("start", "1")?
                 .try_allow("start", "2")?
@@ -335,6 +338,35 @@ mod tests {
             let targets: Vec<_> = machine.targets_from("start").collect();
             assert_eq!(targets, vec!["finish"]);
 
+            Ok(())
+        }
+    }
+    
+    mod targets {
+        use super::*;
+        
+        #[allow(deprecated)]
+        #[test]
+        fn targets_returns_none_when_source_has_no_outgoing_transitions() -> Result<(), StateError> {
+            let machine = Machine::builder()
+                .try_allow("start", "finish")?
+                .build()?;
+        
+            assert!(machine.targets("finish").is_none());
+            assert!(machine.targets("unknown").is_none());
+        
+            Ok(())
+        }
+        
+        #[allow(deprecated)]
+        #[test]
+        fn targets_returns_some_when_source_has_outgoing_transitions() -> Result<(), StateError> {
+            let machine = Machine::builder()
+                .try_allow("start", "finish")?
+                .build()?;
+        
+            assert!(machine.targets("start").is_some());
+            
             Ok(())
         }
     }

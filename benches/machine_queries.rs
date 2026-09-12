@@ -339,7 +339,6 @@ fn benchmark_contains_state_missing(c: &mut Criterion) {
 
 fn benchmark_build_and_drop(c: &mut Criterion) {
     let mut group = c.benchmark_group("build_and_drop");
-    //group.measurement_time(Duration::from_secs(10));
 
     for transition_count in [100, 1_000, 10_000, 100_000] {
         let inputs = build_linear_inputs(transition_count);      
