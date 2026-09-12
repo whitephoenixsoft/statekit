@@ -1,6 +1,6 @@
 # Statekit Implementation Roadmap
 State: Active 
-Current Version: v0.3
+Current Version: v0.3.x
 
 ## Purpose
 To define how statekit will evolve over next versions.
@@ -50,12 +50,12 @@ Introduce:
 
 These will help correct the domain concepts and start reading like English.
 
-### Phase 4 - Benchmarking
+### Phase 4 - Benchmarking -- COMPLETED
 **Goal:** Introduce benchmarking to see if it's worth adding indexing
 
-Introdec:
+Introduce:
 - Benchmarking to measure current design properly
-- Property testing (maybe)
+- Property testing 
 
 ### Phase 5 - Stateful execution (v0.4)
 
@@ -67,9 +67,9 @@ Go from:
 To:
 > "I am currently in this state."
 
-Define:
-- `MachineInstance` for execution
-- `MachineDefinition` to store the allowed transitions
+Consider:
+- `MachineInstance` for stateful execution
+- whether `Machine` should remain the definition type or be renamed
 
 Also consider:
 - Performance/indexing changes only if benchmarks justify them.

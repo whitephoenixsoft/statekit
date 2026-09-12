@@ -100,7 +100,7 @@ mod tests {
     }
 
     #[test]
-    fn invalid_transition_display_escapes_white_space() {
+    fn invalid_transition_display_escapes_whitespace() {
         let error = StateError::InvalidTransition {
             from: "\nstart".to_owned(),
             to: "finish\t".to_owned(),

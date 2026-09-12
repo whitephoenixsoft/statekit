@@ -23,15 +23,17 @@ Examples include:
 
 Statekit is under active development.
 
-Current release: v0.3.0.
+Current release: v0.3.1.
 
 Statekit follows semantic versioning. As a pre-1.0 crate, its public API may evolve between minor releases.
 
 ## Installation
 
+Add this to your `Cargo.toml`:
+
 ```toml
 [dependencies]
-statekit = "0.3"
+statekit = "0.3.1"
 ```
 
 ## Examples
@@ -93,7 +95,6 @@ for transition in machine.transitions() {
 
 Iteration order is unspecified.
 
-
 ## Invariants
 
 - State names must not be empty or consist entirely of whitespace.
@@ -122,7 +123,7 @@ Once constructed, a machine cannot be modified.
 
 This allows a machine definition to be reused safely without callers mutating its transition structure.
 
-## What it is Not
+## What It Is Not
 
 Statekit is not:
 - a process engine
@@ -137,6 +138,17 @@ Statekit can be used as a building block for these kinds of systems, but intenti
 - [Statekit Specification](docs/statekit-specification.md) — domain definitions and invariants
 - [Migration Guide](MIGRATION.md) — guidance for upgrading between releases
 - [Changelog](CHANGELOG.md) — notable changes by release
+- [Benchmarks](docs/benchmarks/README.md) — performance measurements and methodology for Statekit
+
+## Acknowledgements
+
+Statekit is built with help from the Rust ecosystem and uses the following crates:
+
+- [`thiserror`](https://crates.io/crates/thiserror) — ergonomic error definitions
+- [`proptest`](https://crates.io/crates/proptest) — property-based testing
+- [`criterion`](https://crates.io/crates/criterion) — benchmarking
+
+Thank you to the maintainers and contributors of these projects.
 
 ## License
 MIT

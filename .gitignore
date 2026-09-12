@@ -22,4 +22,7 @@ Cargo.lock
 #.idea/
 *.swp
 
+# Property test regression files
+*.proptest-regressions
+
 .DS_Store

@@ -24,7 +24,7 @@ impl Transitions {
         self.items.is_empty()
     }
 
-    /// Add a Transition to the collection.
+    /// Adds a [`Transition`] to the collection.
     pub(crate) fn add(&mut self, transition: Transition) {
         self.items.insert(transition);
     }
@@ -40,14 +40,14 @@ impl Transitions {
         self.states().count()
     }
 
-    /// Return whether a transition exists based on `source` and `target`.
+    /// Returns whether a transition exists based on `source` and `target`.
     pub(crate) fn contains(&self, source: &str, target: &str) -> bool {
         self.items
             .iter()
             .any(|item| item.source() == source && item.target() == target)
     }
 
-    /// Returns where the `state` appears as either endpoint of a transition.
+    /// Returns whether `state` appears as either endpoint of a transition.
     pub(crate) fn contains_state(&self, state: &str) -> bool {
         self.items
             .iter()
@@ -326,7 +326,7 @@ mod tests {
         }
 
         #[test]
-        fn contains_is_drectional() -> Result<(), StateError> {
+        fn contains_is_directional() -> Result<(), StateError> {
             let mut items = Transitions::new();
 
             items.add(Transition::try_new("1", "2")?);
@@ -491,7 +491,7 @@ mod tests {
         }
 
         #[test]
-        fn sources_returns_all_source_state() -> Result<(), StateError> {
+        fn sources_returns_all_source_states() -> Result<(), StateError> {
             let mut items = Transitions::new();
 
             items.add(Transition::try_new("1", "0")?);
@@ -552,8 +552,7 @@ mod tests {
             Ok(())
         }
 
-        /// This one repeats for documenting invariant that needs to contain
-        /// target states.
+        /// Repeats the target-only-state invariant explicitly for documentation.
         #[test]
         fn includes_target_only_states() -> Result<(), StateError> {
             let mut items = Transitions::new();

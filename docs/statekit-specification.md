@@ -2,7 +2,7 @@
 
 Version: 0.3
 
-Status: Foundational — In Development
+Status: Foundational
 
 Scope: Statekit domain definitions and invariants
 
@@ -26,8 +26,8 @@ The components in this specification describe Statekit's domain model. A compone
 
 Represents an immutable definition of the allowed state transitions.
 
-- It is only valid if there is a transition.
-- Verifies that a transition exists.
+- It is only valid if it contains at least one transition.
+- Determines whether a transition from a source state to a target state is allowed.
 - Machine must support querying allowed transitions.
 - Querying the transitions reachable from a state with no outgoing transitions produces an empty result. This includes states that appear only as transition targets and names that do not occur in the machine.
 - Provides access to queries over the machine's transitions.
@@ -37,6 +37,7 @@ Represents an immutable definition of the allowed state transitions.
 - Machine must be immutable.
 - Machine will validate a transition based on source and target states.
 - There must be at least one transition.
+- State names supplied to machine queries are matched exactly and are not trimmed or normalized.
 
 ### Transitions
 
@@ -70,7 +71,7 @@ Note: Statekit may eventually need a compilation/import layer that can accumulat
 
 ### State Name
 
-Validates and holds the state. 
+Validates and holds the state name.
 
 - Creates and maintains a valid state.
 	- Two states with the same state name represent the same logical state.
@@ -78,6 +79,7 @@ Validates and holds the state.
 	- A state name must contain at least one non-whitespace character.
 - Must support UTF-8 strings.
 - `State Name` is an internal component and is not part of Statekit's public API.
+- State names are case-sensitive.
 
 
 ## Architecture
@@ -126,7 +128,7 @@ Statekit is not:
 - a process engine
 - a policy engine
 - pathfinding code
-- workflow engine
+- a workflow engine
 
 It can be used as a building block for these kinds of systems, but it intentionally does not implement them.
 

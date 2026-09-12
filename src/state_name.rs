@@ -2,9 +2,9 @@ use crate::StateError;
 
 /// A validated state name within a machine.
 ///
-/// A `StateName` is guaranteed to be non-empty and to contain no
-/// leading or trailing whitespace.
-#[derive(Debug, PartialEq, Clone, Hash, Eq)]
+/// A `StateName` is guaranteed to be non-empty, not whitespace-only,
+/// and to contain no leading or trailing Unicode whitespace.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub(crate) struct StateName(String);
 
 impl StateName {
@@ -113,7 +113,7 @@ mod tests {
     }
 
     #[test]
-    fn validate_state_name_whitespace_before_name_returns_error() {
+    fn validate_state_name_leading_whitespace_returns_error() {
         let result = validate_state_name("\n\t something");
 
         assert_eq!(
@@ -125,13 +125,25 @@ mod tests {
     }
 
     #[test]
-    fn validate_state_name_whitespace_after_name_returns_error() {
+    fn validate_state_name_trailing_whitespace_returns_error() {
         let result = validate_state_name("something\n\t ");
 
         assert_eq!(
             result,
             Err(StateError::AmbiguousStateName {
                 state: "something\n\t ".to_owned()
+            })
+        );
+    }
+
+    #[test]
+    fn validate_state_name_unicode_leading_whitespace_returns_error() {
+        let result = validate_state_name("\u{00A0}queued");
+
+        assert_eq!(
+            result,
+            Err(StateError::AmbiguousStateName {
+                state: "\u{00A0}queued".to_owned()
             })
         );
     }
