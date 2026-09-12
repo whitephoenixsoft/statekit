@@ -3,19 +3,21 @@
 All notable changes to Statekit are documented in this file.
 
 ## [Unreleased]
+
 ## [0.3.1]
 
 ### Added
 
-- Added property tests with `proptest`. These will be run along with the unit tests using: `cargo test`.
-- Added benchmarking with `criterion`. These can be run using: `cargo bench`.
+- Added property-based testing with `proptest`; property tests run with the existing test suite using `cargo test`.
+- Added Criterion benchmarks for machine construction and query operations; run them with `cargo bench`.
 
 ### Documentation 
 
-- Added Property test outline, describing the property test coverage.
-- Added benchmark baseline documents, showing performance for v0.3.
-- Added acknowledgements for ecosystem crates and linked the v0.3 benchmark baseline from the README.
-- Updated lib.rs documentation links to point to tagged version of the GitHub references.
+- Added a property test outline describing the property-test coverage.
+- Added benchmark baseline documents, showing performance for v0.3. 
+- Added acknowledgements for ecosystem crates and linked the benchmark documentation from the README.
+- Updated `lib.rs` documentation to remove version-specific GitHub documentation links.
+- Updated `MIGRATION.md` for clarity.
 
 ## [0.3.0]
 

@@ -28,17 +28,11 @@ Measurements are collected using machines containing 100, 1,000, 10,000, and 100
 
 ## Benchmark Source
 
-The benchmark implementation used for the baseline is available from the corresponding release tag:
+The benchmark implementation used for the baseline is available here:
 
 - [Statekit benchmark source](../../benches/machine_queries.rs)
 
-Using the release tag keeps the benchmark source associated with the implementation that produced the recorded measurements.
-
-## Benchmarking Notes
-
-Development notes covering the experiments and methodology behind the benchmark suite are available separately:
-
-- [Benchmarking Lab Notes](../development/lab-notes)
+When viewing a release tag, the benchmark source and baseline documentation correspond to that version of Statekit.
 
 ## Running the Benchmarks
 

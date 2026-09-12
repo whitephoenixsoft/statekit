@@ -1,6 +1,6 @@
 # Statekit Implementation Roadmap
 State: Active 
-Current Version: v0.3
+Current Version: v0.3.x
 
 ## Purpose
 To define how statekit will evolve over next versions.
@@ -67,9 +67,9 @@ Go from:
 To:
 > "I am currently in this state."
 
-Define:
-- `MachineInstance` for execution
-- `MachineDefinition` to store the allowed transitions
+Consider:
+- `MachineInstance` for stateful execution
+- whether `Machine` should remain the definition type or be renamed
 
 Also consider:
 - Performance/indexing changes only if benchmarks justify them.

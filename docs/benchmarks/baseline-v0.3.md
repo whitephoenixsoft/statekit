@@ -587,19 +587,13 @@ This document freezes the initial Statekit v0.3 benchmark baseline.
 
 The measurements should remain unchanged as a historical record.
 
-Future benchmark results belong in either:
-
-    the current benchmark report
-
-or:
-
-    a new versioned baseline
+Future benchmark results should be recorded in a new versioned baseline.
 
 For example:
 
     baseline-v0.4.md
 
-The v0.3 baseline should only be corrected if a factual or transcription error is discovered, and such corrections should be explicitly documented.
+The benchmark documentation index may be updated to point to the newest baseline, while this document remains the frozen historical record for v0.3.
 
 ---
 

@@ -1150,6 +1150,38 @@ The main lessons from this work were:
 
 The benchmarking documentation is intentionally split into three artifacts.
 
+### Repository README
+
+Purpose:
+
+    brief current performance context
+    links into benchmark documentation
+
+This document can be updated as Statekit evolves.
+
+### Benchmark documentation
+
+Purpose:
+
+    navigation and benchmark-suite overview
+    links to the current versioned baseline
+
+This document can be updated as Statekit evolves.
+
+### Versioned Baselines
+
+Purpose:
+
+    frozen measurements, methodology,
+    environment, interpretation, limitations
+
+For example:
+
+    baseline-v0.3.md
+    baseline-v0.4.md
+
+A frozen baseline should not be silently rewritten when later versions are benchmarked.
+
 ### Benchmarking Lab Notes
 
 Purpose:
@@ -1160,32 +1192,7 @@ Purpose:
     preserve methodology lessons
     preserve hypotheses
 
-This document is expected to evolve as new benchmark work is performed.
-
-### Current Benchmark Report
-
-Purpose:
-
-    give users the current performance picture
-    summarize methodology
-    present current measurements
-    explain supported conclusions
-    identify limitations
-
-This document can be updated as Statekit evolves.
-
-### Versioned Baselines
-
-Purpose:
-
-    freeze historical benchmark snapshots
-
-For example:
-
-    baseline-v0.3.md
-    baseline-v0.4.md
-
-A frozen baseline should not be silently rewritten when later versions are benchmarked.
+These notes preserve the benchmark development process for Statekit v0.3. Later benchmark work may produce separate development notes rather than rewriting the historical methodology recorded here.
 
 This provides an auditable performance history.
  

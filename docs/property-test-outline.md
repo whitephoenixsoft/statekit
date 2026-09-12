@@ -30,8 +30,8 @@ REFERENCE MODEL
 ✔ states == model vertices
 ✔ sources == model sources
 ✔ targets_from == model outgoing targets
-✔ can_transition == model membership
-✔ contains_state(s) == model contains vertex s
+✔ can_transition == model membershipi
+✔ contains_state(s) == model vertex membership
 ✔ transitions() == model edge set
 ✔ validate_transition(a, b).is_ok() == model.contains((a, b))
 

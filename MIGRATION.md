@@ -20,7 +20,8 @@ for transition in machine.transitions() {
 
 A `Transition` exposes its source and target state names through `source()` and `target()`.
 
-Transitions are immutable and cannot be constructed directly by callers. Machine definitions continue to be constructed through `MachineBuilder`.
+Transitions are immutable and are exposed through `Machine::transitions()`.
+Machine definitions continue to be constructed through `MachineBuilder`.
 
 ### `Machine::targets_from` now returns an iterator directly
 
@@ -68,7 +69,7 @@ if targets.is_empty() {
 }
 ```
 
-### `StateError:: AmbiguousStateName` contains a `state` field
+### `StateError::AmbiguousStateName` contains a `state` field
  
 `StateError::AmbiguousStateName` now preserves the invalid state name in a `state` field, allowing callers to report the exact value that contained leading or trailing Unicode whitespace.
 
@@ -120,6 +121,7 @@ Most 0.2 consumers need to update code that handles `Machine::targets_from` or e
 - `MachineBuilder::default()` is no longer available; use `Machine::builder()`.
 - `MachineBuilder` no longer implements `PartialEq`.
 - `Machine::transitions()` can be used to inspect transitions directly.
+
 ## 0.1 -> 0.2
 
 Version 0.2 strengthens Statekit's domain invariants and moves validation closer to the point where state names and transitions are created.
@@ -284,7 +286,7 @@ The following changes are important to Statekit's architecture but do not themse
 
 #### State names are represented internally by `StateName`
 
-Machine definitions now store validated domain values rather than raw strings.
+In version 0.2, Machine definitions store validated domain values rather than raw strings.
 
 Conceptually:
 

@@ -14,7 +14,6 @@ categories = ["data-structures"]
 
 exclude = [
  "docs/development/**",
- "docs/benchmarks/README.md",
  ".gitignore"
 ]
 
