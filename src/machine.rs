@@ -21,7 +21,7 @@ impl Machine {
     pub fn builder() -> MachineBuilder {
         MachineBuilder::new()
     }
-    
+
     /// Returns whether the transition from `from` to `to` is allowed.
     ///
     /// State names are matched exactly. This method does not trim, normalize,
@@ -341,32 +341,29 @@ mod tests {
             Ok(())
         }
     }
-    
+
     mod targets {
         use super::*;
-        
+
         #[allow(deprecated)]
         #[test]
-        fn targets_returns_none_when_source_has_no_outgoing_transitions() -> Result<(), StateError> {
-            let machine = Machine::builder()
-                .try_allow("start", "finish")?
-                .build()?;
-        
+        fn targets_returns_none_when_source_has_no_outgoing_transitions() -> Result<(), StateError>
+        {
+            let machine = Machine::builder().try_allow("start", "finish")?.build()?;
+
             assert!(machine.targets("finish").is_none());
             assert!(machine.targets("unknown").is_none());
-        
+
             Ok(())
         }
-        
+
         #[allow(deprecated)]
         #[test]
         fn targets_returns_some_when_source_has_outgoing_transitions() -> Result<(), StateError> {
-            let machine = Machine::builder()
-                .try_allow("start", "finish")?
-                .build()?;
-        
+            let machine = Machine::builder().try_allow("start", "finish")?.build()?;
+
             assert!(machine.targets("start").is_some());
-            
+
             Ok(())
         }
     }

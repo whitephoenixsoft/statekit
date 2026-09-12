@@ -135,11 +135,11 @@ mod tests {
             })
         );
     }
-    
+
     #[test]
     fn validate_state_name_unicode_leading_whitespace_returns_error() {
         let result = validate_state_name("\u{00A0}queued");
-    
+
         assert_eq!(
             result,
             Err(StateError::AmbiguousStateName {

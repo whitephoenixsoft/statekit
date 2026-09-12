@@ -49,7 +49,7 @@ impl MachineBuilder {
     /// Returns:
     ///
     /// - [`StateError::AmbiguousStateName`] if an endpoint has leading or trailing
-///   Unicode whitespace.
+    ///   Unicode whitespace.
     /// - [`StateError::SelfTransition`] if a transition has identical endpoints.
     /// - [`StateError::EmptyState`] if an endpoint is empty or whitespace-only.
     pub fn try_allow(

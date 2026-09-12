@@ -23,7 +23,7 @@ impl Transitions {
     pub(crate) fn is_empty(&self) -> bool {
         self.items.is_empty()
     }
-    
+
     /// Adds a [`Transition`] to the collection.
     pub(crate) fn add(&mut self, transition: Transition) {
         self.items.insert(transition);
@@ -46,7 +46,7 @@ impl Transitions {
             .iter()
             .any(|item| item.source() == source && item.target() == target)
     }
-    
+
     /// Returns whether `state` appears as either endpoint of a transition.
     pub(crate) fn contains_state(&self, state: &str) -> bool {
         self.items

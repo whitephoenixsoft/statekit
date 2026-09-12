@@ -1,5 +1,5 @@
-use std::collections::HashSet;
 use proptest::prelude::*;
+use std::collections::HashSet;
 
 use statekit::{Machine, StateError};
 
@@ -29,19 +29,13 @@ fn valid_state_name() -> impl Strategy<Value = String> {
 
 fn valid_transition_pair() -> impl Strategy<Value = (String, String)> {
     (valid_state_name(), valid_state_name())
-        .prop_filter(
-            "source and target must be different",
-            |(source, target)| source != target,
-        )
+        .prop_filter("source and target must be different", |(source, target)| {
+            source != target
+        })
 }
 
-fn valid_transition_pairs()
-    -> impl Strategy<Value = Vec<(String, String)>>
-{
-    proptest::collection::vec(
-        valid_transition_pair(),
-        1..20,
-    )
+fn valid_transition_pairs() -> impl Strategy<Value = Vec<(String, String)>> {
+    proptest::collection::vec(valid_transition_pair(), 1..20)
 }
 
 fn whitespace_only_state_name() -> impl Strategy<Value = String> {
@@ -49,26 +43,15 @@ fn whitespace_only_state_name() -> impl Strategy<Value = String> {
 }
 
 fn leading_whitespace_state_name() -> impl Strategy<Value = String> {
-    (
-        "[ \t]{1,4}",
-        valid_state_name(),
-    )
-    .prop_map(|(whitespace, name)| {
-        format!("{whitespace}{name}")
-    })
+    ("[ \t]{1,4}", valid_state_name()).prop_map(|(whitespace, name)| format!("{whitespace}{name}"))
 }
 
 fn trailing_whitespace_state_name() -> impl Strategy<Value = String> {
-    (
-        "[ \t]{1,4}",
-        valid_state_name(),
-    )
-    .prop_map(|(whitespace, name)| {
-        format!("{name}{whitespace}")
-    })
+    ("[ \t]{1,4}", valid_state_name()).prop_map(|(whitespace, name)| format!("{name}{whitespace}"))
 }
 
-fn transitions_with_existing_probe() -> impl Strategy<Value = (Vec<(String, String)>, (String, String))> {
+fn transitions_with_existing_probe()
+-> impl Strategy<Value = (Vec<(String, String)>, (String, String))> {
     valid_transition_pairs()
         .prop_flat_map(|transitions| {
             let len = transitions.len();
@@ -82,81 +65,50 @@ fn transitions_with_existing_probe() -> impl Strategy<Value = (Vec<(String, Stri
         })
 }
 
-fn transitions_with_missing_probe() -> impl Strategy<Value = (Vec<(String, String)>, (String, String))> {
+fn transitions_with_missing_probe()
+-> impl Strategy<Value = (Vec<(String, String)>, (String, String))> {
     valid_transition_pairs()
-        .prop_flat_map(|transitions| {
-            (
-                Just(transitions),
-                valid_transition_pair(),
-            )
+        .prop_flat_map(|transitions| (Just(transitions), valid_transition_pair()))
+        .prop_filter("probe must not already exist", |(transitions, probe)| {
+            !transitions.contains(probe)
         })
-        .prop_filter(
-            "probe must not already exist",
-            |(transitions, probe)| !transitions.contains(probe),
-        )
 }
 
-fn transitions_with_existing_source()
-    -> impl Strategy<Value = (Vec<(String, String)>, String)>
-{
-    valid_transition_pairs()
-        .prop_flat_map(|transitions| {
-            (
-                Just(transitions),
-                valid_state_name(),
-            )
-        })
-        .prop_filter(
-            "source must have no outgoing transitions",
-            |(transitions, source)| {
-                !transitions
-                    .iter()
-                    .any(|(candidate, _)| candidate == source)
-            },
-        )
+fn transitions_with_existing_source() -> impl Strategy<Value = (Vec<(String, String)>, String)> {
+    valid_transition_pairs().prop_flat_map(|transitions| {
+        let sources = transitions
+            .iter()
+            .map(|(source, _)| source.clone())
+            .collect::<Vec<_>>();
+
+        (Just(transitions), proptest::sample::select(sources))
+    })
 }
 
 fn transitions_with_source_without_outgoing_transitions()
-    -> impl Strategy<Value = (Vec<(String, String)>, String)>
-{
+-> impl Strategy<Value = (Vec<(String, String)>, String)> {
     valid_transition_pairs()
-        .prop_flat_map(|transitions| {
-            (
-                Just(transitions),   
-                valid_transition_pair()
-            )
+        .prop_flat_map(|transitions| (Just(transitions), valid_transition_pair()))
+        .prop_filter("source must not already exist", |(transition, probe)| {
+            !transition
+                .iter()
+                .any(|(candidate, _)| candidate == &probe.0)
         })
-        .prop_filter(
-            "source must not already exist",
-            |(transition, probe)| !transition.iter().any(|(candidate, _)| candidate == &probe.0)
-        )
         .prop_map(|(transitions, probe)| {
-            let source = probe.0.clone(); 
+            let source = probe.0.clone();
             (transitions, source)
         })
 }
 
 fn transitions_with_missing_state()
-    -> impl Strategy<Value = (Vec<(String, String)>, (String, String))>
-{
+-> impl Strategy<Value = (Vec<(String, String)>, (String, String))> {
     valid_transition_pairs()
-        .prop_flat_map(|transitions| {
-            (
-                Just(transitions),   
-                valid_transition_pair()
-            )
+        .prop_flat_map(|transitions| (Just(transitions), valid_transition_pair()))
+        .prop_filter("states must not already exist", |(transitions, probe)| {
+            !transitions.iter().any(|(source, target)| {
+                source == &probe.0 || target == &probe.0 || source == &probe.1 || target == &probe.1
+            })
         })
-        .prop_filter(
-            "states must not already exist",
-            |(transitions, probe)| {
-                !transitions.iter().any(|(source, target)| {
-                    source == &probe.0
-                        || target == &probe.0
-                        || source == &probe.1
-                        || target == &probe.1
-                })
-            }
-        )
 }
 
 proptest! {
@@ -174,7 +126,7 @@ proptest! {
 
         prop_assert!(machine.can_transition(&source, &target));
     }
-    
+
     #[test]
     fn whitespace_only_source_is_rejected(
         source in whitespace_only_state_name(),
@@ -204,7 +156,7 @@ proptest! {
 
         prop_assert!(is_ambiguous);
     }
-    
+
     #[test]
     fn whitespace_only_target_is_rejected(
         source in valid_state_name(),
@@ -212,7 +164,7 @@ proptest! {
     ) {
         let result = Machine::builder()
             .try_allow(&source, &target);
-    
+
         prop_assert!(matches!(
             result,
             Err(StateError::EmptyState)
@@ -318,7 +270,7 @@ proptest! {
             }
         }
     }
-    
+
     #[test]
     fn transition_count_matches_iteration(
         transitions in valid_transition_pairs(),
@@ -346,7 +298,7 @@ proptest! {
             );
         }
     }
-    
+
     #[test]
     fn every_exposed_source_is_an_existing_state(
         transitions in valid_transition_pairs(),
@@ -522,14 +474,14 @@ proptest! {
         prop_assert!(model_targets.is_empty());
         prop_assert_eq!(machine_targets, model_targets);
     }
-    
+
     #[test]
     fn model_and_machine_agree_on_transitions(
         transitions in valid_transition_pairs(),
     ) {
         let machine = build_machine(&transitions);
         let model = build_model(&transitions);
-    
+
         let machine_transitions: Model = machine
             .transitions()
             .map(|transition| {
@@ -539,10 +491,10 @@ proptest! {
                 )
             })
             .collect();
-    
+
         prop_assert_eq!(machine_transitions, model);
     }
-    
+
     #[test]
     fn model_and_machine_agree_on_valid_transition(
         (transitions, probe) in transitions_with_existing_probe(),
@@ -550,50 +502,50 @@ proptest! {
         let machine = build_machine(&transitions);
         let model = build_model(&transitions);
         let (source, target) = &probe;
-    
+
         prop_assert_eq!(
             machine.validate_transition(source, target).is_ok(),
             model.contains(&probe),
         );
     }
-    
+
     #[test]
     fn model_and_machine_agree_on_invalid_transition(
         (transitions, probe) in transitions_with_missing_probe(),
     ) {
         let machine = build_machine(&transitions);
         let model = build_model(&transitions);
-    
+
         let (source, target) = &probe;
-    
+
         prop_assert!(!model.contains(&probe));
-    
+
         prop_assert_eq!(
             machine.validate_transition(source, target).is_ok(),
             model.contains(&probe),
         );
     }
-    
+
     #[test]
     fn contains_state_recognizes_existing_endpoint(
         (transitions, probe) in transitions_with_existing_probe(),
     ) {
         let machine = build_machine(&transitions);
-    
+
         let (source, target) = &probe;
-    
+
         prop_assert!(machine.contains_state(source));
         prop_assert!(machine.contains_state(target));
     }
-    
+
     #[test]
     fn contains_state_recognizes_missing_endpoint(
         (transitions, probe) in transitions_with_missing_state(),
     ) {
         let machine = build_machine(&transitions);
-    
+
         let (source, target) = &probe;
-    
+
         prop_assert!(!machine.contains_state(source));
         prop_assert!(!machine.contains_state(target));
     }
@@ -619,7 +571,7 @@ proptest! {
         prop_assert!(machine.can_transition(&source, &target));
     }
 
-    
+
     #[test]
     fn accepted_arbitrary_transitions_preserve_invariants(
         source in any::<String>(),
