@@ -39,6 +39,14 @@ Represents an immutable definition of the allowed state transitions.
 - There must be at least one transition.
 - State names supplied to machine queries are matched exactly and are not trimmed or normalized.
 
+### Machine Instance
+
+Represents a mutable instance of a transitioning state machine.
+
+#### Invariants and Constraints
+
+- A failed transition attempt has no observable effect on the instance.
+
 ### Transitions
 
 The collection of transitions.
@@ -119,6 +127,10 @@ Public API changes follow semantic versioning.
 Internal storage is not part of the Statekit domain contract.
 
 Strengthening an invariant that causes previously valid input to be rejected is considered a behavioral compatibility change and must be intentional.
+
+## Concurrency Principles 
+
+Statekit makes independent machine instances safe and inexpensive to execute concurrently, while leaving scheduling and synchronization policy to the host application.
 
 ## Benchmark Principles 
 
