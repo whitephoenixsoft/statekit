@@ -67,8 +67,6 @@ Validates and builds the state-machine.
 - Enforces transition and state validation before a `Machine` is built.
 - Provides an API for constructing a machine definition incrementally.
 
-Note: Statekit may eventually need a compilation/import layer that can accumulate multiple validation diagnostics before producing a Machine.
-
 ### State Name
 
 Validates and holds the state name.
@@ -121,6 +119,10 @@ Public API changes follow semantic versioning.
 Internal storage is not part of the Statekit domain contract.
 
 Strengthening an invariant that causes previously valid input to be rejected is considered a behavioral compatibility change and must be intentional.
+
+## Benchmark Principles 
+
+Statekit may spend additional work during immutable machine construction when doing so materially reduces repeated runtime validation cost, provided memory growth remains bounded and measurable.
 
 ## What it is Not
 
