@@ -70,11 +70,17 @@ To:
 Consider:
 - `MachineInstance` for stateful execution
 - whether `Machine` should remain the definition type or be renamed
+- adding memory benchmarks preparation for indexing changes.
 
-Also consider:
-- Performance/indexing changes only if benchmarks justify them.
+### Phase 6 - Optimization (v0.5)
 
-### Phase 6 - API Freeze (v0.9)
+**Goal:** Runtime-oriented internal representation
+Evidence-driven indexing and memory tradeoffs
+
+Consider:
+- Performance/indexing changes for that benchmarks justify them.
+
+### Phase 7 - API Freeze (v0.9)
 
 No new features.
 
@@ -86,7 +92,7 @@ Answer questions:
 - Is this the API I'd be happy maintaining for five years?
 
 
-### Phase 7 - Production polish (v1.0)
+### Phase 8 - Production polish (v1.0)
 
 Only when the API seems acceptable.
 
