@@ -1,6 +1,6 @@
 # Statekit Implementation Roadmap
 State: Active 
-Current Version: v0.3.x
+Current Version: v0.4.x
 
 ## Purpose
 To define how statekit will evolve over next versions.
@@ -70,17 +70,52 @@ To:
 Consider:
 - `MachineInstance` for stateful execution
 - whether `Machine` should remain the definition type or be renamed
-- adding memory benchmarks preparation for indexing changes.
 
-### Phase 6 - Optimization (v0.5)
+Todo:
+Stateful execution
+- MachineInstance
+- current state
+- transition_to()
+- can_transition_to()
+- failed transitions do not mutate state
+- settle ownership model
+
+### Phase 6 - Multiple Representations (v.5)
+
+> Should Statekit's public runtime model distinguish symbolic state names from internal/runtime state identity?
+
+Consider:
+A. Keep strings as state identity
+B. Make Machine generic over state identity
+C. Keep string-oriented construction but lower to Statekit-owned StateId
+
+Todo:
+Runtime state identity / lowering
+- distinguish symbolic state names from runtime identity
+- investigate StateId-style representation
+- decide whether public APIs should expose IDs
+- decide how name ↔ ID mapping works
+- evaluate whether strings remain the construction surface
+- keep generic Machine\<S\> as an alternative to compare, not the default assumption
+
+### Phase 7 - Optimization (v0.6)
 
 **Goal:** Runtime-oriented internal representation
 Evidence-driven indexing and memory tradeoffs
 
 Consider:
+- Adding memory benchmarks preparation for indexing changes.
 - Performance/indexing changes for that benchmarks justify them.
 
-### Phase 7 - API Freeze (v0.9)
+Todo:
+Runtime indexing / representation optimization
+- transition membership index
+- adjacency/source index
+- state membership index
+- cached states/sources
+- memory benchmarking
+- construction/runtime/memory tradeoff analysis
+### Phase 8 - API Freeze (v0.9)
 
 No new features.
 
@@ -92,7 +127,7 @@ Answer questions:
 - Is this the API I'd be happy maintaining for five years?
 
 
-### Phase 8 - Production polish (v1.0)
+### Phase 9 - Production polish (v1.0)
 
 Only when the API seems acceptable.
 
