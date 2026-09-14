@@ -48,16 +48,20 @@
 //! and benchmark documentation.
 mod builder;
 mod error;
+mod instance;
 mod machine;
 mod transition;
 
+mod inner;
 mod state_name;
 mod transitions;
 
 pub use builder::MachineBuilder;
 pub use error::StateError;
+pub use instance::MachineInstance;
 pub use machine::Machine;
 pub use transition::Transition;
 
+pub(crate) use inner::MachineInner;
 pub(crate) use state_name::StateName;
 pub(crate) use transitions::Transitions;

@@ -1,42 +1,22 @@
-use std::sync::Arc;
-use crate::{MachineBuilder, MachineInner, MachineInstance, StateError, Transition, Transitions};
+use crate::{MachineBuilder, StateError, Transition, Transitions};
 
-/// An immutable state-machine definition.
-///
-/// A `Machine` contains at least one transition. Every stored state name and
-/// transition has already been validated by the builder.
+/// The internally shared immutable state-machine definition.
 #[derive(Debug, PartialEq, Eq)]
-pub struct Machine {
-    inner: Arc<MachineInner>,
+pub struct MachineInner {
+    transitions: Transitions,
 }
 
-impl Machine {
+impl MachineInner {
     /// Constructs a machine from validated transitions.
     pub(crate) fn new(transitions: Transitions) -> Self {
-        let inner = MachineInner::new(transitions);
-        
-        Self { 
-            inner: Arc::new(inner),
-        }
+        Self { transitions }
     }
-    
+
     /// Returns a builder for constructing a [`Machine`].
     ///
     /// This is the public entry point for creating machine definitions.
     pub fn builder() -> MachineBuilder {
         MachineBuilder::new()
-    }
-    
-    /// Returns an instance of a mutable state machine instance.
-    pub fn instance(&self, initial: &str) -> Result<MachineInstance, StateError> {
-        if !self.inner.contains_state(initial) {
-            return Err(StateError::UnknownInitialSourceState { state: initial.to_owned() });
-        }
-
-        Ok(MachineInstance::new(
-            Arc::clone(&self.inner),
-            initial.to_owned(),
-        ))
     }
 
     /// Returns whether the transition from `from` to `to` is allowed.
@@ -44,7 +24,7 @@ impl Machine {
     /// State names are matched exactly. This method does not trim, normalize,
     /// or otherwise modify the supplied names.
     pub fn can_transition(&self, from: &str, to: &str) -> bool {
-        self.inner.can_transition(from, to)
+        self.transitions.contains(from, to)
     }
 
     /// Validates that the transition from `from` to `to` is allowed.
@@ -56,17 +36,24 @@ impl Machine {
     /// State names are matched exactly. This method does not trim, normalize,
     /// or otherwise modify the supplied names.
     pub fn validate_transition(&self, from: &str, to: &str) -> Result<(), StateError> {
-        self.inner.validate_transition(from, to)
+        if self.can_transition(from, to) {
+            Ok(())
+        } else {
+            Err(StateError::InvalidTransition {
+                from: from.to_owned(),
+                to: to.to_owned(),
+            })
+        }
     }
 
     /// Returns the number of transitions in the state machine.
     pub fn transition_count(&self) -> usize {
-        self.inner.transition_count()
+        self.transitions.len()
     }
 
     /// Returns whether `state` appears as either endpoint of a transition.
     pub fn contains_state(&self, state: &str) -> bool {
-        self.inner.contains_state(state)
+        self.transitions.contains_state(state)
     }
 
     /// Returns an iterator over states directly reachable from `from`.
@@ -75,9 +62,14 @@ impl Machine {
     /// `from` is unknown or appears only as a transition target.
     ///
     /// The iteration order is unspecified.
-    #[deprecated(since = "0.2.0", note = "use `targets_from` instead")]
     pub fn targets(&self, from: &str) -> Option<impl Iterator<Item = &str>> {
-        self.inner.targets(from)
+        let mut targets = self.targets_from(from).peekable();
+
+        if targets.peek().is_none() {
+            None
+        } else {
+            Some(targets)
+        }
     }
 
     /// Returns an iterator over states directly reachable from `from`.
@@ -87,28 +79,28 @@ impl Machine {
     ///
     /// The iteration order is unspecified.
     pub fn targets_from(&self, from: &str) -> impl Iterator<Item = &str> {
-        self.inner.targets_from(from)
+        self.transitions.targets_from(from)
     }
 
     /// Returns an iterator over all source states.
     ///
     /// The iteration order is unspecified.
     pub fn sources(&self) -> impl Iterator<Item = &str> {
-        self.inner.sources()
+        self.transitions.sources()
     }
 
     /// Returns an iterator over all unique source and target states.
     ///
     /// The iteration order is unspecified.
     pub fn states(&self) -> impl Iterator<Item = &str> {
-        self.inner.states()
+        self.transitions.states()
     }
 
     /// Returns an iterator over all the transitions in the state machine.
     ///
     /// The iteration order is unspecified.
     pub fn transitions(&self) -> impl Iterator<Item = &Transition> {
-        self.inner.transitions()
+        self.transitions.iter()
     }
 }
 
