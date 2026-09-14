@@ -121,18 +121,25 @@ Validates and holds the state name.
 [Transition]
 ```
 
-## Compatibility Principles
+
+## Governing Principles 
+
+### Compatibility Principles
 
 Public API changes follow semantic versioning.
 Internal storage is not part of the Statekit domain contract.
 
 Strengthening an invariant that causes previously valid input to be rejected is considered a behavioral compatibility change and must be intentional.
 
-## Concurrency Principles 
+### Runtime Principles 
+
+Normal runtime state should be observable without provoking errors. Errors represent invalid operations, not ordinary machine conditions.
+
+### Concurrency Principles 
 
 Statekit makes independent machine instances safe and inexpensive to execute concurrently, while leaving scheduling and synchronization policy to the host application.
 
-## Benchmark Principles 
+### Benchmark Principles 
 
 Statekit may spend additional work during immutable machine construction when doing so materially reduces repeated runtime validation cost, provided memory growth remains bounded and measurable.
 
