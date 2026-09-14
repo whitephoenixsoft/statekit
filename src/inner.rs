@@ -96,6 +96,11 @@ impl MachineInner {
     pub(crate) fn transitions(&self) -> impl Iterator<Item = &Transition> {
         self.transitions.iter()
     }
+    
+    ///A state is terminal when it has no outgoing transitions.
+    pub fn is_terminal(&self, state: &str) -> bool {
+        !self.targets_from(state).next().is_none()
+    }
 }
 
 #[cfg(test)]

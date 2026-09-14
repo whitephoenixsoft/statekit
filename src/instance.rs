@@ -36,4 +36,38 @@ impl MachineInstance {
 
         Ok(())
     }
+    
+    ///A state is terminal when it has no outgoing transitions.
+    pub fn is_terminal(&self) -> bool {
+        self.machine.is_terminal(self.state())
+    }
 }
+
+/*
+ Construction
+- known source state succeeds
+- known target-only state succeeds       [if we choose existing-state semantics]
+- unknown state fails
+- exact-match behavior is preserved
+
+State observation
+- state() returns initial state
+- state() changes after successful transition
+
+Transition query
+- can_transition_to() true for allowed edge
+- false for disallowed edge
+- false from terminal state
+
+Mutation
+- successful transition changes current state
+- multiple sequential transitions work
+- failed transition leaves state unchanged
+- transition validation uses current state, not initial state
+
+Independence
+- two instances from same Machine mutate independently
+
+Ownership
+- instance remains usable after original Machine handle is dropped
+ */

@@ -30,7 +30,7 @@ impl Machine {
     /// Returns an instance of a mutable state machine instance.
     pub fn instance(&self, initial: &str) -> Result<MachineInstance, StateError> {
         if !self.inner.contains_state(initial) {
-            return Err(StateError::UnknownInitialSourceState { state: initial.to_owned() });
+            return Err(StateError::UnknownInitialState { state: initial.to_owned() });
         }
 
         Ok(MachineInstance::new(
@@ -109,6 +109,11 @@ impl Machine {
     /// The iteration order is unspecified.
     pub fn transitions(&self) -> impl Iterator<Item = &Transition> {
         self.inner.transitions()
+    }
+    
+    ///A state is terminal when it has no outgoing transitions.
+    pub fn is_terminal(&self, state: &str) -> bool {
+        self.inner.is_terminal(state)
     }
 }
 
