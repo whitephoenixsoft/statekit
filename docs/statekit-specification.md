@@ -24,13 +24,14 @@ The components in this specification describe Statekit's domain model. A compone
 
 ### Machine
 
-Represents an immutable definition of the allowed state transitions.
+Machine is an immutable value-like machine definition implemented as a shared handle. It represents a definition of the allowed state transitions.
 
 - It is only valid if it contains at least one transition.
 - Determines whether a transition from a source state to a target state is allowed.
 - Machine must support querying allowed transitions.
 - Querying the transitions reachable from a state with no outgoing transitions produces an empty result. This includes states that appear only as transition targets and names that do not occur in the machine.
 - Provides access to queries over the machine's transitions.
+- Machine has value equality based on its state-machine definition. Shared allocation identity is an internal ownership concern.
 
 #### Invariants and Constraints
 
