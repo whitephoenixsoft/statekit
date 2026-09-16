@@ -481,4 +481,50 @@ mod tests {
             Ok(())
         }
     }
+    
+    mod is_terminal {
+        use super::*;
+        
+        #[test]
+        fn one_transition_target_returns_true() -> Result<(), StateError> {
+            let machine = Machine::builder().try_allow("1", "2")?.build()?;
+
+            assert!(machine.is_terminal("2"));
+
+            Ok(())
+        }
+        
+        #[test]
+        fn one_transition_source_returns_false() -> Result<(), StateError> {
+            let machine = Machine::builder().try_allow("1", "2")?.build()?;
+
+            assert!(!machine.is_terminal("1"));
+
+            Ok(())
+        }
+        
+        #[test]
+        fn multiple_transitions_terminal_returns_true() -> Result<(), StateError> {
+            let machine = Machine::builder()
+            .try_allow("1", "2")?
+            .try_allow("2", "3")?
+            .build()?;
+
+            assert!(machine.is_terminal("3"));
+
+            Ok(())
+        }
+        
+        #[test]
+        fn multiple_transitions_connected_returns_false() -> Result<(), StateError> {
+            let machine = Machine::builder()
+            .try_allow("1", "2")?
+            .try_allow("2", "3")?
+            .build()?;
+
+            assert!(!machine.is_terminal("2"));
+
+            Ok(())
+        }
+    }
 }

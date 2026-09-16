@@ -1,7 +1,10 @@
 use std::sync::Arc;
-use crate::{MachineInner, StateError};
+use crate::{Machine, MachineInner, StateError};
 
 /// The instance of a state machine.
+///
+/// A machine instance is always on a valid state.
+/// All states have already
 pub struct MachineInstance {
     machine: Arc<MachineInner>,
     current: String,
@@ -41,6 +44,11 @@ impl MachineInstance {
     pub fn is_terminal(&self) -> bool {
         self.machine.is_terminal(self.state())
     }
+    
+    /// Returns a shared handle to this instance's machine definition.
+    pub fn machine(&self) -> Machine {
+        Machine::from_inner(Arc::clone(&self.machine))
+    }
 }
 
 /*
@@ -71,3 +79,5 @@ Independence
 Ownership
 - instance remains usable after original Machine handle is dropped
  */
+
+#[cfg(test)]

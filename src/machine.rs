@@ -20,6 +20,14 @@ impl Machine {
         }
     }
     
+    /// Constructs a machine handle from existing MachineInner.
+    pub(crate) fn from_inner(inner: Arc<MachineInner>) -> Self {
+        
+        Self { 
+            inner,
+        }
+    }
+    
     /// Returns a builder for constructing a [`Machine`].
     ///
     /// This is the public entry point for creating machine definitions.
@@ -494,5 +502,21 @@ mod tests {
 
             Ok(())
         }
+    }
+    
+    mod is_terminal {
+        use super::*;
+        
+        #[test]
+        fn one_transition_returns_one_item() -> Result<(), StateError> {
+            let machine = Machine::builder().try_allow("1", "2")?.build()?;
+
+            let transitions: Vec<_> = machine.transitions().collect();
+
+            assert_eq!(transitions.len(), 1);
+
+            Ok(())
+        }
+        
     }
 }
