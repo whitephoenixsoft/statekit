@@ -85,7 +85,13 @@ impl Machine {
     /// The iteration order is unspecified.
     #[deprecated(since = "0.2.0", note = "use `targets_from` instead")]
     pub fn targets(&self, from: &str) -> Option<impl Iterator<Item = &str>> {
-        self.inner.targets(from)
+         let mut targets = self.targets_from(from).peekable();
+
+         if targets.peek().is_none() {
+             None
+         } else {
+             Some(targets)
+         }
     }
 
     /// Returns an iterator over states directly reachable from `from`.

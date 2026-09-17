@@ -81,3 +81,7 @@ Ownership
  */
 
 #[cfg(test)]
+mod tests {
+    use super::*;
+
+}
