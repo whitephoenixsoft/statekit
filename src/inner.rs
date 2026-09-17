@@ -14,21 +14,11 @@ impl MachineInner {
     
 
     /// Returns whether the transition from `from` to `to` is allowed.
-    ///
-    /// State names are matched exactly. This method does not trim, normalize,
-    /// or otherwise modify the supplied names.
     pub(crate) fn can_transition(&self, from: &str, to: &str) -> bool {
         self.transitions.contains(from, to)
     }
 
     /// Validates that the transition from `from` to `to` is allowed.
-    ///
-    /// # Errors
-    ///
-    /// Returns [`StateError::InvalidTransition`] when the machine does not
-    /// contain the requested transition.
-    /// State names are matched exactly. This method does not trim, normalize,
-    /// or otherwise modify the supplied names.
     pub(crate) fn validate_transition(&self, from: &str, to: &str) -> Result<(), StateError> {
         if self.can_transition(from, to) {
             Ok(())
@@ -51,48 +41,21 @@ impl MachineInner {
     }
 
     /// Returns an iterator over states directly reachable from `from`.
-    ///
-    /// Returns `None` when `from` has no outgoing transitions, including when
-    /// `from` is unknown or appears only as a transition target.
-    ///
-    /// The iteration order is unspecified.
-    pub(crate) fn targets(&self, from: &str) -> Option<impl Iterator<Item = &str>> {
-        let mut targets = self.targets_from(from).peekable();
-
-        if targets.peek().is_none() {
-            None
-        } else {
-            Some(targets)
-        }
-    }
-
-    /// Returns an iterator over states directly reachable from `from`.
-    ///
-    /// Returns an empty iterator when `from` has no outgoing transitions,
-    /// including when `from` is unknown or appears only as a transition target.
-    ///
-    /// The iteration order is unspecified.
     pub(crate) fn targets_from(&self, from: &str) -> impl Iterator<Item = &str> {
         self.transitions.targets_from(from)
     }
 
     /// Returns an iterator over all source states.
-    ///
-    /// The iteration order is unspecified.
     pub(crate) fn sources(&self) -> impl Iterator<Item = &str> {
         self.transitions.sources()
     }
 
     /// Returns an iterator over all unique source and target states.
-    ///
-    /// The iteration order is unspecified.
     pub(crate) fn states(&self) -> impl Iterator<Item = &str> {
         self.transitions.states()
     }
 
     /// Returns an iterator over all the transitions in the state machine.
-    ///
-    /// The iteration order is unspecified.
     pub(crate) fn transitions(&self) -> impl Iterator<Item = &Transition> {
         self.transitions.iter()
     }
@@ -112,11 +75,11 @@ mod tests {
 
         #[test]
         fn validate_transition_accepts_configured_transition() -> Result<(), StateError> {
-            let builder = Machine::builder()
-                .try_allow("start", "finish")?
-                .try_allow("1", "2")?;
+            let mut transitions = Transitions::new();
+            transitions.add(Transition::try_new("start", "finish")?);
+            transitions.add(Transition::try_new("1", "2")?);
 
-            let m = builder.build()?;
+            let m = MachineInner::new(transitions);
 
             assert!(m.validate_transition("start", "finish").is_ok());
 
@@ -125,9 +88,10 @@ mod tests {
 
         #[test]
         fn validate_transition_not_exists_returns_invalid_error() -> Result<(), StateError> {
-            let builder = Machine::builder().try_allow("start", "finish")?;
-
-            let m = builder.build()?;
+            let mut transitions = Transitions::new();
+            transitions.add(Transition::try_new("start", "finish")?);
+            
+            let m = MachineInner::new(transitions);
 
             assert_eq!(
                 m.validate_transition("start", "invalid"),
@@ -142,12 +106,12 @@ mod tests {
 
         #[test]
         fn validate_transition_cyclic_is_valid() -> Result<(), StateError> {
-            let builder = Machine::builder()
-                .try_allow("start", "finish")?
-                .try_allow("finish", "start")?;
-
-            let m = builder.build()?;
-
+            let mut transitions = Transitions::new();
+            transitions.add(Transition::try_new("start", "finish")?);
+            transitions.add(Transition::try_new("finish", "start")?);
+            
+            let m = MachineInner::new(transitions);
+            
             assert!(m.validate_transition("finish", "start").is_ok());
 
             Ok(())
@@ -159,11 +123,11 @@ mod tests {
 
         #[test]
         fn transition_count_counts_transitions() -> Result<(), StateError> {
-            let builder = Machine::builder()
-                .try_allow("start", "finish")?
-                .try_allow("1", "2")?;
-
-            let m = builder.build()?;
+            let mut transitions = Transitions::new();
+            transitions.add(Transition::try_new("start", "finish")?);
+            transitions.add(Transition::try_new("1", "2")?);
+            
+            let m = MachineInner::new(transitions);
 
             assert_eq!(m.transition_count(), 2);
 
@@ -176,9 +140,10 @@ mod tests {
 
         #[test]
         fn can_transition_exists_returns_true() -> Result<(), StateError> {
-            let builder = Machine::builder().try_allow("start", "finish")?;
-
-            let m = builder.build()?;
+            let mut transitions = Transitions::new();
+            transitions.add(Transition::try_new("start", "finish")?);
+            
+            let m = MachineInner::new(transitions);
 
             assert!(m.can_transition("start", "finish"));
 
@@ -187,9 +152,10 @@ mod tests {
 
         #[test]
         fn can_transition_not_exists_returns_false() -> Result<(), StateError> {
-            let builder = Machine::builder().try_allow("start", "finish")?;
-
-            let m = builder.build()?;
+            let mut transitions = Transitions::new();
+            transitions.add(Transition::try_new("start", "finish")?);
+            
+            let m = MachineInner::new(transitions);
 
             assert!(!m.can_transition("start", "invalid"));
 
@@ -202,9 +168,10 @@ mod tests {
 
         #[test]
         fn contains_state_finds_target_only_state() -> Result<(), StateError> {
-            let builder = Machine::builder().try_allow("start", "finish")?;
-
-            let m = builder.build()?;
+            let mut transitions = Transitions::new();
+            transitions.add(Transition::try_new("start", "finish")?);
+            
+            let m = MachineInner::new(transitions);
 
             assert!(m.contains_state("finish"));
 
@@ -213,9 +180,10 @@ mod tests {
 
         #[test]
         fn contains_state_rejects_unknown_state() -> Result<(), StateError> {
-            let builder = Machine::builder().try_allow("start", "finish")?;
-
-            let m = builder.build()?;
+            let mut transitions = Transitions::new();
+            transitions.add(Transition::try_new("start", "finish")?);
+            
+            let m = MachineInner::new(transitions);
 
             assert!(!m.contains_state("other"));
 
@@ -224,9 +192,10 @@ mod tests {
 
         #[test]
         fn contains_state_rejects_ambiguous_state() -> Result<(), StateError> {
-            let builder = Machine::builder().try_allow("start", "finish")?;
-
-            let m = builder.build()?;
+            let mut transitions = Transitions::new();
+            transitions.add(Transition::try_new("start", "finish")?);
+            
+            let m = MachineInner::new(transitions);
 
             assert!(!m.contains_state(" start"));
 
@@ -235,11 +204,11 @@ mod tests {
 
         #[test]
         fn contains_state_finds_source_state() -> Result<(), StateError> {
-            let builder = Machine::builder()
-                .try_allow("start", "end")?
-                .try_allow("rest", "finish")?;
-
-            let m = builder.build()?;
+            let mut transitions = Transitions::new();
+            transitions.add(Transition::try_new("start", "end")?);
+            transitions.add(Transition::try_new("rest", "finish")?);
+            
+            let m = MachineInner::new(transitions);
 
             assert!(m.contains_state("rest"));
 
@@ -253,9 +222,10 @@ mod tests {
         #[test]
         fn targets_from_one_transition_key_does_not_exist_returns_empty() -> Result<(), StateError>
         {
-            let builder = Machine::builder().try_allow("start", "finish")?;
-
-            let m = builder.build()?;
+            let mut transitions = Transitions::new();
+            transitions.add(Transition::try_new("start", "finish")?);
+            
+            let m = MachineInner::new(transitions);
             let collected: Vec<_> = m.targets_from("other").collect();
 
             assert!(collected.is_empty());
@@ -265,9 +235,10 @@ mod tests {
 
         #[test]
         fn targets_from_one_transition_one_value() -> Result<(), StateError> {
-            let builder = Machine::builder().try_allow("start", "finish")?;
-
-            let m = builder.build()?;
+            let mut transitions = Transitions::new();
+            transitions.add(Transition::try_new("start", "finish")?);
+            
+            let m = MachineInner::new(transitions);
             let collected: Vec<_> = m.targets_from("start").collect();
 
             assert_eq!(collected, vec!["finish"]);
@@ -277,11 +248,11 @@ mod tests {
 
         #[test]
         fn targets_from_one_source_returns_two_targets() -> Result<(), StateError> {
-            let builder = Machine::builder()
-                .try_allow("start", "1")?
-                .try_allow("start", "2")?;
-
-            let m = builder.build()?;
+            let mut transitions = Transitions::new();
+            transitions.add(Transition::try_new("start", "1")?);
+            transitions.add(Transition::try_new("start", "2")?);
+            
+            let m = MachineInner::new(transitions);
             let mut collected: Vec<_> = m.targets_from("start").collect();
             collected.sort();
 
@@ -292,12 +263,12 @@ mod tests {
 
         #[test]
         fn targets_from_one_source_returns_three_targets() -> Result<(), StateError> {
-            let builder = Machine::builder()
-                .try_allow("start", "1")?
-                .try_allow("start", "2")?
-                .try_allow("start", "3")?;
-
-            let m = builder.build()?;
+            let mut transitions = Transitions::new();
+            transitions.add(Transition::try_new("start", "1")?);
+            transitions.add(Transition::try_new("start", "2")?);
+            transitions.add(Transition::try_new("start", "3")?);
+            
+            let m = MachineInner::new(transitions);
             let mut collected: Vec<_> = m.targets_from("start").collect();
             collected.sort();
 
@@ -308,11 +279,13 @@ mod tests {
 
         #[test]
         fn targets_from_target_only_state_returns_empty() -> Result<(), StateError> {
-            let machine = Machine::builder().try_allow("start", "finish")?.build()?;
-
-            assert!(machine.contains_state("finish"));
+            let mut transitions = Transitions::new();
+            transitions.add(Transition::try_new("start", "finish")?);
+            
+            let m = MachineInner::new(transitions);
+            assert!(m.contains_state("finish"));
             assert!(
-                machine
+                m
                     .targets_from("finish")
                     .collect::<Vec<_>>()
                     .is_empty()
@@ -323,41 +296,15 @@ mod tests {
 
         #[test]
         fn targets_from_duplicate_transition_is_stored_once() -> Result<(), StateError> {
-            let machine = Machine::builder()
-                .try_allow("start", "finish")?
-                .try_allow("start", "finish")?
-                .build()?;
+            let mut transitions = Transitions::new();
+            transitions.add(Transition::try_new("start", "finish")?);
+            transitions.add(Transition::try_new("start", "finish")?);
+            
+            let m = MachineInner::new(transitions);
+            assert_eq!(m.transition_count(), 1);
 
-            assert_eq!(machine.transition_count(), 1);
-
-            let targets: Vec<_> = machine.targets_from("start").collect();
+            let targets: Vec<_> = m.targets_from("start").collect();
             assert_eq!(targets, vec!["finish"]);
-
-            Ok(())
-        }
-    }
-
-    mod targets {
-        use super::*;
-
-        #[allow(deprecated)]
-        #[test]
-        fn targets_returns_none_when_source_has_no_outgoing_transitions() -> Result<(), StateError>
-        {
-            let machine = Machine::builder().try_allow("start", "finish")?.build()?;
-
-            assert!(machine.targets("finish").is_none());
-            assert!(machine.targets("unknown").is_none());
-
-            Ok(())
-        }
-
-        #[allow(deprecated)]
-        #[test]
-        fn targets_returns_some_when_source_has_outgoing_transitions() -> Result<(), StateError> {
-            let machine = Machine::builder().try_allow("start", "finish")?.build()?;
-
-            assert!(machine.targets("start").is_some());
 
             Ok(())
         }
@@ -368,7 +315,10 @@ mod tests {
 
         #[test]
         fn sources_one_source_one_value() -> Result<(), StateError> {
-            let machine = Machine::builder().try_allow("start", "finish")?.build()?;
+            let mut transitions = Transitions::new();
+            transitions.add(Transition::try_new("start", "finish")?);
+            
+            let machine = MachineInner::new(transitions);
 
             let sources: Vec<_> = machine.sources().collect();
 
@@ -379,11 +329,12 @@ mod tests {
 
         #[test]
         fn returns_all_source_states() -> Result<(), StateError> {
-            let machine = Machine::builder()
-                .try_allow("1", "0")?
-                .try_allow("2", "0")?
-                .try_allow("3", "0")?
-                .build()?;
+            let mut transitions = Transitions::new();
+            transitions.add(Transition::try_new("1", "0")?);
+            transitions.add(Transition::try_new("2", "0")?);
+            transitions.add(Transition::try_new("3", "0")?);
+            
+            let machine = MachineInner::new(transitions);
 
             let mut sources: Vec<_> = machine.sources().collect();
             sources.sort();
@@ -399,7 +350,10 @@ mod tests {
 
         #[test]
         fn states_one_transition_returns_2_values() -> Result<(), StateError> {
-            let machine = Machine::builder().try_allow("1", "2")?.build()?;
+            let mut transitions = Transitions::new();
+            transitions.add(Transition::try_new("1", "2")?);
+            
+            let machine = MachineInner::new(transitions);
 
             let mut states: Vec<_> = machine.states().collect();
             states.sort();
@@ -411,12 +365,13 @@ mod tests {
 
         #[test]
         fn returns_unique_source_and_target_states() -> Result<(), StateError> {
-            let machine = Machine::builder()
-                .try_allow("1", "2")?
-                .try_allow("1", "3")?
-                .try_allow("2", "3")?
-                .try_allow("3", "4")?
-                .build()?;
+            let mut transitions = Transitions::new();
+            transitions.add(Transition::try_new("1", "2")?);
+            transitions.add(Transition::try_new("1", "3")?);
+            transitions.add(Transition::try_new("2", "3")?);
+            transitions.add(Transition::try_new("3", "4")?);
+            
+            let machine = MachineInner::new(transitions);
 
             let mut states: Vec<_> = machine.states().collect();
             states.sort();
@@ -428,7 +383,10 @@ mod tests {
 
         #[test]
         fn includes_target_only_states() -> Result<(), StateError> {
-            let machine = Machine::builder().try_allow("queued", "running")?.build()?;
+            let mut transitions = Transitions::new();
+            transitions.add(Transition::try_new("queued", "running")?);
+            
+            let machine = MachineInner::new(transitions);
 
             let mut states: Vec<_> = machine.states().collect();
             states.sort();
@@ -444,39 +402,46 @@ mod tests {
 
         #[test]
         fn one_transition_returns_matching_fields() -> Result<(), StateError> {
-            let machine = Machine::builder().try_allow("1", "2")?.build()?;
+            let mut transitions = Transitions::new();
+            transitions.add(Transition::try_new("1", "2")?);
+            
+            let machine = MachineInner::new(transitions);
 
-            let transitions: Vec<_> = machine.transitions().collect();
+            let transitions2: Vec<_> = machine.transitions().collect();
 
-            assert_eq!(transitions[0].source(), "1");
-            assert_eq!(transitions[0].target(), "2");
+            assert_eq!(transitions2[0].source(), "1");
+            assert_eq!(transitions2[0].target(), "2");
 
             Ok(())
         }
 
         #[test]
         fn one_transition_returns_one_item() -> Result<(), StateError> {
-            let machine = Machine::builder().try_allow("1", "2")?.build()?;
+            let mut transitions = Transitions::new();
+            transitions.add(Transition::try_new("1", "2")?);
+            
+            let machine = MachineInner::new(transitions);
 
-            let transitions: Vec<_> = machine.transitions().collect();
+            let transitions2: Vec<_> = machine.transitions().collect();
 
-            assert_eq!(transitions.len(), 1);
+            assert_eq!(transitions2.len(), 1);
 
             Ok(())
         }
 
         #[test]
         fn multiple_transitions_returns_correct_count() -> Result<(), StateError> {
-            let machine = Machine::builder()
-                .try_allow("1", "2")?
-                .try_allow("2", "3")?
-                .try_allow("2", "1")?
-                .try_allow("5", "2")?
-                .build()?;
+            let mut transitions = Transitions::new();
+            transitions.add(Transition::try_new("1", "2")?);
+            transitions.add(Transition::try_new("2", "3")?);
+            transitions.add(Transition::try_new("2", "1")?);
+            transitions.add(Transition::try_new("5", "2")?);
+            
+            let machine = MachineInner::new(transitions);
 
-            let transitions: Vec<_> = machine.transitions().collect();
+            let transitions2: Vec<_> = machine.transitions().collect();
 
-            assert_eq!(transitions.len(), 4);
+            assert_eq!(transitions2.len(), 4);
 
             Ok(())
         }
@@ -487,7 +452,10 @@ mod tests {
         
         #[test]
         fn one_transition_target_returns_true() -> Result<(), StateError> {
-            let machine = Machine::builder().try_allow("1", "2")?.build()?;
+            let mut transitions = Transitions::new();
+            transitions.add(Transition::try_new("1", "2")?);
+            
+            let machine = MachineInner::new(transitions);
 
             assert!(machine.is_terminal("2"));
 
@@ -496,7 +464,10 @@ mod tests {
         
         #[test]
         fn one_transition_source_returns_false() -> Result<(), StateError> {
-            let machine = Machine::builder().try_allow("1", "2")?.build()?;
+            let mut transitions = Transitions::new();
+            transitions.add(Transition::try_new("1", "2")?);
+            
+            let machine = MachineInner::new(transitions);
 
             assert!(!machine.is_terminal("1"));
 
@@ -505,10 +476,11 @@ mod tests {
         
         #[test]
         fn multiple_transitions_terminal_returns_true() -> Result<(), StateError> {
-            let machine = Machine::builder()
-            .try_allow("1", "2")?
-            .try_allow("2", "3")?
-            .build()?;
+            let mut transitions = Transitions::new();
+            transitions.add(Transition::try_new("1", "2")?);
+            transitions.add(Transition::try_new("2", "3")?);
+            
+            let machine = MachineInner::new(transitions);
 
             assert!(machine.is_terminal("3"));
 
@@ -517,10 +489,11 @@ mod tests {
         
         #[test]
         fn multiple_transitions_connected_returns_false() -> Result<(), StateError> {
-            let machine = Machine::builder()
-            .try_allow("1", "2")?
-            .try_allow("2", "3")?
-            .build()?;
+            let mut transitions = Transitions::new();
+            transitions.add(Transition::try_new("1", "2")?);
+            transitions.add(Transition::try_new("2", "3")?);
+            
+            let machine = MachineInner::new(transitions);
 
             assert!(!machine.is_terminal("2"));
 
