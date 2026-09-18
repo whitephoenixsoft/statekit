@@ -184,7 +184,7 @@ mod tests {
         }
 
         #[test]
-        fn can_transition_to_returns_false_on_disallowed_edge() -> Result<(), StateError> {
+        fn can_transition_to_returns_false_on_unknown_edge() -> Result<(), StateError> {
             let machine = Machine::builder()
                 .try_allow("1", "2")?
                 .try_allow("2", "3")?
@@ -208,6 +208,41 @@ mod tests {
 
             assert!(!instance.can_transition_to("2"));
 
+            Ok(())
+        }
+        
+        #[test]
+        fn can_transition_to_returns_false_when_edge_exists_from_disallowed_state(
+        ) -> Result<(), StateError> {
+            let machine = Machine::builder()
+                .try_allow("1", "2")?
+                .try_allow("2", "3")?
+                .build()?;
+        
+            let instance = machine.instance("1")?;
+        
+            assert!(!instance.can_transition_to("3"));
+        
+            Ok(())
+        }
+        
+        #[test]
+        fn can_transition_to_uses_current_state_after_transition(
+        ) -> Result<(), StateError> {
+            let machine = Machine::builder()
+                .try_allow("1", "2")?
+                .try_allow("2", "3")?
+                .build()?;
+        
+            let mut instance = machine.instance("1")?;
+        
+            assert!(instance.can_transition_to("2"));
+        
+            instance.transition_to("2")?;
+        
+            assert!(instance.can_transition_to("3"));
+            assert!(!instance.can_transition_to("2"));
+        
             Ok(())
         }
     }
