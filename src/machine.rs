@@ -36,15 +36,16 @@ impl Machine {
     }
     
     /// Returns an instance of a mutable state machine instance.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`StateError::UnknownInitialState`] when `initial` is not an
+    /// existing state.
     pub fn instance(&self, initial: &str) -> Result<MachineInstance, StateError> {
-        if !self.inner.contains_state(initial) {
-            return Err(StateError::UnknownInitialState { state: initial.to_owned() });
-        }
-
-        Ok(MachineInstance::new(
+        MachineInstance::try_new(
             Arc::clone(&self.inner),
             initial.to_owned(),
-        ))
+        )
     }
 
     /// Returns whether the transition from `from` to `to` is allowed.
