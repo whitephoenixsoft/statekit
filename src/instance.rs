@@ -5,7 +5,7 @@ use crate::{Machine, MachineInner, StateError};
 ///
 /// A machine instance is always on a valid state.
 /// All states have already been validated and part of a transaction.
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct MachineInstance {
     machine: Arc<MachineInner>,
     current: String,
@@ -436,6 +436,138 @@ mod tests {
             };
 
             assert!(instance.transition_to("2").is_ok());
+
+            Ok(())
+        }
+    }
+
+    mod is_terminal {
+        use super::*;
+
+        #[test]
+        fn is_terminal_on_initial_returns_false_on_source() -> Result<(), StateError> {
+            let machine = Machine::builder()
+                .try_allow("1", "2")?
+                .build()?;
+
+            let instance = machine.instance("1")?;
+
+            assert!(!instance.is_terminal());
+
+            Ok(())
+        }
+
+        #[test]
+        fn is_terminal_on_initial_returns_true_on_terminal_state() -> Result<(), StateError> {
+            let machine = Machine::builder()
+                .try_allow("1", "2")?
+                .build()?;
+
+            let instance = machine.instance("2")?;
+
+            assert!(instance.is_terminal());
+
+            Ok(())
+        }
+
+        #[test]
+        fn is_terminal_returns_false_after_transition_to_nonterminal_node() -> Result<(), StateError> {
+            let machine = Machine::builder()
+                .try_allow("1", "2")?
+                .try_allow("2", "3")?
+                .build()?;
+
+            let mut instance = machine.instance("1")?;
+
+            instance.transition_to("2")?;
+
+            assert!(!instance.is_terminal());
+
+            Ok(())
+        }
+
+        #[test]
+        fn is_terminal_returns_true_after_transition_to_terminal_node() -> Result<(), StateError> {
+            let machine = Machine::builder()
+                .try_allow("1", "2")?
+                .try_allow("2", "3")?
+                .build()?;
+
+            let mut instance = machine.instance("2")?;
+
+            instance.transition_to("3")?;
+
+            assert!(instance.is_terminal());
+
+            Ok(())
+        }
+    }
+
+    mod partial_eq {
+        use super::*;
+
+        #[test]
+        fn instances_are_equal_when_machine_and_current_state_are_equal() -> Result<(), StateError> {
+            let machine = Machine::builder()
+                .try_allow("1", "2")?
+                .try_allow("2", "3")?
+                .build()?;
+
+            let first = machine.instance("1")?;
+            let second = machine.instance("1")?;
+
+            assert_eq!(first, second);
+
+            Ok(())
+        }
+
+        #[test]
+        fn instances_are_not_equal_when_machine_and_current_state_are_different() -> Result<(), StateError> {
+            let machine = Machine::builder()
+                .try_allow("1", "2")?
+                .try_allow("2", "3")?
+                .build()?;
+
+            let first = machine.instance("1")?;
+            let second = machine.instance("2")?;
+
+            assert_ne!(first, second);
+
+            Ok(())
+        }
+
+        #[test]
+        fn instances_are_not_equal_when_machine_definitions_differ() -> Result<(), StateError> {
+            let first_machine = Machine::builder()
+                .try_allow("1", "2")?
+                .build()?;
+
+            let second_machine = Machine::builder()
+                .try_allow("1", "3")?
+                .build()?;
+
+            let first = first_machine.instance("1")?;
+            let second = second_machine.instance("1")?;
+
+            assert_ne!(first, second);
+
+            Ok(())
+        }
+    }
+
+    mod machine {
+        use super::*;
+
+        #[test]
+        fn machine_returns_handle_to_same_machine_inner() -> Result<(), StateError> {
+            let machine = Machine::builder()
+                .try_allow("1", "2")?
+                .build()?;
+
+            let instance = machine.instance("1")?;
+            let returned  = instance.machine();
+
+            assert!(Arc::ptr_eq(&machine.inner, &returned.inner));
 
             Ok(())
         }

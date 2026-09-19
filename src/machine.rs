@@ -7,7 +7,7 @@ use crate::{MachineBuilder, MachineInner, MachineInstance, StateError, Transitio
 /// transition has already been validated by the builder.
 #[derive(Debug, PartialEq, Eq)]
 pub struct Machine {
-    inner: Arc<MachineInner>,
+    pub(crate) inner: Arc<MachineInner>,
 }
 
 impl Machine {
