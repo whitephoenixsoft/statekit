@@ -5,6 +5,7 @@ use crate::{Machine, MachineInner, StateError};
 ///
 /// A machine instance is always on a valid state.
 /// All states have already been validated and part of a transaction.
+#[derive(Debug, PartialEq)]
 pub struct MachineInstance {
     machine: Arc<MachineInner>,
     current: String,
@@ -115,6 +116,23 @@ mod tests {
             let instance = machine.instance("3");
 
             assert!(instance.is_err());
+
+            Ok(())
+        }
+
+        #[test]
+        fn initial_unknown_state_fails_with_unknown_initial_state_error() -> Result<(), StateError> {
+            let machine = Machine::builder()
+                .try_allow("1", "2")?
+                .build()?;
+
+            let instance = machine.instance("3");
+
+            assert!(matches!(
+                instance,
+                Err(StateError::UnknownInitialState { ref state }) 
+                    if state == "3"
+            ));
 
             Ok(())
         }
@@ -243,6 +261,150 @@ mod tests {
             assert!(instance.can_transition_to("3"));
             assert!(!instance.can_transition_to("2"));
         
+            Ok(())
+        }
+    }
+
+    mod transition_to {
+        use super::*;
+
+        #[test]
+        fn transition_to_one_transition() -> Result<(), StateError> {
+            let machine = Machine::builder()
+                .try_allow("1", "2")?
+                .try_allow("2", "3")?
+                .build()?;
+
+            let mut instance = machine.instance("1")?;
+
+            assert_eq!(instance.state(), "1");
+
+            instance.transition_to("2")?;
+
+            assert_eq!(instance.state(), "2");
+
+            Ok(())
+        }
+
+        #[test]
+        fn transition_to_multiple_transitions() -> Result<(), StateError> {
+            let machine = Machine::builder()
+                .try_allow("1", "2")?
+                .try_allow("2", "3")?
+                .try_allow("3", "4")?
+                .build()?;
+
+            let mut instance = machine.instance("1")?;
+
+            assert_eq!(instance.state(), "1");
+
+            instance.transition_to("2")?;
+            instance.transition_to("3")?;
+
+            assert_eq!(instance.state(), "3");
+
+            Ok(())
+        }
+
+        #[test]
+        fn transition_to_failure_when_unknown() -> Result<(), StateError> {
+            let machine = Machine::builder()
+                .try_allow("1", "2")?
+                .build()?;
+
+            let mut instance = machine.instance("1")?;
+
+            let result = instance.transition_to("4");
+
+            assert!(matches!(
+                result, 
+                Err(StateError::InvalidTransition { 
+                    ref from,
+                    ref to
+                }) if from == "1" && to == "4"
+            ));
+
+            Ok(())
+        }
+
+        #[test]
+        fn transition_to_failure_when_not_reachable() -> Result<(), StateError> {
+            let machine = Machine::builder()
+                .try_allow("1", "2")?
+                .try_allow("2", "3")?
+                .build()?;
+
+            let mut instance = machine.instance("1")?;
+
+            let result = instance.transition_to("3");
+
+            assert!(matches!(
+                result, 
+                Err(StateError::InvalidTransition { 
+                    ref from,
+                    ref to
+                }) if from == "1" && to == "3"
+            ));
+
+            Ok(())
+        }
+
+        #[test]
+        fn transition_to_failure_does_not_change_the_state() -> Result<(), StateError> {
+            let machine = Machine::builder()
+                .try_allow("1", "2")?
+                .build()?;
+
+            let mut instance = machine.instance("1")?;
+
+            let result = instance.transition_to("4");
+
+            assert!(result.is_err());
+            assert_eq!(instance.state(), "1");
+
+            Ok(())
+        }
+
+        #[test]
+        fn transition_validation_uses_current_state_not_initial() -> Result<(), StateError> {
+            let machine = Machine::builder()
+                .try_allow("1", "2")?
+                .try_allow("2", "3")?
+                .build()?;
+
+            let mut instance = machine.instance("1")?;
+
+            assert_eq!(instance.state(), "1");
+
+            instance.transition_to("2")?;
+
+            assert_eq!(instance.state(), "2");
+
+            let result = instance.transition_to("4");
+
+            assert!(matches!(
+                result, 
+                Err(StateError::InvalidTransition { 
+                    ref from,
+                    ref to
+                }) if from == "2" && to == "4"
+            ));
+
+            Ok(())
+        }
+
+        #[test]
+        fn transition_to_transitions_to_terminal_state() -> Result<(), StateError> {
+            let machine = Machine::builder()
+                .try_allow("1", "2")?
+                .build()?;
+
+            let mut instance = machine.instance("1")?;
+
+            let result = instance.transition_to("2");
+
+            assert!(result.is_ok());
+
             Ok(())
         }
     }
