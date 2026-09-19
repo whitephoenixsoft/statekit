@@ -60,19 +60,6 @@ impl MachineInstance {
     }
 }
 
-/*
-Mutation
-- successful transition changes current state
-- multiple sequential transitions work
-- failed transition leaves state unchanged
-- transition validation uses current state, not initial state
-
-Independence
-- two instances from same Machine mutate independently
-
-Ownership
-- instance remains usable after original Machine handle is dropped
- */
 
 #[cfg(test)]
 mod tests {
@@ -404,6 +391,51 @@ mod tests {
             let result = instance.transition_to("2");
 
             assert!(result.is_ok());
+
+            Ok(())
+        }
+    }
+
+    mod interdependence {
+        use super::*;
+
+        #[test]
+        fn two_instances_are_independent() -> Result<(), StateError> {
+            let machine = Machine::builder()
+                .try_allow("1", "2")?
+                .try_allow("2", "3")?
+                .build()?;
+
+            let mut instance = machine.instance("1")?;
+            let mut instance2 = machine.instance("1")?;
+
+            assert_eq!(instance.state(), "1");
+            assert_eq!(instance2.state(), "1");
+
+            instance.transition_to("2")?;
+
+            assert_eq!(instance.state(), "2");
+            assert_eq!(instance2.state(), "1");
+
+            instance.transition_to("3")?;
+            instance2.transition_to("2")?;
+
+            assert_eq!(instance.state(), "3");
+            assert_eq!(instance2.state(), "2");
+
+            Ok(())
+        }
+
+        #[test]
+        fn instance_functions_with_no_handle() -> Result<(), StateError> {
+            let mut instance = {
+                let machine = Machine::builder()
+                    .try_allow("1", "2")?
+                    .build()?;
+                machine.instance("1")?
+            };
+
+            assert!(instance.transition_to("2").is_ok());
 
             Ok(())
         }
