@@ -1,4 +1,5 @@
 use statekit::{Machine, StateError};
+use std::thread;
 
 fn workflow_machine() -> Result<Machine, StateError> {
     Machine::builder()
@@ -128,4 +129,61 @@ fn rejects_whitespace_only_state_names() {
     let result = Machine::builder().try_allow(" \n\t", "running");
 
     assert!(matches!(result, Err(StateError::EmptyState)));
+}
+
+#[test]
+fn terminal_states_report_correctly() -> Result<(), StateError> {
+    let machine = workflow_machine()?;
+    
+    assert!(machine.is_terminal("failed"));
+    
+    assert!(!machine.is_terminal("queued"));
+    
+    Ok(())
+}
+
+#[test]
+fn instance_walks_the_machine() -> Result<(), StateError>{
+    let machine = workflow_machine()?;
+    let mut instance = machine.instance("queued")?;
+    
+    assert_eq!(instance.state(), "queued");
+    
+    instance.transition_to("running")?;
+    assert_eq!(instance.state(), "running");
+    
+    instance.transition_to("completed")?;
+    assert_eq!(instance.state(), "completed");
+    
+    assert!(instance.is_terminal());
+    
+    Ok(())
+}
+
+#[test]
+fn multi_threaded_instance() -> Result<(), StateError> {
+    let machine = workflow_machine()?;
+    let first = machine.instance("queued")?;
+    let second = machine.instance("queued")?;
+    
+    let a = thread::spawn(move || {
+        let mut instance = first;
+        instance.transition_to("running")?;
+        Ok::<_, StateError>(instance)
+    });
+    
+    let b = thread::spawn(move || {
+        let mut instance = second;
+        instance.transition_to("running")?;
+        instance.transition_to("completed")?;
+        Ok::<_, StateError>(instance)
+    });
+    
+    let first = a.join().unwrap()?;
+    let second = b.join().unwrap()?;
+    
+    assert_eq!(first.state(), "running");
+    assert_eq!(second.state(), "completed");
+    
+    Ok(())
 }
