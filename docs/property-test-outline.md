@@ -18,6 +18,12 @@ VALIDATION
 ✔ trailing whitespace rejected
 ✔ source/target validation symmetry
 ✔ offending ambiguous value preserved
+X instance construction preserves its initial state
+X can_transition_to() agrees with the edge model
+X Successful transitions update current state exactly to the target
+X Failed transitions have no observable effect
+X Terminality agrees with the graph model
+
 
 EDGE SEMANTICS
 ✔ exposed transition is queryable
@@ -30,7 +36,7 @@ REFERENCE MODEL
 ✔ states == model vertices
 ✔ sources == model sources
 ✔ targets_from == model outgoing targets
-✔ can_transition == model membershipi
+✔ can_transition == model membership
 ✔ contains_state(s) == model vertex membership
 ✔ transitions() == model edge set
 ✔ validate_transition(a, b).is_ok() == model.contains((a, b))
