@@ -39,3 +39,57 @@ impl Transition {
         self.target.as_str()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn source_returns_correct_value() -> Result<(), StateError> {
+        let transition = Transition::try_new("1", "2")?;
+
+        assert_eq!(transition.source(), "1");
+
+        Ok(())
+    }
+
+    #[test]
+    fn target_returns_correct_value() -> Result<(), StateError> {
+        let transition = Transition::try_new("1", "2")?;
+
+        assert_eq!(transition.target(), "2");
+
+        Ok(())
+    }
+
+    #[test]
+    fn self_transition_returns_error()  {
+        let result = Transition::try_new("1", "1");
+
+        assert!(matches!(
+            result,
+            Err(StateError::SelfTransition { ref state }) if state == "1"
+        ));
+    }
+
+    #[test]
+    fn similar_transitions_are_equal() -> Result<(), StateError> {
+        let transition1 = Transition::try_new("1", "2")?;
+        let transition2 = Transition::try_new("1", "2")?;
+
+        assert_eq!(transition1, transition2);
+
+        Ok(())
+    }
+
+    #[test]
+    fn different_transitions_are_not_equal() -> Result<(), StateError> { 
+        let transition1 = Transition::try_new("1", "2")?;
+        let transition2 = Transition::try_new("2", "3")?;
+
+        assert_ne!(transition1, transition2);
+
+        Ok(())
+    }
+
+}
