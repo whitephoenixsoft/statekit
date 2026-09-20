@@ -111,6 +111,17 @@ fn transitions_with_missing_state()
         })
 }
 
+fn transitions_with_existing_state() -> impl Strategy<Value = (Vec<(String, String)>, String)> {
+    valid_transition_pairs().prop_flat_map(|transitions| {
+        let states = transitions
+            .iter()
+            .flat_map(|(source, target)| [source.clone(), target.clone()])
+            .collect::<Vec<_>>();
+
+        (Just(transitions), proptest::sample::select(states))
+    })
+}
+
 proptest! {
     #[test]
     fn added_transition_is_allowed(
@@ -605,5 +616,12 @@ proptest! {
                 transition.target(),
             );
         }
+    }
+    
+    #[test]
+    fn instance_construction_preserves_its_initial_state(
+    (transitions, states) in transitions_with_existing_state(),
+    ) {
+        
     }
 }
