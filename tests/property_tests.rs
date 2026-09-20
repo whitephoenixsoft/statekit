@@ -620,8 +620,32 @@ proptest! {
     
     #[test]
     fn instance_construction_preserves_its_initial_state(
-    (transitions, states) in transitions_with_existing_state(),
+        (transitions, state) in transitions_with_existing_state(),
     ) {
-        
+        let machine = build_machine(&transitions);
+
+        let instance = machine.instance(state.as_str())
+            .expect("instance initialized with existing state");
+
+        prop_assert_eq!(instance.state(), state);
+    }
+    
+    #[test]
+    fn can_transition_to_agrees_with_the_edge_model(
+        (transitions, state) in transitions_with_existing_state(),
+        new_state in valid_state_name(),
+    ) {
+        let machine = build_machine(&transitions);
+        let model = build_model(&transitions);
+
+        let instance = machine.instance(state.as_str())
+            .expect("instance initialized with existing state");
+
+        let probe = (state, new_state.clone());
+
+        prop_assert_eq!(
+            instance.can_transition_to(&new_state),
+            model.contains(&probe)
+        );
     }
 }
