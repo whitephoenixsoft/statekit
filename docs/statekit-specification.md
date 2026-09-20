@@ -39,23 +39,23 @@ Machine is an immutable value-like machine definition implemented as a shared ha
 - Machine will validate a transition based on source and target states.
 - There must be at least one transition.
 - State names supplied to machine queries are matched exactly and are not trimmed or normalized.
-- Two machines with the same edges are equal.
+- Machines with the same edges are equal.
 
 ### Machine Instance
 
 Represents a mutable instance of a transitioning state machine.
 
-- Is mutable representation of a state.
+- Is a mutable representation of a state node.
 - Walks through the states using allowed transitions.
 - Ends on a terminal state.
 - Supports queries related to walking the state machine.
 #### Invariants and Constraints
 
-- The initial state of the instance must be state in the host state machine.
+- The initial state of the instance must be an existing state in the host state machine.
 - A failed transition attempt has no observable effect on the instance.
 - An instance can only transition through an adjacent edge.
 - A state on a target with no outgoing transitions can no longer transition.
-- Two instances of the same machine and on the same state are equal.
+- Instances of the same machine and on the same state are equal.
 
 ### Transitions
 
@@ -66,7 +66,7 @@ The collection of transitions.
 - Supports queries related to an individual transition or for the collection.
 - Contains unique transitions.
 - Two transitions with the same source and target are treated as the same logical transition.
-- Two transition collections are equal if they contain a similar list of transition items.
+- Transition collections are equal if they contain a similar list of transition items.
 
 ### Transition
 
@@ -104,7 +104,9 @@ Validates and holds the state name.
 ```
 [Machine] -- Contains --> [Transitions] -- Contains --> [Transition] -- Has Source --> [State Name]
                              -- Has Target --> [State Name]
+          -- Creates --> [Machine Instance]
 ```
+
 ```
 [Machine Builder]
       |
@@ -130,6 +132,14 @@ Validates and holds the state name.
       | contains
       v
 [Transition]
+```
+
+```
+[Machine Instance]
+      |
+      | contains
+      v
+  [Machine]
 ```
 
 
