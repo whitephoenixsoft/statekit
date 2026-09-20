@@ -515,15 +515,45 @@ mod tests {
         use super::*;
         
         #[test]
-        fn one_transition_returns_one_item() -> Result<(), StateError> {
+        fn source_is_not_terminal() -> Result<(), StateError> {
             let machine = Machine::builder().try_allow("1", "2")?.build()?;
 
-            let transitions: Vec<_> = machine.transitions().collect();
-
-            assert_eq!(transitions.len(), 1);
+            assert!(!machine.is_terminal("1"));
 
             Ok(())
         }
         
+        #[test]
+        fn target_with_no_outgoing_source_is_terminal() -> Result<(), StateError> {
+            let machine = Machine::builder().try_allow("1", "2")?.build()?;
+
+            assert!(machine.is_terminal("2"));
+
+            Ok(())
+        }
+    }
+
+    mod equality {
+        use super::*;
+
+        #[test]
+        fn similar_machines_are_equal() -> Result<(), StateError> {
+            let machine1 = Machine::builder().try_allow("1", "2")?.build()?;
+            let machine2 = Machine::builder().try_allow("1", "2")?.build()?;
+
+            assert_eq!(machine1, machine2);
+
+            Ok(())
+        }
+
+        #[test]
+        fn different_machines_are_not_equal() -> Result<(), StateError> {
+            let machine1 = Machine::builder().try_allow("1", "2")?.build()?;
+            let machine2 = Machine::builder().try_allow("1", "3")?.build()?;
+
+            assert_ne!(machine1, machine2);
+
+            Ok(())
+        }
     }
 }
