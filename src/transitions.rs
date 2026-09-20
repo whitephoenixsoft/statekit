@@ -567,4 +567,34 @@ mod tests {
             Ok(())
         }
     }
+
+    mod equality {
+        use super::*;
+
+        #[test]
+        fn similar_transitions_are_equal() -> Result<(), StateError> {
+            let mut items1 = Transitions::new();
+            items1.add(Transition::try_new("1", "2")?);
+
+            let mut items2 = Transitions::new();
+            items2.add(Transition::try_new("1", "2")?);
+
+            assert_eq!(items1, items2);
+
+            Ok(())
+        }
+
+        #[test]
+        fn different_transitions_are_not_equal() -> Result<(), StateError> {
+            let mut items1 = Transitions::new();
+            items1.add(Transition::try_new("1", "2")?);
+
+            let mut items2 = Transitions::new();
+            items2.add(Transition::try_new("2", "4")?);
+
+            assert_ne!(items1, items2);
+
+            Ok(())
+        }
+    }
 }
