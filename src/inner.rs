@@ -500,4 +500,42 @@ mod tests {
             Ok(())
         }
     }
+
+    mod partial_eq {
+        use super::*;
+
+        #[test]
+        fn similar_machines_are_equal() -> Result<(), StateError> {
+            let mut transitions = Transitions::new();
+            transitions.add(Transition::try_new("1", "2")?);
+
+            let machine1 = MachineInner::new(transitions);
+
+            let mut transitions = Transitions::new();
+            transitions.add(Transition::try_new("1", "2")?);
+
+            let machine2 = MachineInner::new(transitions);
+
+            assert_eq!(machine1, machine2);
+
+            Ok(())
+        }
+
+        #[test]
+        fn different_machines_are_not_equal() -> Result<(), StateError> {
+            let mut transitions = Transitions::new();
+            transitions.add(Transition::try_new("1", "2")?);
+
+            let machine1 = MachineInner::new(transitions);
+
+            let mut transitions = Transitions::new();
+            transitions.add(Transition::try_new("2", "1")?);
+
+            let machine2 = MachineInner::new(transitions);
+
+            assert_ne!(machine1, machine2);
+
+            Ok(())
+        }
+    }    
 }
