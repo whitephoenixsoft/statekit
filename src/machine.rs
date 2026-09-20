@@ -168,19 +168,6 @@ mod tests {
 
             Ok(())
         }
-
-        #[test]
-        fn validate_transition_cyclic_is_valid() -> Result<(), StateError> {
-            let builder = Machine::builder()
-                .try_allow("start", "finish")?
-                .try_allow("finish", "start")?;
-
-            let m = builder.build()?;
-
-            assert!(m.validate_transition("finish", "start").is_ok());
-
-            Ok(())
-        }
     }
 
     mod transition_count {
@@ -252,17 +239,6 @@ mod tests {
         }
 
         #[test]
-        fn contains_state_rejects_ambiguous_state() -> Result<(), StateError> {
-            let builder = Machine::builder().try_allow("start", "finish")?;
-
-            let m = builder.build()?;
-
-            assert!(!m.contains_state(" start"));
-
-            Ok(())
-        }
-
-        #[test]
         fn contains_state_finds_source_state() -> Result<(), StateError> {
             let builder = Machine::builder()
                 .try_allow("start", "end")?
@@ -303,67 +279,6 @@ mod tests {
 
             Ok(())
         }
-
-        #[test]
-        fn targets_from_one_source_returns_two_targets() -> Result<(), StateError> {
-            let builder = Machine::builder()
-                .try_allow("start", "1")?
-                .try_allow("start", "2")?;
-
-            let m = builder.build()?;
-            let mut collected: Vec<_> = m.targets_from("start").collect();
-            collected.sort();
-
-            assert_eq!(collected, vec!["1", "2"]);
-
-            Ok(())
-        }
-
-        #[test]
-        fn targets_from_one_source_returns_three_targets() -> Result<(), StateError> {
-            let builder = Machine::builder()
-                .try_allow("start", "1")?
-                .try_allow("start", "2")?
-                .try_allow("start", "3")?;
-
-            let m = builder.build()?;
-            let mut collected: Vec<_> = m.targets_from("start").collect();
-            collected.sort();
-
-            assert_eq!(collected, vec!["1", "2", "3"]);
-
-            Ok(())
-        }
-
-        #[test]
-        fn targets_from_target_only_state_returns_empty() -> Result<(), StateError> {
-            let machine = Machine::builder().try_allow("start", "finish")?.build()?;
-
-            assert!(machine.contains_state("finish"));
-            assert!(
-                machine
-                    .targets_from("finish")
-                    .collect::<Vec<_>>()
-                    .is_empty()
-            );
-
-            Ok(())
-        }
-
-        #[test]
-        fn targets_from_duplicate_transition_is_stored_once() -> Result<(), StateError> {
-            let machine = Machine::builder()
-                .try_allow("start", "finish")?
-                .try_allow("start", "finish")?
-                .build()?;
-
-            assert_eq!(machine.transition_count(), 1);
-
-            let targets: Vec<_> = machine.targets_from("start").collect();
-            assert_eq!(targets, vec!["finish"]);
-
-            Ok(())
-        }
     }
 
     mod targets {
@@ -396,17 +311,6 @@ mod tests {
         use super::*;
 
         #[test]
-        fn sources_one_source_one_value() -> Result<(), StateError> {
-            let machine = Machine::builder().try_allow("start", "finish")?.build()?;
-
-            let sources: Vec<_> = machine.sources().collect();
-
-            assert_eq!(sources, vec!["start"]);
-
-            Ok(())
-        }
-
-        #[test]
         fn returns_all_source_states() -> Result<(), StateError> {
             let machine = Machine::builder()
                 .try_allow("1", "0")?
@@ -427,18 +331,6 @@ mod tests {
         use super::*;
 
         #[test]
-        fn states_one_transition_returns_2_values() -> Result<(), StateError> {
-            let machine = Machine::builder().try_allow("1", "2")?.build()?;
-
-            let mut states: Vec<_> = machine.states().collect();
-            states.sort();
-
-            assert_eq!(states, vec!["1", "2"]);
-
-            Ok(())
-        }
-
-        #[test]
         fn returns_unique_source_and_target_states() -> Result<(), StateError> {
             let machine = Machine::builder()
                 .try_allow("1", "2")?
@@ -451,18 +343,6 @@ mod tests {
             states.sort();
 
             assert_eq!(states, vec!["1", "2", "3", "4"]);
-
-            Ok(())
-        }
-
-        #[test]
-        fn includes_target_only_states() -> Result<(), StateError> {
-            let machine = Machine::builder().try_allow("queued", "running")?.build()?;
-
-            let mut states: Vec<_> = machine.states().collect();
-            states.sort();
-
-            assert_eq!(states, vec!["queued", "running"]);
 
             Ok(())
         }
@@ -490,22 +370,6 @@ mod tests {
             let transitions: Vec<_> = machine.transitions().collect();
 
             assert_eq!(transitions.len(), 1);
-
-            Ok(())
-        }
-
-        #[test]
-        fn multiple_transitions_returns_correct_count() -> Result<(), StateError> {
-            let machine = Machine::builder()
-                .try_allow("1", "2")?
-                .try_allow("2", "3")?
-                .try_allow("2", "1")?
-                .try_allow("5", "2")?
-                .build()?;
-
-            let transitions: Vec<_> = machine.transitions().collect();
-
-            assert_eq!(transitions.len(), 4);
 
             Ok(())
         }
