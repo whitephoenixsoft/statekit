@@ -39,7 +39,8 @@ REFERENCE MODEL
 ✔ validate_transition(a, b).is_ok() == model.contains((a, b))
 ✔ a.can_transition_to(b) == model.contains(a, b)
 ✔ instance is_terminal() == model terminal vertice
-X instance transition_to() + current state  == model.contains + current state
+✔ instance transition_to()   == model.contains + mutable current state
+X instance transition_to() + targets == model.contains + mutable current states + targets
 
 CROSS-API CONSISTENCY
 ✔ transitions ↔ can_transition

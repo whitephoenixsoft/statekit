@@ -132,18 +132,28 @@ fn transitions_with_existing_target() -> impl Strategy<Value = (Vec<(String, Str
     })
 }
 
-fn transitions_with_missing_target() -> impl Strategy<Value = (Vec<(String, String)>, (String, String))> {
-    valid_transition_pairs()
-        .prop_flat_map(|transitions| (Just(transitions), valid_transition_pair()))
-        .prop_filter("target must not already exist", |(transitions, probe)| {
-            transitions.iter().any(|(source, target)| {
-                source == &probe.0 && target != &probe.1
-            })
-        })
+fn transitions_with_attempt()
+    -> impl Strategy<Value = (Vec<(String, String)>, (String, String))>
+{
+    valid_transition_pairs().prop_flat_map(|transitions| {
+        let states = transitions
+            .iter()
+            .flat_map(|(source, target)| [source.clone(), target.clone()])
+            .collect::<Vec<_>>();
+
+        (
+            Just(transitions),
+            (
+                proptest::sample::select(states),
+                valid_state_name()
+            ),
+        )
+    })
 }
+
 fn transitions_with_probe_and_existing_source() -> impl Strategy<Value = (Vec<(String, String)>, (String, String))> {
     prop_oneof![
-        transitions_with_missing_target(),
+        transitions_with_attempt(),
         transitions_with_existing_probe(),
     ]
 }
