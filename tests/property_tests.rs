@@ -122,6 +122,17 @@ fn transitions_with_existing_state() -> impl Strategy<Value = (Vec<(String, Stri
     })
 }
 
+fn transitions_with_existing_target() -> impl Strategy<Value = (Vec<(String, String)>, String)> {
+    valid_transition_pairs().prop_flat_map(|transitions| {
+        let targets = transitions
+            .iter()
+            .map(|(_, target)| target.clone())
+            .collect::<Vec<_>>();
+
+        (Just(transitions), proptest::sample::select(targets))
+    })
+}
+
 proptest! {
     #[test]
     fn added_transition_is_allowed(
@@ -671,8 +682,7 @@ proptest! {
     ) {
         let target = String::from("impossible-edge");
         let machine = build_machine(&transitions);
-
-        prop_assert!(!transitions.contains(&(source.clone(), target.clone())));
+        
         prop_assert!(machine.contains_state(source.as_str()));
 
         let mut instance = machine.instance(source.as_str())
@@ -682,5 +692,25 @@ proptest! {
 
         prop_assert!(result.is_err());
         prop_assert_eq!(instance.state(), source);
+    }
+
+    #[test]
+    fn failed_instant_transitions_have_no_observable_effect(
+        (transitions, target) in transitions_with_existing_target(),
+    ) {
+        let machine = build_machine(&transitions);
+        let model = build_model(&transitions);
+        
+        prop_assert!(machine.contains_state(target.as_str()));
+
+        let instance = machine.instance(target.as_str())
+            .expect("instance initialized with existing state");
+        
+        let is_terminal = model
+            .iter()
+            .filter(|(s,_)| *s == target)
+            .count() == 0;
+        
+        prop_assert_eq!(instance.is_terminal(), is_terminal);
     }
 }

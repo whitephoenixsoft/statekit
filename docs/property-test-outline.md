@@ -19,8 +19,8 @@ VALIDATION
 ✔ source/target validation symmetry
 ✔ offending ambiguous value preserved
 ✔ instance construction preserves its initial state
-✔ successful transitions update current state exactly to the target
-✔ failed transitions have no observable effect
+✔ successful instance transitions update current state exactly to the target
+✔ failed instance transitions have no observable effect
 
 EDGE SEMANTICS
 ✔ exposed transition is queryable
