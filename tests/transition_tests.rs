@@ -161,7 +161,7 @@ fn instance_walks_the_machine() -> Result<(), StateError>{
 }
 
 #[test]
-fn multi_threaded_instance() -> Result<(), StateError> {
+fn independent_multi_threaded_instances() -> Result<(), StateError> {
     let machine = workflow_machine()?;
     let first = machine.instance("queued")?;
     let second = machine.instance("queued")?;
