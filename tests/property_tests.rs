@@ -695,7 +695,7 @@ proptest! {
     }
 
     #[test]
-    fn failed_instant_transitions_have_no_observable_effect(
+    fn model_and_instance_agree_with_terminality(
         (transitions, target) in transitions_with_existing_target(),
     ) {
         let machine = build_machine(&transitions);
@@ -708,7 +708,7 @@ proptest! {
         
         let is_terminal = model
             .iter()
-            .filter(|(s,_)| *s == target)
+            .filter(|&(s,_)| *s == target)
             .count() == 0;
         
         prop_assert_eq!(instance.is_terminal(), is_terminal);

@@ -37,8 +37,9 @@ REFERENCE MODEL
 ✔ contains_state(s) == model vertex membership
 ✔ transitions() == model edge set
 ✔ validate_transition(a, b).is_ok() == model.contains((a, b))
-✔ can_transition_to(a, b) == model.contains(a, b)
-X terminality = model terminal edge
+✔ a.can_transition_to(b) == model.contains(a, b)
+✔ instance is_terminal() == model terminal vertice
+X instance transition_to() + current state  == model.contains + current state
 
 CROSS-API CONSISTENCY
 ✔ transitions ↔ can_transition
