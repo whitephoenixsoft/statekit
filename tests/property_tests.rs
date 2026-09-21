@@ -100,8 +100,7 @@ fn transitions_with_source_without_outgoing_transitions()
         })
 }
 
-fn transitions_with_missing_state()
--> impl Strategy<Value = (Vec<(String, String)>, (String, String))> {
+fn transitions_with_missing_state() -> impl Strategy<Value = (Vec<(String, String)>, (String, String))> {
     valid_transition_pairs()
         .prop_flat_map(|transitions| (Just(transitions), valid_transition_pair()))
         .prop_filter("states must not already exist", |(transitions, probe)| {
@@ -131,6 +130,22 @@ fn transitions_with_existing_target() -> impl Strategy<Value = (Vec<(String, Str
 
         (Just(transitions), proptest::sample::select(targets))
     })
+}
+
+fn transitions_with_missing_target() -> impl Strategy<Value = (Vec<(String, String)>, (String, String))> {
+    valid_transition_pairs()
+        .prop_flat_map(|transitions| (Just(transitions), valid_transition_pair()))
+        .prop_filter("target must not already exist", |(transitions, probe)| {
+            transitions.iter().any(|(source, target)| {
+                source == &probe.0 && target != &probe.1
+            })
+        })
+}
+fn transitions_with_probe_and_existing_source() -> impl Strategy<Value = (Vec<(String, String)>, (String, String))> {
+    prop_oneof![
+        transitions_with_missing_target(),
+        transitions_with_existing_probe(),
+    ]
 }
 
 proptest! {
@@ -712,5 +727,31 @@ proptest! {
             .count() == 0;
         
         prop_assert_eq!(instance.is_terminal(), is_terminal);
+    }
+
+    #[test]
+    fn model_and_instance_agree_with_transitions(
+        (transitions, probe) in transitions_with_probe_and_existing_source(),
+    ) {
+        let machine = build_machine(&transitions);
+        let model = build_model(&transitions);
+        let (source, target) = &probe;
+
+        prop_assert!(machine.contains_state(source.as_str()));
+
+        let mut instance = machine.instance(source.as_str())
+            .expect("instance initialized with existing state");
+
+        let result = instance.transition_to(target.as_str());
+
+        let mut current = source.clone();
+        if model.contains(&(current.clone(), target.clone())) {
+            current = target.clone();
+            prop_assert!(result.is_ok());
+        } else {
+            prop_assert!(result.is_err());
+        }
+
+        prop_assert_eq!(instance.state(), current);
     }
 }
