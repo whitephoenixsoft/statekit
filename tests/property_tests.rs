@@ -122,24 +122,6 @@ fn transitions_with_existing_state() -> impl Strategy<Value = (Vec<(String, Stri
     })
 }
 
-fn transitions_with_existing_source_and_target() -> impl Strategy<Value = (Vec<(String, String)>, String, String)> {
-    valid_transition_pairs().prop_flat_map(|transitions| {
-        let sources = transitions
-            .iter()
-            .flat_map(|(source, _)| source.clone())
-            .collect::<Vec<_>>();
-
-        let source = proptest::sample::select(sources);
-        let targets = sources
-            .iter()
-            .filter(|(s,t)| s == source)
-            .collect::<Vec<_>>();
-        let target = proptest::sample::select(targets);
-
-        (Just(transitions), source, target)
-    })
-}
-
 proptest! {
     #[test]
     fn added_transition_is_allowed(
@@ -669,9 +651,10 @@ proptest! {
 
     #[test]
     fn successful_instant_transitions_updates_current_state_to_target(
-        (transitions, source, target) in transitions_with_existing_source_and_target(),
+        (transitions, probe) in transitions_with_existing_probe(),
     ) {
         let machine = build_machine(&transitions);
+        let (source, target) = &probe;
 
         let mut instance = machine.instance(source.as_str())
             .expect("instance initialized with existing state");
@@ -680,5 +663,24 @@ proptest! {
 
         prop_assert!(result.is_ok());
         prop_assert_eq!(instance.state(), target);
+    }
+
+    #[test]
+    fn failed_instant_transitions_have_no_observable_effect(
+        (transitions, source) in transitions_with_existing_source(),
+    ) {
+        let target = String::from("impossible-edge");
+        let machine = build_machine(&transitions);
+
+        prop_assert!(!transitions.contains(&(source.clone(), target.clone())));
+        prop_assert!(machine.contains_state(source.as_str()));
+
+        let mut instance = machine.instance(source.as_str())
+            .expect("instance initialized with existing state");
+
+        let result = instance.transition_to(target.as_str());
+
+        prop_assert!(result.is_err());
+        prop_assert_eq!(instance.state(), source);
     }
 }

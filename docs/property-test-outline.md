@@ -19,10 +19,8 @@ VALIDATION
 ✔ source/target validation symmetry
 ✔ offending ambiguous value preserved
 ✔ instance construction preserves its initial state
-X Successful transitions update current state exactly to the target
-X Failed transitions have no observable effect
-X Terminality agrees with the graph model
-
+✔ successful transitions update current state exactly to the target
+✔ failed transitions have no observable effect
 
 EDGE SEMANTICS
 ✔ exposed transition is queryable
@@ -39,7 +37,8 @@ REFERENCE MODEL
 ✔ contains_state(s) == model vertex membership
 ✔ transitions() == model edge set
 ✔ validate_transition(a, b).is_ok() == model.contains((a, b))
-✔ can_transition_to() == model edge
+✔ can_transition_to(a, b) == model.contains(a, b)
+X terminality = model terminal edge
 
 CROSS-API CONSISTENCY
 ✔ transitions ↔ can_transition
