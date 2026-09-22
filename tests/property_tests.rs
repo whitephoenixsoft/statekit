@@ -158,6 +158,24 @@ fn transitions_with_probe_and_existing_source() -> impl Strategy<Value = (Vec<(S
     ]
 }
 
+fn transitions_with_initial_state_and_attempts() 
+    -> impl Strategy<Value = (Vec<(String, String), String, Vec<String>>)> {
+    valid_transition_pairs()
+        .prop_flat_map(|transitions| {
+            let state = transitions
+                .iter()
+                .flap_map(|(source, target)| {
+                    [source.clone(), target.clone()]
+                })
+                .collect::<Vec<_>>();
+            (
+                Just(transitions),
+                proptest::sample::select(state),
+                proptest::collection::vec(valid_state_name(), 0..20),
+            )
+        })
+}
+
 proptest! {
     #[test]
     fn added_transition_is_allowed(
@@ -764,4 +782,44 @@ proptest! {
 
         prop_assert_eq!(instance.state(), current);
     }
+
+    #[test]
+    fn model_and_instance_agree_on_attempts(
+        (transitions, initial, attempts) in transitions_with_initial_state_and_attempts(),
+    ) {
+        let machine = build_machine(&transitions);
+        let model = build_model(&transitions);
+
+        let mut instance = machine.instance(&initial)
+            .expect("generated initial state must exist");
+
+        let mut current = initial.clone();
+
+        prop_assert!(model.iter().any(|(source, target)| source == &initial || target == &initial));
+
+        for target in attempts {
+            let expected_success = model.contains(&(current.clone(), target.clone()));
+
+            prop_assert_eq!(
+                instance.can_transition_to(&target),
+                expected_success
+            );
+
+            let result = instance.transition_to(&target);
+
+            prop_assert_eq!(
+                result.is_ok(),
+                expected_success
+            );
+
+            if expected_success {
+                current = target;
+            }
+
+            prop_assert_eq!(
+                instance.state(),
+                current.as_str()
+            );
+            }
+    } 
 }
