@@ -731,10 +731,9 @@ proptest! {
         let instance = machine.instance(target.as_str())
             .expect("instance initialized with existing state");
         
-        let is_terminal = model
+        let is_terminal = !model
             .iter()
-            .filter(|&(s,_)| *s == target)
-            .count() == 0;
+            .any(|&(s,_)| *s == target);
         
         prop_assert_eq!(instance.is_terminal(), is_terminal);
     }
