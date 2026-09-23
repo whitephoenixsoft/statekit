@@ -159,24 +159,30 @@ fn transitions_with_probe_and_existing_source() -> impl Strategy<Value = (Vec<(S
 }
 
 fn transitions_with_initial_state_and_attempts() 
-    -> impl Strategy<Value = (Vec<(String, String), String, Vec<String>>)> {
+    -> impl Strategy<Value = (Vec<(String, String)>, String, Vec<String>)> {
     valid_transition_pairs()
         .prop_flat_map(|transitions| {
-            let state = transitions
+            let states = transitions
                 .iter()
-                .flap_map(|(source, target)| {
+                .flat_map(|(source, target)| {
                     [source.clone(), target.clone()]
                 })
                 .collect::<Vec<_>>();
+            let attempt = prop_oneof![
+    proptest::sample::select(states.clone()),
+                valid_state_name(),
+            ];
+            
             (
                 Just(transitions),
-                proptest::sample::select(state),
-                proptest::collection::vec(valid_state_name(), 0..20),
+                proptest::sample::select(states),
+            prop::collection::vec(attempt, 0..20),
             )
         })
 }
 
 proptest! {
+    #![proptest_config(ProptestConfig::with_cases(1000))]
     #[test]
     fn added_transition_is_allowed(
         (source, target) in valid_transition_pair(),
@@ -751,7 +757,7 @@ proptest! {
         
         let is_terminal = !model
             .iter()
-            .any(|&(s,_)| *s == target);
+            .any(|(s,_)| *s == target);
         
         prop_assert_eq!(instance.is_terminal(), is_terminal);
     }
@@ -819,6 +825,16 @@ proptest! {
                 instance.state(),
                 current.as_str()
             );
-            }
+            
+            let expected_terminal =
+    !model.iter().any(|(source, _)| {
+        source == &current
+                });
+            
+            prop_assert_eq!(
+                instance.is_terminal(),
+                expected_terminal
+            );
+        }
     } 
 }
