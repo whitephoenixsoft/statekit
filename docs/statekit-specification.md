@@ -49,6 +49,7 @@ Represents a mutable instance of a transitioning state machine.
 - Walks through the states using allowed transitions.
 - Ends on a terminal state.
 - Supports queries related to walking the state machine.
+- Two instances sharing the same machine definition have independent current states. Operations on one instance must not affect the other.
 #### Invariants and Constraints
 
 - The initial state of the instance must be an existing state in the host state machine.

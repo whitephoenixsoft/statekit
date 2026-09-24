@@ -40,7 +40,7 @@ REFERENCE MODEL
 ✔ a.can_transition_to(b) == model.contains(a, b)
 ✔ instance is_terminal() == model terminal vertice
 ✔ instance transition_to()   == model.contains + mutable current state
-X instance transition_to() + targets == model.contains + mutable current states + targets
+✔ instance transition_to() + targets == model.contains + mutable current states + targets
 
 CROSS-API CONSISTENCY
 ✔ transitions ↔ can_transition
