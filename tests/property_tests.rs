@@ -863,7 +863,7 @@ proptest! {
     } 
     
     #[test]
-    fn instances_are_indepent(
+    fn instances_are_independent(
         (transitions, initial_a, initial_b, attempts_a) in transitions_with_two_initial_states_and_two_different_attempts()
     ) {
         let machine = build_machine(&transitions);
