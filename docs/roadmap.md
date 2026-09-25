@@ -57,7 +57,7 @@ Introduce:
 - Benchmarking to measure current design properly
 - Property testing 
 
-### Phase 5 - Stateful execution (v0.4)
+### Phase 5 - Stateful execution (v0.4) -- COMPLETED
 
 **Goal** Add a machine instance for relative transitions.
 
@@ -71,8 +71,7 @@ Consider:
 - `MachineInstance` for stateful execution
 - whether `Machine` should remain the definition type or be renamed
 
-Todo:
-Stateful execution
+Stateful execution:
 - MachineInstance
 - current state
 - transition_to()
