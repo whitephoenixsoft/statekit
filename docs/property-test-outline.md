@@ -21,6 +21,7 @@ VALIDATION
 ✔ instance construction preserves its initial state
 ✔ successful instance transitions update current state exactly to the target
 ✔ failed instance transitions have no observable effect
+✔ shared-machine instance independence
 
 EDGE SEMANTICS
 ✔ exposed transition is queryable

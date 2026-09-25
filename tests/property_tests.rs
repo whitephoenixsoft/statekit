@@ -181,6 +181,30 @@ fn transitions_with_initial_state_and_attempts()
         })
 }
 
+fn transitions_with_two_initial_states_and_two_different_attempts() 
+    -> impl Strategy<Value = (Vec<(String, String)>, String, String, Vec<String>)> {
+        valid_transition_pairs()
+        .prop_flat_map(|transitions| {
+            let states = transitions
+                .iter()
+                .flat_map(|(source, target)| {
+                    [source.clone(), target.clone()]
+                })
+                .collect::<Vec<_>>();
+            let attempt = prop_oneof![
+    proptest::sample::select(states.clone()),
+                valid_state_name(),
+            ];
+            
+            (
+                Just(transitions),
+                proptest::sample::select(states.clone()),
+            proptest::sample::select(states),
+            prop::collection::vec(attempt, 0..20),
+            )
+        })
+}
+
 proptest! {
     #![proptest_config(ProptestConfig::with_cases(1000))]
     #[test]
@@ -837,4 +861,22 @@ proptest! {
             );
         }
     } 
+    
+    #[test]
+    fn instances_are_indepent(
+        (transitions, initial_a, initial_b, attempts_a) in transitions_with_two_initial_states_and_two_different_attempts()
+    ) {
+        let machine = build_machine(&transitions);
+        let mut first = machine.instance(&initial_a)
+            .expect("generated initial state must exist");
+        let second = machine.instance(&initial_b)
+            .expect("generated initial state must exist");
+        let second_initial = second.state().to_owned();
+        
+        for target in attempts_a {
+            let _ = first.transition_to(&target);
+            
+            prop_assert_eq!(second.state(), second_initial.as_str());
+        }
+    }
 }
