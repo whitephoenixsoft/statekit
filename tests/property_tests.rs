@@ -206,7 +206,7 @@ fn transitions_with_two_initial_states_and_two_different_attempts()
 }
 
 
-fn transitions_with_probe_with_missing_target()
+fn transitions_with_missing_edge_from_existing_source()
 -> impl Strategy<Value = (Vec<(String, String)>, (String, String))> {
     valid_transition_pairs()
         .prop_flat_map(|transitions| {
@@ -774,7 +774,7 @@ proptest! {
 
     #[test]
     fn failed_instant_transitions_have_no_observable_effect(
-        (transitions, probe) in transitions_with_probe_with_missing_target()
+        (transitions, probe) in transitions_with_missing_edge_from_existing_source()
     ) {
         let machine = build_machine(&transitions);
         let (source, target) = &probe;
