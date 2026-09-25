@@ -23,7 +23,7 @@ Examples include:
 
 Statekit is under active development.
 
-Current release: v0.3.1.
+Current release: v0.4.
 
 Statekit follows semantic versioning. As a pre-1.0 crate, its public API may evolve between minor releases.
 
@@ -33,12 +33,16 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-statekit = "0.3.1"
+statekit = "0.4"
 ```
 
 ## Examples
 
 ### Validation Example
+
+There are two ways to use statekit. 
+
+It can be used statelessly:
 
 ```rust
 use statekit::{Machine, StateError};
@@ -50,13 +54,37 @@ fn main() -> Result<(), StateError> {
         .try_allow("running", "failed")?
         .build()?;
 
-    let result = machine.validate_transition("queued", "running")?;
+    machine.validate_transition("queued", "running")?;
 
     assert!(machine.can_transition("queued", "running"));
     assert!(!machine.can_transition("queued", "completed"));
 
     Ok(())
 }
+```
+
+Or it can be used statefully:
+
+```rust
+use statekit::{Machine, StateError};
+
+fn main() -> Result<(), StateError> {
+    let machine = Machine::builder()
+        .try_allow("queued", "running")?
+        .try_allow("running", "completed")?
+        .try_allow("running", "failed")?
+        .build()?;
+
+   let mut instance = machine.instance("queued")?;
+
+   instance.transition_to("running")?;
+
+   assert!(instance.can_transition_to("completed"));
+   assert!(!instance.can_transition_to("queued"));
+
+   Ok(())
+}
+   
 ```
 
 ### Inspecting a Machine
@@ -104,12 +132,17 @@ Iteration order is unspecified.
 - Cycles between distinct states are permitted.
 - A machine must contain at least one transition.
 - Duplicate transitions between the same source and target are stored as a single logical transition.
+- Transitions with non-existing edges are rejected.
+- Instances must be initialized with an existing state.
 
 ## Validation
 
 `try_allow()` validates state names and transition relationships when they are added.
 
 `build()` validates machine-level requirements, including that at least one transition exists.
+
+`validate_transition()` and `transition_to()` validate transitions from the allowed list.
+
 
 ## Features
 
