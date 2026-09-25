@@ -205,6 +205,29 @@ fn transitions_with_two_initial_states_and_two_different_attempts()
         })
 }
 
+
+fn transitions_with_probe_with_missing_target()
+-> impl Strategy<Value = (Vec<(String, String)>, (String, String))> {
+    valid_transition_pairs()
+        .prop_flat_map(|transitions| {
+            let sources = transitions
+                .iter()
+                .map(|(source, _)| source.clone())
+                .collect::<Vec<_>>();
+
+            (
+                Just(transitions), 
+                (
+                    proptest::sample::select(sources), 
+                    valid_state_name()
+                )
+            )
+        })
+        .prop_filter("probe must not already exist", |(transitions, probe)| {
+            !transitions.contains(probe)
+        })
+}
+
 proptest! {
     #![proptest_config(ProptestConfig::with_cases(1000))]
     #[test]
@@ -751,10 +774,10 @@ proptest! {
 
     #[test]
     fn failed_instant_transitions_have_no_observable_effect(
-        (transitions, source) in transitions_with_existing_source(),
+        (transitions, probe) in transitions_with_probe_with_missing_target()
     ) {
-        let target = String::from("impossible-edge");
         let machine = build_machine(&transitions);
+        let (source, target) = &probe;
         
         prop_assert!(machine.contains_state(source.as_str()));
 
