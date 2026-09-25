@@ -8,9 +8,9 @@ Statekit uses Criterion to benchmark machine construction and common query opera
 
 The current benchmark baseline is:
 
-- [Statekit v0.3 Benchmark Baseline](baseline-v0.3.md)
+- [Statekit v0.4 Benchmark Baseline](baseline-v0.4.md)
 
-The baseline contains the benchmark environment, methodology, measurements, interpretation, and known limitations for Statekit v0.3.
+The baseline contains the benchmark environment, methodology, measurements, interpretation, and known limitations for Statekit v0.4.
 
 ## Benchmark Coverage
 
