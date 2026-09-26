@@ -57,7 +57,7 @@ Introduce:
 - Benchmarking to measure current design properly
 - Property testing 
 
-### Phase 5 - Stateful execution (v0.4) -- COMPLETED
+### Phase 5 - Stateful execution (v0.4)
 
 **Goal** Add a machine instance for relative transitions.
 
@@ -70,6 +70,7 @@ To:
 Consider:
 - `MachineInstance` for stateful execution
 - whether `Machine` should remain the definition type or be renamed
+- Adding memory benchmarks preparation for indexing changes.
 
 Stateful execution:
 - MachineInstance
@@ -103,7 +104,6 @@ Runtime state identity / lowering
 Evidence-driven indexing and memory tradeoffs
 
 Consider:
-- Adding memory benchmarks preparation for indexing changes.
 - Performance/indexing changes for that benchmarks justify them.
 
 Todo:
