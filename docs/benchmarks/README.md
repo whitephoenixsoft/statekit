@@ -23,6 +23,10 @@ The benchmark suite measures:
 - source projection
 - state projection
 - machine construction and destruction
+- machine instance creation 
+- instance state membership queries 
+- instance terminal queries 
+- machine production from an instance
 
 Measurements are collected using machines containing 100, 1,000, 10,000, and 100,000 transitions.
 
