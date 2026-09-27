@@ -87,6 +87,11 @@ unsafe impl GlobalAlloc for CountingAllocator {
     }
 }
 
+fn reset_peak() {
+    let live = LIVE_BYTES.load(Ordering::Relaxed);
+    PEAK_LIVE_BYTES.store(live, Ordering::Relaxed);
+}
+
 #[derive(Debug, Clone, Copy)]
 struct AllocatorSnapshot {
     allocated_bytes: usize,
@@ -111,7 +116,7 @@ struct MemoryMeasurement {
     retained_bytes: usize,
     allocated_bytes: usize,
     allocation_count: usize,
-    //peak_live_bytes: usize,
+    peak_live_bytes: usize,
 }
 
 fn build_linear_machine(transition_count: usize) -> Machine {
@@ -134,6 +139,8 @@ fn build_linear_machine(transition_count: usize) -> Machine {
 fn measure_machine(size: usize) -> MemoryMeasurement {
     let before = allocator_snapshot();
 
+    reset_peak();
+
     let machine = build_linear_machine(size);
 
     let after = allocator_snapshot();
@@ -142,6 +149,7 @@ fn measure_machine(size: usize) -> MemoryMeasurement {
         retained_bytes: after.live_bytes - before.live_bytes,
         allocated_bytes: after.allocated_bytes - before.allocated_bytes,
         allocation_count: after.allocation_count - before.allocation_count,
+        peak_live_bytes: after.peak_live_bytes - before.live_bytes,
     };
 
     drop(machine);
@@ -173,10 +181,22 @@ fn report_construction_allocations(map: &BTreeMap<usize, MemoryMeasurement>) {
 
 fn report_allocation_count(map: &BTreeMap<usize, MemoryMeasurement>) {
     println!("\n=== Machine Allocation Count ===\n");
-    println!("transitions\tallocation count");
+    println!("transitions\tcount\tallocations/transition");
     for (count, m) in map.iter() {
-        println!("{count:>11}\t{:<7}",
-        m.allocation_count,
+        println!("{count:>11}\t{:<15}\t{:<.2}",
+            m.allocation_count,
+            m.allocation_count as f64 / *count as f64,
+        );
+    }
+}
+
+fn report_peak_memory(map: &BTreeMap<usize, MemoryMeasurement>) {
+    println!("\n=== Machine Peak Construction Memory ===\n");
+    println!("transitions\tpeak additional\tbytes/transition");
+    for (count, m) in map.iter() {
+        println!("{count:>11}\t{:<15}\t{:<.2}",
+            m.peak_live_bytes,
+            m.peak_live_bytes as f64 / *count as f64,
         );
     }
 }
@@ -194,6 +214,9 @@ fn main() {
     report_retained_memory(&map);
     report_construction_allocations(&map);
     report_allocation_count(&map);
+    report_peak_memory(&map);
+    
+    println!("\n");
 }
 
 
