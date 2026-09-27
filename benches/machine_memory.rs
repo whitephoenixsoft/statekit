@@ -1,5 +1,5 @@
 use statekit::Machine;
-
+use std::collections::BTreeMap;
 use std::alloc::{GlobalAlloc, Layout, System};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
@@ -7,26 +7,112 @@ struct CountingAllocator;
 
 static ALLOCATED: AtomicUsize = AtomicUsize::new(0);
 static DEALLOCATED: AtomicUsize = AtomicUsize::new(0);
+static ALLOCATION_COUNT: AtomicUsize = AtomicUsize::new(0);
+
+static LIVE_BYTES: AtomicUsize = AtomicUsize::new(0);
+static PEAK_LIVE_BYTES: AtomicUsize = AtomicUsize::new(0);
 
 unsafe impl GlobalAlloc for CountingAllocator {
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
         let ptr = unsafe { System.alloc(layout) };
 
         if !ptr.is_null() {
-            ALLOCATED.fetch_add(layout.size(), Ordering::Relaxed);
+            let size = layout.size();
+
+            ALLOCATED.fetch_add(size, Ordering::Relaxed);
+            ALLOCATION_COUNT.fetch_add(1, Ordering::Relaxed);
+
+            let new_live =
+                LIVE_BYTES.fetch_add(size, Ordering::Relaxed) + size;
+
+            PEAK_LIVE_BYTES.fetch_max(new_live, Ordering::Relaxed);
         }
 
         ptr
     }
 
     unsafe fn dealloc(&self, ptr: *mut u8, layout: Layout) {
-        DEALLOCATED.fetch_add(layout.size(), Ordering::Relaxed);
-        unsafe { System.dealloc(ptr, layout) };
+        let size = layout.size();
+
+        DEALLOCATED.fetch_add(size, Ordering::Relaxed);
+        LIVE_BYTES.fetch_sub(size, Ordering::Relaxed);
+
+        unsafe {
+            System.dealloc(ptr, layout);
+        }
+    }
+    
+    unsafe fn alloc_zeroed(&self, layout: Layout) -> *mut u8 {
+        let ptr = unsafe { System.alloc_zeroed(layout) };
+
+        if !ptr.is_null() {
+            let size = layout.size();
+
+            ALLOCATED.fetch_add(size, Ordering::Relaxed);
+            ALLOCATION_COUNT.fetch_add(1, Ordering::Relaxed);
+
+            let new_live =
+            LIVE_BYTES.fetch_add(size, Ordering::Relaxed) + size;
+
+        PEAK_LIVE_BYTES.fetch_max(new_live, Ordering::Relaxed);
+        }
+
+        ptr
+    }
+    
+    unsafe fn realloc(
+        &self,
+        ptr: *mut u8,
+        layout: Layout,
+        new_size: usize,
+    ) -> *mut u8 {
+        let new_ptr = unsafe { System.realloc(ptr, layout, new_size) };
+    
+        if !new_ptr.is_null() {
+            let old_size = layout.size();
+    
+            DEALLOCATED.fetch_add(old_size, Ordering::Relaxed);
+            ALLOCATED.fetch_add(new_size, Ordering::Relaxed);
+            ALLOCATION_COUNT.fetch_add(1, Ordering::Relaxed);
+    
+            LIVE_BYTES.fetch_sub(old_size, Ordering::Relaxed);
+    
+            let new_live =
+                LIVE_BYTES.fetch_add(new_size, Ordering::Relaxed) + new_size;
+    
+            PEAK_LIVE_BYTES.fetch_max(new_live, Ordering::Relaxed);
+        }
+    
+        new_ptr
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+struct AllocatorSnapshot {
+    allocated_bytes: usize,
+    allocation_count: usize,
+    live_bytes: usize,
+    peak_live_bytes: usize,
+}
+
+fn allocator_snapshot() -> AllocatorSnapshot {
+    AllocatorSnapshot {
+        allocated_bytes: ALLOCATED.load(Ordering::Relaxed),
+        allocation_count: ALLOCATION_COUNT.load(Ordering::Relaxed),
+        live_bytes: LIVE_BYTES.load(Ordering::Relaxed),
+        peak_live_bytes: PEAK_LIVE_BYTES.load(Ordering::Relaxed),
     }
 }
 
 #[global_allocator]
 static GLOBAL: CountingAllocator = CountingAllocator;
+
+struct MemoryMeasurement {
+    retained_bytes: usize,
+    allocated_bytes: usize,
+    allocation_count: usize,
+    //peak_live_bytes: usize,
+}
 
 fn build_linear_machine(transition_count: usize) -> Machine {
     let mut builder = Machine::builder();
@@ -45,18 +131,69 @@ fn build_linear_machine(transition_count: usize) -> Machine {
         .expect("benchmark machine contains transitions")
 }
 
-fn build_linear_inputs(transition_count: usize) -> Vec<(String, String)> {
-    (0..transition_count)
-        .map(|index| (format!("state_{index}"), format!("state_{}", index + 1)))
-        .collect()
+fn measure_machine(size: usize) -> MemoryMeasurement {
+    let before = allocator_snapshot();
+
+    let machine = build_linear_machine(size);
+
+    let after = allocator_snapshot();
+
+    let measurement = MemoryMeasurement {
+        retained_bytes: after.live_bytes - before.live_bytes,
+        allocated_bytes: after.allocated_bytes - before.allocated_bytes,
+        allocation_count: after.allocation_count - before.allocation_count,
+    };
+
+    drop(machine);
+
+    measurement
+}
+
+fn report_retained_memory(map: &BTreeMap<usize, MemoryMeasurement>) {
+    println!("\n=== Machine Retained Memory ===\n");
+    println!("transitions\tretained\tbytes/transition");
+    for (count, m) in map.iter() {
+        println!("{count:>11}\t{:<15}\t{:<.2}",
+        m.retained_bytes,
+        m.retained_bytes as f64 / *count as f64,
+        );
+    }
+}
+
+fn report_construction_allocations(map: &BTreeMap<usize, MemoryMeasurement>) {
+    println!("\n=== Machine Allocated Memory ===\n");
+    println!("transitions\tallocated\tbytes/transition");
+    for (count, m) in map.iter() {
+        println!("{count:>11}\t{:<15}\t{:<.2}",
+        m.allocated_bytes,
+        m.allocated_bytes as f64 / *count as f64,
+        );
+    }
+}
+
+fn report_allocation_count(map: &BTreeMap<usize, MemoryMeasurement>) {
+    println!("\n=== Machine Allocation Count ===\n");
+    println!("transitions\tallocation count");
+    for (count, m) in map.iter() {
+        println!("{count:>11}\t{:<7}",
+        m.allocation_count,
+        );
+    }
 }
 
 fn main() {
     println!("Statekit memory benchmark");
 
-    /*for size in [100, 1_000, 10_000, 100_000] {
-        measure_machine(size);
-    }*/
+    let mut map = BTreeMap::new();
+    for size in [100, 1_000, 10_000, 100_000] {
+        let measurement = measure_machine(size);
+        
+        map.insert(size, measurement);
+    }
+    
+    report_retained_memory(&map);
+    report_construction_allocations(&map);
+    report_allocation_count(&map);
 }
 
 
