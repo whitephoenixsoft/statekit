@@ -21,6 +21,10 @@ exclude = [
 name = "machine_queries"
 harness = false
 
+[[bench]]
+name = "machine_memory"
+harness = false
+
 [dev-dependencies]
 criterion = "0.7.0"
 proptest = "1.11"
