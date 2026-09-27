@@ -1,5 +1,6 @@
 use statekit::Machine;
 use std::collections::BTreeMap;
+use std::fmt;
 use std::alloc::{GlobalAlloc, Layout, System};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
@@ -112,6 +113,27 @@ fn allocator_snapshot() -> AllocatorSnapshot {
 #[global_allocator]
 static GLOBAL: CountingAllocator = CountingAllocator;
 
+#[derive(Debug)]
+enum TestType {
+    Machine,
+    Instance,
+}
+
+impl TestType {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            TestType::Machine => "Machine",
+            TestType::Instance => "Instance",
+        }
+    }
+}
+
+impl fmt::Display for TestType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.as_str())
+    }
+}
+
 struct MemoryMeasurement {
     retained_bytes: usize,
     allocated_bytes: usize,
@@ -136,7 +158,9 @@ fn build_linear_machine(transition_count: usize) -> Machine {
         .expect("benchmark machine contains transitions")
 }
 
-fn measure_machine(size: usize) -> MemoryMeasurement {
+fn measure_machine(
+    size: usize
+) -> MemoryMeasurement {
     let before = allocator_snapshot();
 
     reset_peak();
@@ -157,8 +181,8 @@ fn measure_machine(size: usize) -> MemoryMeasurement {
     measurement
 }
 
-fn report_retained_memory(map: &BTreeMap<usize, MemoryMeasurement>) {
-    println!("\n=== Machine Retained Memory ===\n");
+fn report_retained_memory(test_type: &TestType, map: &BTreeMap<usize, MemoryMeasurement>) {
+    println!("\n=== {test_type} Retained Memory ===\n");
     println!("transitions\tretained\tbytes/transition");
     for (count, m) in map.iter() {
         println!("{count:>11}\t{:<15}\t{:<.2}",
@@ -168,8 +192,8 @@ fn report_retained_memory(map: &BTreeMap<usize, MemoryMeasurement>) {
     }
 }
 
-fn report_construction_allocations(map: &BTreeMap<usize, MemoryMeasurement>) {
-    println!("\n=== Machine Allocated Memory ===\n");
+fn report_construction_allocations(test_type: &TestType, map: &BTreeMap<usize, MemoryMeasurement>) {
+    println!("\n=== {test_type} Allocated Memory ===\n");
     println!("transitions\tallocated\tbytes/transition");
     for (count, m) in map.iter() {
         println!("{count:>11}\t{:<15}\t{:<.2}",
@@ -179,8 +203,8 @@ fn report_construction_allocations(map: &BTreeMap<usize, MemoryMeasurement>) {
     }
 }
 
-fn report_allocation_count(map: &BTreeMap<usize, MemoryMeasurement>) {
-    println!("\n=== Machine Allocation Count ===\n");
+fn report_allocation_count(test_type: &TestType, map: &BTreeMap<usize, MemoryMeasurement>) {
+    println!("\n=== {test_type} Allocation Count ===\n");
     println!("transitions\tcount\tallocations/transition");
     for (count, m) in map.iter() {
         println!("{count:>11}\t{:<15}\t{:<.2}",
@@ -190,8 +214,8 @@ fn report_allocation_count(map: &BTreeMap<usize, MemoryMeasurement>) {
     }
 }
 
-fn report_peak_memory(map: &BTreeMap<usize, MemoryMeasurement>) {
-    println!("\n=== Machine Peak Construction Memory ===\n");
+fn report_peak_memory(test_type: &TestType, map: &BTreeMap<usize, MemoryMeasurement>) {
+    println!("\n=== {test_type} Peak Construction Memory ===\n");
     println!("transitions\tpeak additional\tbytes/transition");
     for (count, m) in map.iter() {
         println!("{count:>11}\t{:<15}\t{:<.2}",
@@ -201,22 +225,33 @@ fn report_peak_memory(map: &BTreeMap<usize, MemoryMeasurement>) {
     }
 }
 
-fn main() {
-    println!("Statekit memory benchmark");
-
+fn benchmark_machine() {
+    let test_type = TestType::Machine;
     let mut map = BTreeMap::new();
+    
     for size in [100, 1_000, 10_000, 100_000] {
         let measurement = measure_machine(size);
         
         map.insert(size, measurement);
     }
     
-    report_retained_memory(&map);
-    report_construction_allocations(&map);
-    report_allocation_count(&map);
-    report_peak_memory(&map);
+    report_retained_memory(&test_type, &map);
+    report_construction_allocations(&test_type, &map);
+    report_allocation_count(&test_type, &map);
+    report_peak_memory(&test_type, &map);
     
     println!("\n");
+}
+
+fn benchmark_instance() {
+    
+}
+
+fn main() {
+    println!("Statekit memory benchmark");
+
+    benchmark_machine();
+    benchmark_instance();
 }
 
 
