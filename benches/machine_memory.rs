@@ -1,4 +1,4 @@
-use statekit::Machine;
+use statekit::{Machine, MachineInstance};
 use std::collections::BTreeMap;
 use std::fmt;
 use std::alloc::{GlobalAlloc, Layout, System};
@@ -158,6 +158,20 @@ fn build_linear_machine(transition_count: usize) -> Machine {
         .expect("benchmark machine contains transitions")
 }
 
+
+fn build_instances(machine: &Machine, instance_count: usize) -> Vec<MachineInstance> {
+    let mut instances: Vec<MachineInstance> = Vec::new();
+    
+    for _index in 0..instance_count {
+        let instance = machine.instance("state_0")
+            .expect("valid instance");
+        
+        instances.push(instance);
+    }
+    
+    instances
+}
+
 fn measure_machine(
     size: usize
 ) -> MemoryMeasurement {
@@ -176,6 +190,33 @@ fn measure_machine(
         peak_live_bytes: after.peak_live_bytes - before.live_bytes,
     };
 
+    drop(machine);
+
+    measurement
+}
+
+fn measure_instance(
+    machine_size: usize,
+    instance_size: usize,
+) -> MemoryMeasurement {
+    let machine = build_linear_machine(machine_size);
+
+    let before = allocator_snapshot();
+
+    reset_peak();
+
+    let instances = build_instances(&machine, instance_size);
+
+    let after = allocator_snapshot();
+
+    let measurement = MemoryMeasurement {
+        retained_bytes: after.live_bytes - before.live_bytes,
+        allocated_bytes: after.allocated_bytes - before.allocated_bytes,
+        allocation_count: after.allocation_count - before.allocation_count,
+        peak_live_bytes: after.peak_live_bytes - before.live_bytes,
+    };
+
+    drop(instances);
     drop(machine);
 
     measurement
@@ -244,7 +285,25 @@ fn benchmark_machine() {
 }
 
 fn benchmark_instance() {
+    let test_type = TestType::Instance;
+    let mut map = BTreeMap::new();
     
+    for machine_size in [100, 1_000, 10_000, 100_000] {
+        let measurement = measure_instance(machine_size, 1);
+        
+        map.insert(machine_size, measurement);
+    }
+    
+    println!(
+        "MachineInstance size: {} bytes",
+        std::mem::size_of::<MachineInstance>()
+    );
+    report_retained_memory(&test_type, &map);
+    report_construction_allocations(&test_type, &map);
+    report_allocation_count(&test_type, &map);
+    report_peak_memory(&test_type, &map);
+    
+    println!("\n");
 }
 
 fn main() {
