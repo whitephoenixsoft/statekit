@@ -139,7 +139,8 @@ fn build_linear_machine(transition_count: usize) -> Machine {
 
 
 fn build_instances(machine: &Machine, instance_count: usize) -> Vec<MachineInstance> {
-    let mut instances: Vec<MachineInstance> = Vec::new();
+    let mut instances =
+    Vec::with_capacity(instance_count);
     
     for _index in 0..instance_count {
         let instance = machine.instance("state_0")
