@@ -113,7 +113,7 @@ fn allocator_snapshot() -> AllocatorSnapshot {
 static GLOBAL: CountingAllocator = CountingAllocator;
 
 struct MemoryMeasurement {
-    instance_size: usize,
+    instance_count: usize,
     retained_bytes: usize,
     allocated_bytes: usize,
     allocation_count: usize,
@@ -163,7 +163,7 @@ fn measure_machine(
     let after = allocator_snapshot();
 
     let measurement = MemoryMeasurement {
-        instance_size: 0,
+        instance_count: 0,
         retained_bytes: after.live_bytes - before.live_bytes,
         allocated_bytes: after.allocated_bytes - before.allocated_bytes,
         allocation_count: after.allocation_count - before.allocation_count,
@@ -177,7 +177,7 @@ fn measure_machine(
 
 fn measure_instance(
     machine_size: usize,
-    instance_size: usize,
+    instance_count: usize,
 ) -> MemoryMeasurement {
     let machine = build_linear_machine(machine_size);
 
@@ -185,12 +185,12 @@ fn measure_instance(
 
     reset_peak();
 
-    let instances = build_instances(&machine, instance_size);
+    let instances = build_instances(&machine, instance_count);
 
     let after = allocator_snapshot();
 
     let measurement = MemoryMeasurement {
-        instance_size,
+        instance_count,
         retained_bytes: after.live_bytes - before.live_bytes,
         allocated_bytes: after.allocated_bytes - before.allocated_bytes,
         allocation_count: after.allocation_count - before.allocation_count,
@@ -220,9 +220,9 @@ fn report_retained_instance_memory(map: &BTreeMap<usize, BTreeMap<usize, MemoryM
     for (count, map2) in map.iter() {
         for (_, m) in map2.iter() {
             println!("{count:>11}\t{:<11}\t{:<15}\t{:<.2}",
-                m.instance_size,
+                m.instance_count,
                 m.retained_bytes,
-                m.retained_bytes as f64 / m.instance_size as f64,
+                m.retained_bytes as f64 / m.instance_count as f64,
             );
         }
         println!();
@@ -246,9 +246,9 @@ fn report_instance_construction_allocations(map: &BTreeMap<usize, BTreeMap<usize
     for (count, map2) in map.iter() {
         for (_, m) in map2.iter() {
             println!("{count:>11}\t{:<11}\t{:<15}\t{:<.2}",
-                m.instance_size,
+                m.instance_count,
                 m.allocated_bytes,
-                m.allocated_bytes as f64 / m.instance_size as f64,
+                m.allocated_bytes as f64 / m.instance_count as f64,
             );
         }
         println!();
@@ -272,9 +272,9 @@ fn report_instance_allocation_count(map: &BTreeMap<usize, BTreeMap<usize, Memory
     for (count, map2) in map.iter() {
         for (_, m) in map2.iter() {
             println!("{count:>11}\t{:<11}\t{:<15}\t{:<.2}",
-                m.instance_size,
+                m.instance_count,
                 m.allocation_count,
-                m.allocation_count as f64 / m.instance_size as f64,
+                m.allocation_count as f64 / m.instance_count as f64,
             );
         }
         println!();
@@ -298,9 +298,9 @@ fn report_instance_peak_memory(map: &BTreeMap<usize, BTreeMap<usize, MemoryMeasu
     for (count, map2) in map.iter() {
         for (_, m) in map2.iter() {
             println!("{count:>11}\t{:<11}\t{:<15}\t{:<.2}",
-                m.instance_size,
+                m.instance_count,
                 m.peak_live_bytes,
-                m.peak_live_bytes as f64 / m.instance_size as f64,
+                m.peak_live_bytes as f64 / m.instance_count as f64,
             );
         }
         println!();
@@ -328,12 +328,12 @@ fn benchmark_instance() {
     let mut map: BTreeMap<usize, BTreeMap<usize, MemoryMeasurement>> = BTreeMap::new();
     
     for machine_size in [100, 1_000, 10_000, 100_000] {
-        for instance_size in [1, 100, 1_000] {
-            let measurement = measure_instance(machine_size, instance_size);
+        for instance_count in [1, 100, 1_000] {
+            let measurement = measure_instance(machine_size, instance_count);
             
             map.entry(machine_size)
                 .or_default()
-                .insert(instance_size, measurement);
+                .insert(instance_count, measurement);
         }
     }
     
