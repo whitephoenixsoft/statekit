@@ -1,6 +1,5 @@
 use statekit::{Machine, MachineInstance};
 use std::collections::BTreeMap;
-use std::fmt;
 use std::alloc::{GlobalAlloc, Layout, System};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
@@ -113,28 +112,8 @@ fn allocator_snapshot() -> AllocatorSnapshot {
 #[global_allocator]
 static GLOBAL: CountingAllocator = CountingAllocator;
 
-#[derive(Debug)]
-enum TestType {
-    Machine,
-    Instance,
-}
-
-impl TestType {
-    pub fn as_str(&self) -> &'static str {
-        match self {
-            TestType::Machine => "Machine",
-            TestType::Instance => "Instance",
-        }
-    }
-}
-
-impl fmt::Display for TestType {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.as_str())
-    }
-}
-
 struct MemoryMeasurement {
+    instance_size: usize,
     retained_bytes: usize,
     allocated_bytes: usize,
     allocation_count: usize,
@@ -184,6 +163,7 @@ fn measure_machine(
     let after = allocator_snapshot();
 
     let measurement = MemoryMeasurement {
+        instance_size: 0,
         retained_bytes: after.live_bytes - before.live_bytes,
         allocated_bytes: after.allocated_bytes - before.allocated_bytes,
         allocation_count: after.allocation_count - before.allocation_count,
@@ -210,6 +190,7 @@ fn measure_instance(
     let after = allocator_snapshot();
 
     let measurement = MemoryMeasurement {
+        instance_size,
         retained_bytes: after.live_bytes - before.live_bytes,
         allocated_bytes: after.allocated_bytes - before.allocated_bytes,
         allocation_count: after.allocation_count - before.allocation_count,
@@ -222,30 +203,60 @@ fn measure_instance(
     measurement
 }
 
-fn report_retained_memory(test_type: &TestType, map: &BTreeMap<usize, MemoryMeasurement>) {
-    println!("\n=== {test_type} Retained Memory ===\n");
+fn report_retained_machine_memory(map: &BTreeMap<usize, MemoryMeasurement>) {
+    println!("\n=== Machine Retained Memory ===\n");
     println!("transitions\tretained\tbytes/transition");
     for (count, m) in map.iter() {
         println!("{count:>11}\t{:<15}\t{:<.2}",
-        m.retained_bytes,
-        m.retained_bytes as f64 / *count as f64,
+            m.retained_bytes,
+            m.retained_bytes as f64 / *count as f64,
         );
     }
 }
 
-fn report_construction_allocations(test_type: &TestType, map: &BTreeMap<usize, MemoryMeasurement>) {
-    println!("\n=== {test_type} Allocated Memory ===\n");
+fn report_retained_instance_memory(map: &BTreeMap<usize, BTreeMap<usize, MemoryMeasurement>>) {
+    println!("\n=== Instance Retained Memory ===\n");
+    println!("transitions\tinstances\tretained\tbytes/instance");
+    for (count, map2) in map.iter() {
+        for (_, m) in map2.iter() {
+            println!("{count:>11}\t{:<11}\t{:<15}\t{:<.2}",
+                m.instance_size,
+                m.retained_bytes,
+                m.retained_bytes as f64 / m.instance_size as f64,
+            );
+        }
+        println!();
+    }
+}
+
+fn report_machine_construction_allocations(map: &BTreeMap<usize, MemoryMeasurement>) {
+    println!("\n=== Machine Allocated Memory ===\n");
     println!("transitions\tallocated\tbytes/transition");
     for (count, m) in map.iter() {
         println!("{count:>11}\t{:<15}\t{:<.2}",
-        m.allocated_bytes,
-        m.allocated_bytes as f64 / *count as f64,
+            m.allocated_bytes,
+            m.allocated_bytes as f64 / *count as f64,
         );
     }
 }
 
-fn report_allocation_count(test_type: &TestType, map: &BTreeMap<usize, MemoryMeasurement>) {
-    println!("\n=== {test_type} Allocation Count ===\n");
+fn report_instance_construction_allocations(map: &BTreeMap<usize, BTreeMap<usize, MemoryMeasurement>>) {
+    println!("\n=== Instance Allocated Memory ===\n");
+    println!("transitions\tinstances\tallocated\tbytes/instance");
+    for (count, map2) in map.iter() {
+        for (_, m) in map2.iter() {
+            println!("{count:>11}\t{:<11}\t{:<15}\t{:<.2}",
+                m.instance_size,
+                m.allocated_bytes,
+                m.allocated_bytes as f64 / m.instance_size as f64,
+            );
+        }
+        println!();
+    }
+}
+
+fn report_machine_allocation_count(map: &BTreeMap<usize, MemoryMeasurement>) {
+    println!("\n=== Machine Allocation Count ===\n");
     println!("transitions\tcount\tallocations/transition");
     for (count, m) in map.iter() {
         println!("{count:>11}\t{:<15}\t{:<.2}",
@@ -255,8 +266,23 @@ fn report_allocation_count(test_type: &TestType, map: &BTreeMap<usize, MemoryMea
     }
 }
 
-fn report_peak_memory(test_type: &TestType, map: &BTreeMap<usize, MemoryMeasurement>) {
-    println!("\n=== {test_type} Peak Construction Memory ===\n");
+fn report_instance_allocation_count(map: &BTreeMap<usize, BTreeMap<usize, MemoryMeasurement>>) {
+    println!("\n=== Instance Allocation Count ===\n");
+    println!("transitions\tinstances\tcount\tallocations/instance");
+    for (count, map2) in map.iter() {
+        for (_, m) in map2.iter() {
+            println!("{count:>11}\t{:<11}\t{:<15}\t{:<.2}",
+                m.instance_size,
+                m.allocation_count,
+                m.allocation_count as f64 / m.instance_size as f64,
+            );
+        }
+        println!();
+    }
+}
+
+fn report_machine_peak_memory(map: &BTreeMap<usize, MemoryMeasurement>) {
+    println!("\n=== Machine Peak Construction Memory ===\n");
     println!("transitions\tpeak additional\tbytes/transition");
     for (count, m) in map.iter() {
         println!("{count:>11}\t{:<15}\t{:<.2}",
@@ -266,8 +292,22 @@ fn report_peak_memory(test_type: &TestType, map: &BTreeMap<usize, MemoryMeasurem
     }
 }
 
+fn report_instance_peak_memory(map: &BTreeMap<usize, BTreeMap<usize, MemoryMeasurement>>) {
+    println!("\n=== Instance Peak Construction Memory ===\n");
+    println!("transitions\tinstances\tpeak additional\tbytes/transition");
+    for (count, map2) in map.iter() {
+        for (_, m) in map2.iter() {
+            println!("{count:>11}\t{:<11}\t{:<15}\t{:<.2}",
+                m.instance_size,
+                m.peak_live_bytes,
+                m.peak_live_bytes as f64 / m.instance_size as f64,
+            );
+        }
+        println!();
+    }
+}
+
 fn benchmark_machine() {
-    let test_type = TestType::Machine;
     let mut map = BTreeMap::new();
     
     for size in [100, 1_000, 10_000, 100_000] {
@@ -276,32 +316,36 @@ fn benchmark_machine() {
         map.insert(size, measurement);
     }
     
-    report_retained_memory(&test_type, &map);
-    report_construction_allocations(&test_type, &map);
-    report_allocation_count(&test_type, &map);
-    report_peak_memory(&test_type, &map);
+    report_retained_machine_memory(&map);
+    report_machine_construction_allocations(&map);
+    report_machine_allocation_count(&map);
+    report_machine_peak_memory(&map);
     
     println!("\n");
 }
 
 fn benchmark_instance() {
-    let test_type = TestType::Instance;
-    let mut map = BTreeMap::new();
+    let mut map: BTreeMap<usize, BTreeMap<usize, MemoryMeasurement>> = BTreeMap::new();
     
     for machine_size in [100, 1_000, 10_000, 100_000] {
-        let measurement = measure_instance(machine_size, 1);
-        
-        map.insert(machine_size, measurement);
+        for instance_size in [1, 100, 1_000] {
+            let measurement = measure_instance(machine_size, instance_size);
+            
+            map.entry(machine_size)
+                .or_default()
+                .insert(instance_size, measurement);
+        }
     }
     
     println!(
         "MachineInstance size: {} bytes",
         std::mem::size_of::<MachineInstance>()
     );
-    report_retained_memory(&test_type, &map);
-    report_construction_allocations(&test_type, &map);
-    report_allocation_count(&test_type, &map);
-    report_peak_memory(&test_type, &map);
+
+    report_retained_instance_memory(&map);
+    report_instance_construction_allocations(&map);
+    report_instance_allocation_count(&map);
+    report_instance_peak_memory(&map);
     
     println!("\n");
 }
