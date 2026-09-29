@@ -2,58 +2,132 @@
 
 ## Purpose
 
-This document is to record high-level project intent, invariants, decisions, and relationships.
+This document records the durable intent, invariants, decisions, rationale, and relationships that form the semantic core of Statekit.
+
+It is not intended to replace specifications, roadmaps, tests, benchmarks, source code, or Git history. Those artifacts describe and verify the project in greater detail. This document preserves the reasoning and constraints that give those artifacts context.
+
+## Project Identity
+
+Statekit is a data-driven state machine validation library intended for use within application runtime layers.
 
 ## Intents
 
-I-001: Statekit is a state machine validation library
-I-002: Statekit is meant to be used in the runtime layer 
-I-003: Statekit is meant to be small and quick
-I-004: Statekit is meant to be easy to use
-I-005: Statekit is meant to be a reference project for proper software engineering principles
+**I-001: Runtime Use**
+Statekit is intended to be practical for use within the runtime layer of an application.
 
-## Invariants
+**I-002: Small and Fast**
+Statekit is intended to remain small and computationally inexpensive.
 
-INV-001: The state machine must be immutable
-INV-002: Self transitions are rejected
-INV-003: A machine must contain at least one transition
-INV-004: Duplicate transitions between the same source and target are considered the same logical transition
-INV-005: State names are case sensitive
-INV-007: Validation errors must be as early as possible
-INV-008: State Errors must be of standard Error and simple to match
-INV-009: The state machine instance must safely share an immutable machine
-INV-010: The state machine insntance must always tranverse allowed transitions
+**I-003: Ease of Use**
+Statekit is intended to provide a simple and understandable API for its users.
+
+**I-004: Engineering Reference**
+Statekit is intended to serve as a reference project for disciplined software-engineering practices.
+
+**I-005: Data-Driven Definition**
+State machines are intended to be defined from data rather than requiring machine structure to be encoded directly into application logic.
+
+## Core Invariants
+
+**INV-001: Machine Immutability**
+A built state machine is immutable.
+
+**INV-002: No Self Transitions**
+Self transitions are rejected.
+
+**INV-003: Non-Empty Transition Set**
+A valid machine contains at least one transition.
+
+**INV-004: Logical Transition Uniqueness**
+Duplicate transitions with the same source and target represent the same logical transition.
+
+**INV-005: Case-Sensitive State Identity**
+State names are case sensitive.
+
+**INV-006: Runtime Configuration**
+A state machine can be configured from data during application runtime.
+
+**INV-007: Earliest Valid Error Detection**
+Validation errors are reported at the earliest point at which they can be determined to be invalid.
+
+**INV-008: Standard Error Integration**
+State errors implement the standard Rust error interface and remain straightforward for callers to match and handle.
+
+**INV-009: Shared Immutable Machine**
+Machine instances can safely share an immutable machine definition.
+
+**INV-010: Valid Traversal**
+A machine instance can transition only along transitions allowed by its machine.
 
 ## Decisions
 
-D-001: The main state machine is to be called declaratively 
-	Supports: INV-009
-	Reason: It makes it easier to share between instances
-D-002: The main apis are a builder and a machine
-	Supports: I-003, I-004
-	Reason: This is what is minimally needed to implement a validation tool
-D-003: Unit tests to quality test functions
-	Supports: I-005
-	Reason: Needed to ensure statekit meets expected behavior
-D-004: Use of the ThisError crate for supporting StateError
-	Supports: INV-008
-	Reason: Keeps the code simple when it comes to handling errors
-D-005: Transition API testing for crate validation
-	Supports: I-005, I-004
-	Reason: Validates that the external API will work outside of statekit
-D-006: If possible fail immediately when building the machine
-	Supports: INV-007
-	Reason: It's less confusing and makes the code less bloated.
-D-007: Use of proptest for property testing.
-	Supports: I-005
-	Reason: Property testing is needed to ensure statekit invariants now that infrasture changes are planned
-D-008: Use of Criterion for benchmarking
-	Supports: I-003, I-005
-	Reason: Need a way to prove processing tradeoffs when infrastructure changes are made
-D-009: Use of memory benchmarking
-	Supports: I-003, I-005
-	Reason: Neead a way to prove the memory tradeoffs when infrastructure changes are made
-D-010: Use of instances
-	Support: I-001, I-002, I-004
-	Reason: Seems more natural when traversing the state machine through a mutable instance
+**D-001: Declarative Machine Definition**
+> The primary state machine is defined declaratively rather than through mutation after construction.
+
+**Supports:** I-003, I-005
+**Preserves:** INV-001, INV-009
+**Reason:** Declarative construction makes the resulting machine easier to validate, reason about, and safely share between instances.
+
+**D-002: Builder and Machine as Primary APIs**
+> The primary construction APIs are a builder and a machine.
+
+**Supports:** I-002, I-003, I-005
+**Preserves:** INV-001, INV-006
+**Reason:** These provide the minimum separation needed to configure and validate a machine before exposing the resulting immutable definition.
+
+**D-003: Unit Testing**
+> Statekit uses focused unit tests to verify individual behaviors.
+
+**Supports:** I-004
+**Verifies:** Core behavior and local implementation contracts.
+**Reason:** Unit tests provide direct verification that individual Statekit behaviors continue to meet their expected contracts.
+
+**D-004: `thiserror` for State Errors**
+> Statekit uses `thiserror` to support its state error types.
+
+**Supports:** I-002, I-003
+**Preserves:** INV-008
+**Reason:** `thiserror` keeps error implementation simple while integrating with Rust's standard error conventions.
+
+**D-005: External Transition API Testing**
+> Statekit tests its transition API from the perspective of an external crate consumer.
+
+**Supports**: I-003, I-004
+**Verifies:** Public API usability and externally observable behavior.
+**Reason:** Testing through the public API verifies that Statekit works as a consumer experiences it rather than only through internal implementation access.
+
+**D-006: Fail During Machine Construction When Possible**
+> Errors that can be determined while constructing a machine are reported during construction rather than deferred to traversal.
+
+**Supports:** I-003
+**Preserves:** INV-007
+**Reason:** Reporting known-invalid configurations immediately makes failures easier to understand and avoids carrying unnecessary invalid-state handling into later runtime operations.
+
+**D-007: Property Testing with `proptest`**
+> Statekit uses `proptest` for property-based testing.
+
+**Supports:** I-004
+**Verifies:** Core invariants across generated machine structures and operation sequences.
+**Reason:** Property testing provides broader invariant validation as Statekit's internal representation and infrastructure evolve.
+
+**D-008: Performance Benchmarking with `criterion`**
+> Statekit uses `criterion` for performance benchmarking.
+
+**Supports:** I-002, I-004
+**Evaluates:** Processing-performance tradeoffs.
+**Reason:** Repeatable benchmarks provide evidence for evaluating performance consequences when internal infrastructure changes.
+
+**D-009: Memory Benchmarking**
+> Statekit explicitly measures memory behavior.
+
+**Supports:** I-002, I-004
+**Evaluates:** Memory and allocation tradeoffs.
+**Reason:** Memory measurements provide evidence for evaluating representation and infrastructure changes rather than relying on assumptions about their cost.
+
+**D-010: Mutable Instances over Shared Machines**
+> Statekit represents traversal through mutable machine instances that reference a shared immutable machine.
+
+**Supports:** I-001, I-003
+**Preserves:** INV-001, INV-009, INV-010
+**Reason:** Separating mutable traversal state from the immutable machine definition provides a natural runtime model while allowing the underlying machine to be safely shared.
 
