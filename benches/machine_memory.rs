@@ -294,7 +294,7 @@ fn report_machine_peak_memory(map: &BTreeMap<usize, MemoryMeasurement>) {
 
 fn report_instance_peak_memory(map: &BTreeMap<usize, BTreeMap<usize, MemoryMeasurement>>) {
     println!("\n=== Instance Peak Construction Memory ===\n");
-    println!("transitions\tinstances\tpeak additional\tbytes/transition");
+    println!("transitions\tinstances\tpeak additional\tbytes/instance");
     for (count, map2) in map.iter() {
         for (_, m) in map2.iter() {
             println!("{count:>11}\t{:<11}\t{:<15}\t{:<.2}",
