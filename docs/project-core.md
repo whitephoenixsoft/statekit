@@ -8,12 +8,13 @@ It is not intended to replace specifications, roadmaps, tests, benchmarks, sourc
 
 ## Project Identity
 
-Statekit is a data-driven state machine validation library intended for use within application runtime layers.
+Statekit is an immutable state transition validator
+for applications that model workflow as data.
 
 ## Intents
 
 **I-001: Runtime Use**
-Statekit is intended to be practical for use within the runtime layer of an application.
+Statekit supports dynamic state machines whose states and transitions may be supplied at application runtime.
 
 **I-002: Small and Fast**
 Statekit is intended to remain small and computationally inexpensive.
@@ -26,6 +27,14 @@ Statekit is intended to serve as a reference project for disciplined software-en
 
 **I-005: Data-Driven Definition**
 State machines are intended to be defined from data rather than requiring machine structure to be encoded directly into application logic.
+
+## Boundaries / Durable Intent
+
+**BI-001: Building Block**
+Statekit remains a validation building block rather than becoming a process, workflow, policy, or pathfinding engine.
+
+**BI-002: Hidden Internal Storage**
+Internal storage/representation is not part of the public domain contract.
 
 ## Core Invariants
 
@@ -58,6 +67,15 @@ Machine instances can safely share an immutable machine definition.
 
 **INV-010: Valid Traversal**
 A machine instance can transition only along transitions allowed by its machine.
+
+**INV-011: Safe Traversal Failure**
+Failed instance transitions have no observable effect.
+
+**INV-012: Independent Instances**
+Instances sharing a machine maintain independent traversal state.
+
+**INV-013: Machine Equality**
+Machine equality reflects machine definition, not shared allocation identity.
 
 ## Decisions
 
@@ -131,3 +149,8 @@ A machine instance can transition only along transitions allowed by its machine.
 **Preserves:** INV-001, INV-009, INV-010
 **Reason:** Separating mutable traversal state from the immutable machine definition provides a natural runtime model while allowing the underlying machine to be safely shared.
 
+**D-011: Performance Tradeoff**
+> Construction may perform additional work to reduce repeated runtime cost when the tradeoff is supported by measured performance and bounded memory cost.
+
+**Supports:** I-001, I-002, BI-002
+**Reason:** Construction cost is not as important  as the overall increase of the runtime functions.
