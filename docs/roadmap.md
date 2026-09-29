@@ -71,6 +71,7 @@ Consider:
 - `MachineInstance` for stateful execution
 - whether `Machine` should remain the definition type or be renamed
 - Adding memory benchmarks preparation for indexing changes.
+- Benchmarking for instances
 
 Stateful execution:
 - MachineInstance
