@@ -36,6 +36,9 @@ Statekit remains a validation building block rather than becoming a process, wor
 **BI-002: Hidden Internal Storage**
 Internal storage/representation is not part of the public domain contract.
 
+**BI-003: Concurrency**
+Scheduling and synchronization policy belong to the host application.
+
 ## Core Invariants
 
 **INV-001: Machine Immutability**
@@ -76,6 +79,9 @@ Instances sharing a machine maintain independent traversal state.
 
 **INV-013: Machine Equality**
 Machine equality reflects machine definition, not shared allocation identity.
+
+**INV-014: Instance Equality**
+Instances of the same machine and on the same state are equal. This is because if two instances intersect they now share the same position on the graph.
 
 ## Decisions
 
@@ -154,3 +160,10 @@ Machine equality reflects machine definition, not shared allocation identity.
 
 **Supports:** I-001, I-002, BI-002
 **Reason:** Construction cost is not as important  as the overall increase of the runtime functions.
+
+**D-012: Runtime Failures**
+> Normal runtime state should be observable without provoking errors. Errors represent invalid operations, not ordinary machine conditions.
+
+**Supports:** I-003
+**Preserves:** INV-007, INV-008
+**Reason:** Keeping all possible conditions from reporting errors keeps the complexity of the code supporting it down. It also allows errors to be treated as exceptions.
