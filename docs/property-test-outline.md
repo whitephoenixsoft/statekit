@@ -8,6 +8,37 @@ The purpose of this document is to outline what property tests have been defined
 
 > Every important invariant and public graph operation has strong behavioral coverage, and the graph projections are checked against an independent model.
 
+## CORE INVARIANT COVERAGE
+
+**INV-002 No Self Transitions**
+  → self_transition_is_always_rejected
+
+**INV-004 Logical Transition Uniqueness**
+  → duplicate_transitions_collapse
+  → model transition count
+
+**INV-005 Case-Sensitive State Identity**
+  → case_distinct_states_remain_distinct
+
+**INV-009 Shared Immutable Machine**
+  → instances_are_independent
+  → multithreaded integration coverage
+
+**INV-010 Valid Traversal**
+  → can_transition_to_agrees_with_the_edge_model
+  → model_and_instance_agree_on_attempts
+
+**INV-011 Safe Traversal Failure**
+  → failed_instance_transitions_have_no_observable_effect
+  → model_and_instance_agree_on_attempts
+
+**INV-012 Independent Instances**
+  → instances_are_independent
+
+**INV-013 Machine Equality**
+  → equivalent_definitions_produce_equal_machines
+  → different_definitions_produce_unequal_machines
+
 ## Outline
 
 VALIDATION
