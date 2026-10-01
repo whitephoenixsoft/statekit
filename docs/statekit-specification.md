@@ -1,53 +1,36 @@
 # Statekit Specification
 
 Version: 0.4
-
 Status: Foundational
-
-Scope: Statekit domain definitions and invariants
 
 ## Purpose
 
-This document defines Statekit and its components.
+This specification defines the Statekit domain model and the behavioral contracts between its components. It describes the semantics that implementations of Statekit must preserve while remaining subordinate to the durable intent and invariants defined by the Project Core.
 
-## Core Principle
-
-Statekit is an immutable state transition validator for applications that model workflow as data.
-
-Its purpose is to provide a foundation for validating dynamic state transitions at runtime. 
-
-Statekit fulfills this purpose by providing an immutable state-machine definition that determines whether a transition is permitted.
-
-## Core Components
-
-The components in this specification describe Statekit's domain model. A component does not necessarily correspond one-to-one with a Rust type in every implementation version.
-
-### Machine
+## Machine
 
 Machine is an immutable value-like machine definition implemented as a shared handle. It represents a definition of the allowed state transitions.
-
-- It is only valid if it contains at least one transition.
-- Determines whether a transition from a source state to a target state is allowed.
-- Machine must support querying allowed transitions.
+### Construction
+- Contains at least one logical transition.
+- Contains only validated state names and transitions.
+- Once constructed, its definition cannot change.
+### Queries
+- Determines whether an edge exists between two states.
+- Exposes states, sources, transitions, and outgoing targets.
 - Querying the transitions reachable from a state with no outgoing transitions produces an empty result. This includes states that appear only as transition targets and names that do not occur in the machine.
-- Provides access to queries over the machine's transitions.
-- Machine has value equality based on its state-machine definition. Shared allocation identity is an internal ownership concern.
+### Identity and Equality
+- State names are matched exactly.
+- Query input is not normalized or trimmed.
+- Machine equality is based on the logical machine definition, independent of shared allocation identity.
 
-#### Invariants and Constraints
+## Machine Instance
 
-- Machine must be immutable.
-- Machine will validate a transition based on source and target states.
-- There must be at least one transition.
-- State names supplied to machine queries are matched exactly and are not trimmed or normalized.
-- Machines with the same edges are equal.
-
-### Machine Instance
-
-Represents a mutable instance of a transitioning state machine.
+Represents mutable traversal state over an immutable Machine definition.
 
 - Is a mutable representation of a state node.
 - Walks through the states using allowed transitions.
-- Ends on a terminal state.
+- An instance is terminal when its current state has no outgoing transitions.
+- An instance whose current state has no outgoing transitions is terminal and cannot successfully transition.
 - Supports queries related to walking the state machine.
 - Two instances sharing the same machine definition have independent current states. Operations on one instance must not affect the other.
 #### Invariants and Constraints
@@ -58,7 +41,31 @@ Represents a mutable instance of a transitioning state machine.
 - A state on a target with no outgoing transitions can no longer transition.
 - Instances of the same machine and on the same state are equal.
 
-### Transitions
+### Construction
+### Current State
+### Traversal
+### Terminality
+### Independence
+### Equality (if intentionally contractual)
+
+
+
+## Machine Builder
+
+Validates and builds the state-machine.
+
+- Defines transitions between states.
+- Validates information knowable from the proposed transition per addition of new edges.
+- Validates requirements knowable about the completed definition on build.
+- Enforces transition and state validation before a `Machine` is built.
+- Provides an API for constructing a machine definition incrementally.
+
+### Transition Addition
+### Validation Timing
+### Machine Construction
+
+
+## Transitions
 
 The collection of transitions.
 
@@ -67,9 +74,9 @@ The collection of transitions.
 - Supports queries related to an individual transition or for the collection.
 - Contains unique transitions.
 - Two transitions with the same source and target are treated as the same logical transition.
-- Transition collections are equal if they contain a similar list of transition items.
+- Two transition collections are equal when they contain the same logical transitions, independent of insertion order.
 
-### Transition
+## Transition
 
 Represents a directed transition from a source state to a target state.
 
@@ -79,15 +86,8 @@ Represents a directed transition from a source state to a target state.
 - Cycles between distinct states are permitted.
 - A transition is immutable.
 
-### Machine Builder
 
-Validates and builds the state-machine.
-
-- Defines transitions between states.
-- Enforces transition and state validation before a `Machine` is built.
-- Provides an API for constructing a machine definition incrementally.
-
-### State Name
+## State Name
 
 Validates and holds the state name.
 
@@ -98,9 +98,10 @@ Validates and holds the state name.
 - Must support UTF-8 strings.
 - `State Name` is an internal component and is not part of Statekit's public API.
 - State names are case-sensitive.
+- State names are not normalized or trimmed during construction.
 
 
-## Architecture
+## Component Relationships
 
 ```
 [Machine] -- Contains --> [Transitions] -- Contains --> [Transition] -- Has Source --> [State Name]
@@ -138,44 +139,15 @@ Validates and holds the state name.
 ```
 [Machine Instance]
       |
-      | contains
+      | references 
       v
   [Machine]
 ```
 
 
-## Governing Principles 
-
-### Compatibility Principles
+## Compatibility
 
 Public API changes follow semantic versioning.
 Internal storage is not part of the Statekit domain contract.
 
 Strengthening an invariant that causes previously valid input to be rejected is considered a behavioral compatibility change and must be intentional.
-
-### Runtime Principles 
-
-Normal runtime state should be observable without provoking errors. Errors represent invalid operations, not ordinary machine conditions.
-
-### Concurrency Principles 
-
-Statekit makes independent machine instances safe and inexpensive to execute concurrently, while leaving scheduling and synchronization policy to the host application.
-
-### Benchmark Principles 
-
-Statekit may spend additional work during immutable machine construction when doing so materially reduces repeated runtime validation cost, provided memory growth remains bounded and measurable.
-
-## What it is Not
-
-Statekit is not:
-- a process engine
-- a policy engine
-- pathfinding code
-- a workflow engine
-
-It can be used as a building block for these kinds of systems, but it intentionally does not implement them.
-
-
-
-
-
