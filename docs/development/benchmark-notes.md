@@ -1,7 +1,14 @@
 
 ## performance 
 
-Add Throughput only to benchmarks that do full scans
+Add Throughput only to benchmarks that do full scans In the external representation of the API. This means that if the API seems like a singular function, and I'm only calling it once, I should not add it. 
+
+For example:
+A machine takes multiple state names as parameters. The parameter size increase is with the benchmark. This will get us throughput if it's a full scan. 
+
+The instance for the machine still takes only one machine despite the size of the machine. So even if the instance ends up doing a full scan through the machine, it will not get us throughput because there are not multiple instances.
+
+>If we later benchmark an operation where each iteration genuinely processes N logical items, that's where Throughput::Elements(N) belongs. 
 
 ## memory
 
