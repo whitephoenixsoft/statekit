@@ -108,7 +108,7 @@ fn benchmark_can_transition_to_allowed(c: &mut Criterion) {
             |b, _| {
                 b.iter(|| {
                     black_box(
-                        instance.can_transition_to("state_1")
+                        instance.can_transition_to(black_box("state_1"))
                     );
                 });
             },
@@ -133,7 +133,7 @@ fn benchmark_can_transition_to_disallowed_existing(c: &mut Criterion) {
             |b, _| {
                 b.iter(|| {
                     black_box(
-                        instance.can_transition_to("state_2")
+                        instance.can_transition_to(black_box("state_2"))
                     );
                 });
             },
@@ -157,7 +157,7 @@ fn benchmark_can_transition_to_missing(c: &mut Criterion) {
             |b, _| {
                 b.iter(|| {
                     black_box(
-                        instance.can_transition_to("definitely_missing")
+                        instance.can_transition_to(black_box("definitely_missing"))
                     );
                 });
             },
