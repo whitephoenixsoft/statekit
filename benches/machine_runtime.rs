@@ -83,8 +83,81 @@ fn benchmark_instance_construction_missing(c: &mut Criterion) {
             &transition_count,
             |b, _| {
                 b.iter(|| {
+                    let instance = machine.instance(black_box("definitely_missing"));
+
+                    black_box(instance);
+                });
+            },
+        );
+    }
+
+    group.finish();
+}
+
+fn benchmark_can_transition_to_allowed(c: &mut Criterion) {
+    let mut group = c.benchmark_group("can_transition_to");
+
+    for transition_count in SIZES {
+        let machine = build_linear_machine(transition_count);
+        let instance = machine.instance(black_box("state_0"))
+            .expect("benchmark state exists");
+
+        group.bench_with_input(
+            BenchmarkId::new("allowed", transition_count),
+            &transition_count,
+            |b, _| {
+                b.iter(|| {
                     black_box(
-                                    machine.instance(black_box("definitely_missing"))
+                        instance.can_transition_to("state_1")
+                    );
+                });
+            },
+        );
+    }
+
+    group.finish();
+}
+
+
+fn benchmark_can_transition_to_disallowed_existing(c: &mut Criterion) {
+    let mut group = c.benchmark_group("can_transition_to");
+
+    for transition_count in SIZES {
+        let machine = build_linear_machine(transition_count);
+        let instance = machine.instance(black_box("state_0"))
+            .expect("benchmark state exists");
+
+        group.bench_with_input(
+            BenchmarkId::new("disallowed_existing", transition_count),
+            &transition_count,
+            |b, _| {
+                b.iter(|| {
+                    black_box(
+                        instance.can_transition_to("state_2")
+                    );
+                });
+            },
+        );
+    }
+
+    group.finish();
+}
+
+fn benchmark_can_transition_to_missing(c: &mut Criterion) {
+    let mut group = c.benchmark_group("can_transition_to");
+
+    for transition_count in SIZES {
+        let machine = build_linear_machine(transition_count);
+        let instance = machine.instance(black_box("state_0"))
+            .expect("benchmark state exists");
+
+        group.bench_with_input(
+            BenchmarkId::new("missing", transition_count),
+            &transition_count,
+            |b, _| {
+                b.iter(|| {
+                    black_box(
+                        instance.can_transition_to("definitely_missing")
                     );
                 });
             },
@@ -97,8 +170,11 @@ fn benchmark_instance_construction_missing(c: &mut Criterion) {
 criterion_group!(
     instance_benches,
     benchmark_instance_construction_existing_source,
-benchmark_instance_construction_terminal,
-benchmark_instance_construction_missing
+    benchmark_instance_construction_terminal,
+    benchmark_instance_construction_missing,
+    benchmark_can_transition_to_allowed,
+    benchmark_can_transition_to_disallowed_existing,
+    benchmark_can_transition_to_missing
 );
 
 criterion_main!(instance_benches);
