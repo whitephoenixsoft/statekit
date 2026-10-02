@@ -57,7 +57,7 @@ Introduce:
 - Benchmarking to measure current design properly
 - Property testing 
 
-### Phase 5 - Stateful execution (v0.4)
+### Phase 5 - Stateful execution (v0.4) -- COMPLETED
 
 **Goal** Add a machine instance for relative transitions.
 
@@ -81,7 +81,15 @@ Stateful execution:
 - failed transitions do not mutate state
 - settle ownership model
 
-### Phase 6 - Multiple Representations (v.5)
+### Phase 6 - Tighten Product Direction (v0.4.1)
+
+**Goal:** Review Core Project document and align direction with evidence.
+
+Consider:
+- add/modify tests to cover core to invariants
+- add traceability to application invariants
+
+### Phase 7 - Multiple Representations (v.5)
 
 > Should Statekit's public runtime model distinguish symbolic state names from internal/runtime state identity?
 
@@ -99,7 +107,7 @@ Runtime state identity / lowering
 - evaluate whether strings remain the construction surface
 - keep generic Machine\<S\> as an alternative to compare, not the default assumption
 
-### Phase 7 - Optimization (v0.6)
+### Phase 8 - Optimization (v0.6)
 
 **Goal:** Runtime-oriented internal representation
 Evidence-driven indexing and memory tradeoffs
@@ -115,7 +123,7 @@ Runtime indexing / representation optimization
 - cached states/sources
 - memory benchmarking
 - construction/runtime/memory tradeoff analysis
-### Phase 8 - API Freeze (v0.9)
+### Phase 9 - API Freeze (v0.9)
 
 No new features.
 
@@ -127,7 +135,10 @@ Answer questions:
 - Is this the API I'd be happy maintaining for five years?
 
 
-### Phase 9 - Production polish (v1.0)
+### Phase 10 - Production polish (v1.0)
 
 Only when the API seems acceptable.
+
+Consider:
+- Post 1.x direction
 
