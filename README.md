@@ -134,6 +134,7 @@ Iteration order is unspecified.
 - Duplicate transitions between the same source and target are stored as a single logical transition.
 - Transitions with non-existing edges are rejected.
 - Instances must be initialized with an existing state.
+- Instances can only transition to adjacent states.
 
 ## Validation
 
@@ -142,7 +143,6 @@ Iteration order is unspecified.
 `build()` validates machine-level requirements, including that at least one transition exists.
 
 `validate_transition()` and `transition_to()` validate transitions from the allowed list.
-
 
 ## Features
 
@@ -155,6 +155,18 @@ All public Statekit errors implement `std::error::Error`.
 Once constructed, a machine cannot be modified.
 
 This allows a machine definition to be reused safely without callers mutating its transition structure.
+
+### Thread Safe Traversal
+
+An instance can be created from the stateless machine to traverse the states using adjacent edges. 
+
+These instances share a reference to the state machine and can work concurrently even if the state machine is out of scope.
+
+### Semantic Equality
+
+Two machines are equal if they contain the same graph. Two instances are equal if they are in the same graph and at the same node.
+
+This allows for algorithmic use of the graph through for problem solving.
 
 ## What It Is Not
 
