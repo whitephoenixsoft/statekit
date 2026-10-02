@@ -2,7 +2,7 @@
 
 This directory contains benchmark results and documentation for Statekit.
 
-Statekit uses Criterion to benchmark machine construction and common query operations across different machine sizes.
+Statekit benchmarks runtime performance with Criterion and uses allocator instrumentation to measure memory behavior across different machine and instance sizes.
 
 ## Current Baseline
 
@@ -23,18 +23,24 @@ The benchmark suite measures:
 - source projection
 - state projection
 - machine construction and destruction
-- machine instance creation 
-- instance state membership queries 
-- instance terminal queries 
-- machine production from an instance
+- machine instance creation
+- instance transition queries
+- instance transitions
+- instance terminal-state queries
+- machine construction memory
+- machine instance memory
 
 Measurements are collected using machines containing 100, 1,000, 10,000, and 100,000 transitions.
+
+Instance memory measurements additionally vary the number of live instances to measure incremental per-instance memory behavior.
 
 ## Benchmark Source
 
 The benchmark implementation used for the baseline is available here:
 
-- [Statekit benchmark source](../../benches/machine_queries.rs)
+- [Statekit Machine benchmark source](../../benches/machine_queries.rs)
+- [Statekit Instance benchmark source](../../benches/machine_runtime.rs)
+- [Statekit memory benchmark source](../../benches/machine_memory.rs)
 
 When viewing a release tag, the benchmark source and baseline documentation correspond to that version of Statekit.
 
@@ -43,5 +49,12 @@ When viewing a release tag, the benchmark source and baseline documentation corr
 Run the benchmark suite with:
 
     cargo bench
+
+Run individual benchmarks with:
+```sh
+cargo bench --bench machine_queries
+cargo bench --bench machine_runtime
+cargo bench --bench machine_memory
+```
 
 Benchmark timings depend on hardware and execution conditions. The recorded baseline is primarily intended as a reference point for comparing Statekit performance across implementations.
