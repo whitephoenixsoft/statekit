@@ -4,7 +4,7 @@ All notable changes to Statekit are documented in this file.
 
 ## [Unreleased]
 
-## [0.4]
+## [0.4.0]
 
 ### Added
 
