@@ -26,29 +26,20 @@ Machine is an immutable value-like machine definition implemented as a shared ha
 ## Machine Instance
 
 Represents mutable traversal state over an immutable Machine definition.
-
-- Is a mutable representation of a state node.
-- Walks through the states using allowed transitions.
-- An instance is terminal when its current state has no outgoing transitions.
-- An instance whose current state has no outgoing transitions is terminal and cannot successfully transition.
-- Supports queries related to walking the state machine.
-- Two instances sharing the same machine definition have independent current states. Operations on one instance must not affect the other.
-#### Invariants and Constraints
-
-- The initial state of the instance must be an existing state in the host state machine.
-- A failed transition attempt has no observable effect on the instance.
-- An instance can only transition through an adjacent edge.
-- A state on a target with no outgoing transitions can no longer transition.
-- Instances of the same machine and on the same state are equal.
-
 ### Construction
+- The initial state of the instance must already exist in the machine definition.
 ### Current State
+- The current state is always a state in the machine definition.
 ### Traversal
+- The instance can transition from its current state only to a target allowed by the machine definition.
+- A failed transition attempt has no observable effect on the instance.
 ### Terminality
+- An instance is terminal when its current state has no outgoing transitions.
+- A terminal instance cannot successfully transition.
 ### Independence
-### Equality (if intentionally contractual)
-
-
+- Two instances referencing the same machine definition do not change each other's traversal state.
+### Equality 
+- Two instances are equal when their machine definitions are equal and their current states are equal.
 
 ## Machine Builder
 
