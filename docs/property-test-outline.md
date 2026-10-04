@@ -1,5 +1,8 @@
 # Property Test Outline 
 
+**Category:** Evidence 
+**Version:** 0.4  
+**Status:** Under Review
 ## Purpose
 
 The purpose of this document is to outline what property tests have been defined and how they work together as a whole within the complete test harness.

@@ -1,5 +1,8 @@
 # Project Core
 
+**Category:** Direction 
+**Version:** 0.4  
+**Status:** Under Review 
 ## Purpose
 
 This document records the durable intent, invariants, decisions, rationale, and relationships that form the semantic core of Statekit.
