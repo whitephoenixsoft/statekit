@@ -8,20 +8,20 @@ All notable changes to Statekit are documented in this file.
 
 ### Added
 
-- Added `MachineInstance` to traverse over the `Machine` definition. It can be accessed through `Machine::instance()`. Instances are thread safe. [Please see MIGRATION.md](MIGRATION.md) for details.
-- Added `StateError::UnknownInitialState` to report errors related to invalid instance construction.
-- Added `Machine::is_terminal(state)` to determine states with no outgoing transitions.
-- Introduced custom memory benchmarks; run them along with the other benchmarks with `cargo bench`
-- Added benchmarks for v0.4 for both memory and performance.
+- Added `MachineInstance` for stateful traversal of a `Machine` definition through `Machine::instance()`. Instances maintain independent traversal state and are thread-safe. See [MIGRATION.md](MIGRATION.md) for details.
+- Added `StateError::UnknownInitialState` for invalid instance construction.
+- Added `Machine::is_terminal(state)` to determine whether a state has no outgoing transitions.
+- Added memory benchmarks alongside the existing performance benchmarks. All benchmarks can be run with `cargo bench`.
+- Added v0.4 performance and memory benchmark baselines.
 
 ### Documentation
 
-- Updated README and code documentation to include examples of using instance within code.
-- Updated benchmark README to include memory and instance benchmark coverage.
-- Added project core document defining project intent, invariants, and decisions.
-- Added unit test outline to show evidence of project invariants in unit and integration tests.
-- Changed property test outline to show evidence of project invariants.
-- Changed specification to focus mainly on domain requirements.
+- Updated the README and API documentation with `MachineInstance` usage examples.
+- Updated benchmark documentation to cover instance operations and memory measurements.
+- Added a Project Core document defining Statekit's project intent, invariants, and architectural decisions.
+- Added a unit-test outline, mapping project invariants to unit and integration test evidence.
+- Updated the property-test outline to map property tests to project invariants.
+- Refined the specification to focus on domain requirements and behavioral contracts.
 
 ## [0.3.1]
 
