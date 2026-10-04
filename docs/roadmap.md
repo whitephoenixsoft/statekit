@@ -1,8 +1,12 @@
+---
+category: planning
+version: 0.4
+status: active
+review-status: reviewed
+---
+
 # Statekit Implementation Roadmap
 
-**Category:** Planning 
-**State:** Finalized 
-**Current Version:** v0.4.x
 ## Purpose
 To define how statekit will evolve over next versions.
 

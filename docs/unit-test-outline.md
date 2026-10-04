@@ -1,8 +1,12 @@
+---
+category: traceability
+version: 0.4
+status: active
+review-status: under-review
+---
+
 # Unit Test Outline
 
-**Category:** Evidence 
-**Version:** 0.4  
-**Status:** Under Review
 ## Purpose
 
 This document maps the Project Core invariants to focused unit and integration tests. It records direct, example-based evidence and identifies where the current suite does not directly prove an invariant.

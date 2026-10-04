@@ -1,8 +1,12 @@
+---
+category: specification
+category-level: foundational
+version: 0.4
+status: active
+review-status: under-review
+---
 # Statekit Specification
 
-**Category:** Foundational
-**Version:** 0.4
-**Status:** Under Review 
 ## Purpose
 
 This specification defines the Statekit domain model and the behavioral contracts between its components. It describes the semantics that implementations of Statekit must preserve while remaining subordinate to the durable intent and invariants defined by the Project Core.

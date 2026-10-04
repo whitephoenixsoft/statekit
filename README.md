@@ -1,3 +1,10 @@
+---
+category: readme
+version: 0.4
+status: active
+review-status: reviewed
+---
+
 # Statekit
 An immutable state transition validator for applications that model workflow as data.
 

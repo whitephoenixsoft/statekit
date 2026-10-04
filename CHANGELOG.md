@@ -1,3 +1,10 @@
+---
+category: release
+version: 0.4
+status: active
+review-status: needs-review
+---
+
 # Changelog
 
 All notable changes to Statekit are documented in this file.
