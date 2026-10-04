@@ -1,10 +1,3 @@
----
-category: release
-version: 0.4
-status: active
-review-status: needs-review
----
-
 # Statekit Migration Guide
 
 This document describes breaking and behaviorally significant changes between Statekit releases and provides guidance for migrating existing code.

@@ -1,8 +1,9 @@
 ---
+project: statekit
 category: traceability
 version: 0.4
 status: active
-review-status: under-review
+review-status: under-second-review
 ---
 # Property Test Outline 
 

@@ -1,10 +1,3 @@
----
-category: readme
-version: 0.4
-status: active
-review-status: under-review
----
-
 # Statekit Benchmarks
 
 This directory contains benchmark results and documentation for Statekit.

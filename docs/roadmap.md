@@ -1,4 +1,5 @@
 ---
+project: statekit
 category: planning
 version: 0.4
 status: active

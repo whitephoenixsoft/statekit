@@ -1,4 +1,5 @@
 ---
+project: statekit
 category: specification
 category-level: foundational
 version: 0.4
