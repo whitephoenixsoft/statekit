@@ -52,17 +52,6 @@ Validates and builds the state-machine.
 ### Machine Construction
 - A successful build produces a `Machine`.
 
-## Transitions
-
-The collection of transitions.
-
-- Manages storage for each transition.
-- `Transitions` is an internal component and is not part of Statekit's public API.
-- Supports queries related to an individual transition or for the collection.
-- Contains unique transitions.
-- Two transitions with the same source and target are treated as the same logical transition.
-- Two transition collections are equal when they contain the same logical transitions, independent of insertion order.
-
 ## Transition
 
 Represents a directed transition from a source state to a target state.
@@ -72,7 +61,6 @@ Represents a directed transition from a source state to a target state.
 - Two transitions with the same source and target represent the same logical transition.
 - Cycles between distinct states are permitted.
 - A transition is immutable.
-
 
 ## State Name
 
@@ -91,46 +79,33 @@ Validates and holds the state name.
 ## Component Relationships
 
 ```
-[Machine] -- Contains --> [Transitions] -- Contains --> [Transition] -- Has Source --> [State Name]
-                             -- Has Target --> [State Name]
+[Machine] -- Contains --> [Transition] -- Has Source --> [State Name]
+                                       -- Has Target --> [State Name]
           -- Creates --> [Machine Instance]
 ```
 
 ```
-[Machine Builder]
-      |
-      | defines
-      v
-[Transition]
-   |       |
+MachineBuilder
+      │
+      │ builds
+      ▼
+   Machine
+      │
+      │ defines allowed
+      ▼
+ Transition
+   │       │
  source   target
-   |       |
-   v       v
-[State Name]
+   │       │
+   ▼       ▼
+ State   State
 
-[Machine Builder]
-      |
-      | builds
-      v
-   [Machine]
-      |
-      | contains
-      v
-[Transitions]
-      |
-      | contains
-      v
-[Transition]
+Machine
+   │
+   │ creates / defines traversal for
+   ▼
+MachineInstance
 ```
-
-```
-[Machine Instance]
-      |
-      | references 
-      v
-  [Machine]
-```
-
 
 ## Compatibility
 
