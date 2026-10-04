@@ -44,17 +44,13 @@ Represents mutable traversal state over an immutable Machine definition.
 ## Machine Builder
 
 Validates and builds the state-machine.
-
-- Defines transitions between states.
-- Validates information knowable from the proposed transition per addition of new edges.
-- Validates requirements knowable about the completed definition on build.
-- Enforces transition and state validation before a `Machine` is built.
-- Provides an API for constructing a machine definition incrementally.
-
 ### Transition Addition
+- Adds transitions between source and target states to the machine definition.
 ### Validation Timing
+- Validates requirements knowable about a proposed transition when the transition is added.
+- Validates requirements knowable about the completed definition on build.
 ### Machine Construction
-
+- A successful build produces a `Machine`.
 
 ## Transitions
 
