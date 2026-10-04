@@ -3,7 +3,7 @@ project: statekit
 category: foundation
 version: 0.4
 status: active
-review-status: needs-review
+review-status: under-second-review
 ---
 # Project Core 
 ## Purpose
@@ -87,7 +87,7 @@ Instances sharing a machine maintain independent traversal state.
 Machine equality reflects machine definition, not shared allocation identity.
 
 **INV-014: Instance Equality**
-Instances of the same machine and on the same state are equal. This is because if two instances intersect they now share the same position on the graph.
+Instances on equal machine definitions and in the same state are equal. This is because two instances can be in the same logical traversal position.
 
 ## Decisions
 
