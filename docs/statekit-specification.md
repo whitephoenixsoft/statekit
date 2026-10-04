@@ -4,19 +4,21 @@ category: specification
 category-level: foundational
 version: 0.4
 status: active
-review-status: under-review
+review-status: under-second-review
 ---
 # Statekit Specification
 
 ## Purpose
 
 This specification defines the Statekit domain model and the behavioral contracts between its components. It describes the semantics that implementations of Statekit must preserve while remaining subordinate to the durable intent and invariants defined by the Project Core.
+
 ## Machine
 
 Machine is an immutable value-like machine definition implemented as a shared handle. It represents a definition of the allowed state transitions.
 ### Construction
 - Contains at least one logical transition.
 - Contains only validated state names and transitions.
+- Cycles between distinct states are permitted.
 - Once constructed, its definition cannot change.
 ### Queries
 - Determines whether an edge exists between two states.
@@ -26,6 +28,7 @@ Machine is an immutable value-like machine definition implemented as a shared ha
 - State names are matched exactly.
 - Query input is not normalized or trimmed.
 - Machine equality is based on the logical machine definition, independent of shared allocation identity.
+
 ## Machine Instance
 
 Represents mutable traversal state over an immutable Machine definition.
@@ -43,37 +46,41 @@ Represents mutable traversal state over an immutable Machine definition.
 - Two instances referencing the same machine definition do not change each other's traversal state.
 ### Equality 
 - Two instances are equal when their machine definitions are equal and their current states are equal.
+
 ## Machine Builder
 
 Validates and builds the state-machine.
 ### Transition Addition
 - Adds transitions between source and target states to the machine definition.
+- Adding a duplicate transition does not change the machine definition.
 ### Validation Timing
 - Validates requirements knowable about a proposed transition when the transition is added.
 - Validates requirements knowable about the completed definition on build.
 ### Machine Construction
 - A successful build produces a `Machine`.
+
 ## Transition
 
 Represents a directed transition from a source state to a target state.
-
+### Construction 
 - A transition is defined by its source and target states.
 - The source and target states must be different.
+- Once constructed, its source and target cannot change.
+### Equality 
 - Two transitions with the same source and target represent the same logical transition.
-- Cycles between distinct states are permitted.
-- A transition is immutable.
+
 ## State Name
 
-Validates and holds the state name.
-
-- Creates and maintains a valid state.
-	- Two states with the same state name represent the same logical state.
-	- A state name must not begin or end with Unicode whitespace.
-	- A state name must contain at least one non-whitespace character.
-- Must support UTF-8 strings.
-- `State Name` is an internal component and is not part of Statekit's public API.
-- State names are case-sensitive.
+Represents the symbolic identity of a state.
+### Construction
+- A state name must not begin or end with Unicode whitespace.
+- A state name must contain at least one non-whitespace character.
+- State names may contain UTF-8 text.
 - State names are not normalized or trimmed during construction.
+### Identity
+- Two states with the same state name represent the same logical state.
+- State names are case-sensitive.
+
 ## Component Relationships
 
 ```
@@ -104,12 +111,14 @@ Machine
    ▼
 MachineInstance
 ```
+
 ## Compatibility
 
 Public API changes follow semantic versioning.
 Internal storage is not part of the Statekit domain contract.
 
 Strengthening an invariant that causes previously valid input to be rejected is considered a behavioral compatibility change and must be intentional.
+
 ## Evidence
 
 See [Project Core](./project-core.md).
