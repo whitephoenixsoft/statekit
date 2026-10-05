@@ -100,7 +100,8 @@ fn transitions_with_source_without_outgoing_transitions()
         })
 }
 
-fn transitions_with_missing_state() -> impl Strategy<Value = (Vec<(String, String)>, (String, String))> {
+fn transitions_with_missing_state()
+-> impl Strategy<Value = (Vec<(String, String)>, (String, String))> {
     valid_transition_pairs()
         .prop_flat_map(|transitions| (Just(transitions), valid_transition_pair()))
         .prop_filter("states must not already exist", |(transitions, probe)| {
@@ -132,9 +133,7 @@ fn transitions_with_existing_target() -> impl Strategy<Value = (Vec<(String, Str
     })
 }
 
-fn transitions_with_attempt()
-    -> impl Strategy<Value = (Vec<(String, String)>, (String, String))>
-{
+fn transitions_with_attempt() -> impl Strategy<Value = (Vec<(String, String)>, (String, String))> {
     valid_transition_pairs().prop_flat_map(|transitions| {
         let states = transitions
             .iter()
@@ -143,68 +142,53 @@ fn transitions_with_attempt()
 
         (
             Just(transitions),
-            (
-                proptest::sample::select(states),
-                valid_state_name()
-            ),
+            (proptest::sample::select(states), valid_state_name()),
         )
     })
 }
 
-fn transitions_with_probe_and_existing_source() -> impl Strategy<Value = (Vec<(String, String)>, (String, String))> {
+fn transitions_with_probe_and_existing_source()
+-> impl Strategy<Value = (Vec<(String, String)>, (String, String))> {
     prop_oneof![
         transitions_with_attempt(),
         transitions_with_existing_probe(),
     ]
 }
 
-fn transitions_with_initial_state_and_attempts() 
-    -> impl Strategy<Value = (Vec<(String, String)>, String, Vec<String>)> {
-    valid_transition_pairs()
-        .prop_flat_map(|transitions| {
-            let states = transitions
-                .iter()
-                .flat_map(|(source, target)| {
-                    [source.clone(), target.clone()]
-                })
-                .collect::<Vec<_>>();
-            let attempt = prop_oneof![
-    proptest::sample::select(states.clone()),
-                valid_state_name(),
-            ];
-            
-            (
-                Just(transitions),
-                proptest::sample::select(states),
-            prop::collection::vec(attempt, 0..20),
-            )
-        })
-}
+fn transitions_with_initial_state_and_attempts()
+-> impl Strategy<Value = (Vec<(String, String)>, String, Vec<String>)> {
+    valid_transition_pairs().prop_flat_map(|transitions| {
+        let states = transitions
+            .iter()
+            .flat_map(|(source, target)| [source.clone(), target.clone()])
+            .collect::<Vec<_>>();
+        let attempt = prop_oneof![proptest::sample::select(states.clone()), valid_state_name(),];
 
-fn transitions_with_two_initial_states_and_two_different_attempts() 
-    -> impl Strategy<Value = (Vec<(String, String)>, String, String, Vec<String>)> {
-        valid_transition_pairs()
-        .prop_flat_map(|transitions| {
-            let states = transitions
-                .iter()
-                .flat_map(|(source, target)| {
-                    [source.clone(), target.clone()]
-                })
-                .collect::<Vec<_>>();
-            let attempt = prop_oneof![
-    proptest::sample::select(states.clone()),
-                valid_state_name(),
-            ];
-            
-            (
-                Just(transitions),
-                proptest::sample::select(states.clone()),
+        (
+            Just(transitions),
             proptest::sample::select(states),
             prop::collection::vec(attempt, 0..20),
-            )
-        })
+        )
+    })
 }
 
+fn transitions_with_two_initial_states_and_two_different_attempts()
+-> impl Strategy<Value = (Vec<(String, String)>, String, String, Vec<String>)> {
+    valid_transition_pairs().prop_flat_map(|transitions| {
+        let states = transitions
+            .iter()
+            .flat_map(|(source, target)| [source.clone(), target.clone()])
+            .collect::<Vec<_>>();
+        let attempt = prop_oneof![proptest::sample::select(states.clone()), valid_state_name(),];
+
+        (
+            Just(transitions),
+            proptest::sample::select(states.clone()),
+            proptest::sample::select(states),
+            prop::collection::vec(attempt, 0..20),
+        )
+    })
+}
 
 fn transitions_with_missing_edge_from_existing_source()
 -> impl Strategy<Value = (Vec<(String, String)>, (String, String))> {
@@ -216,11 +200,8 @@ fn transitions_with_missing_edge_from_existing_source()
                 .collect::<Vec<_>>();
 
             (
-                Just(transitions), 
-                (
-                    proptest::sample::select(sources), 
-                    valid_state_name()
-                )
+                Just(transitions),
+                (proptest::sample::select(sources), valid_state_name()),
             )
         })
         .prop_filter("probe must not already exist", |(transitions, probe)| {
@@ -724,7 +705,7 @@ proptest! {
             );
         }
     }
-    
+
     #[test]
     fn instance_construction_preserves_its_initial_state(
         (transitions, state) in transitions_with_existing_state(),
@@ -736,7 +717,7 @@ proptest! {
 
         prop_assert_eq!(instance.state(), state);
     }
-    
+
     #[test]
     fn can_transition_to_agrees_with_the_edge_model(
         (transitions, state) in transitions_with_existing_state(),
@@ -778,7 +759,7 @@ proptest! {
     ) {
         let machine = build_machine(&transitions);
         let (source, target) = &probe;
-        
+
         prop_assert!(machine.contains_state(source.as_str()));
 
         let mut instance = machine.instance(source.as_str())
@@ -796,16 +777,16 @@ proptest! {
     ) {
         let machine = build_machine(&transitions);
         let model = build_model(&transitions);
-        
+
         prop_assert!(machine.contains_state(target.as_str()));
 
         let instance = machine.instance(target.as_str())
             .expect("instance initialized with existing state");
-        
+
         let is_terminal = !model
             .iter()
             .any(|(s,_)| *s == target);
-        
+
         prop_assert_eq!(instance.is_terminal(), is_terminal);
     }
 
@@ -872,19 +853,19 @@ proptest! {
                 instance.state(),
                 current.as_str()
             );
-            
+
             let expected_terminal =
     !model.iter().any(|(source, _)| {
         source == &current
                 });
-            
+
             prop_assert_eq!(
                 instance.is_terminal(),
                 expected_terminal
             );
         }
-    } 
-    
+    }
+
     #[test]
     fn instances_are_independent(
         (transitions, initial_a, initial_b, attempts_a) in transitions_with_two_initial_states_and_two_different_attempts()
@@ -895,10 +876,10 @@ proptest! {
         let second = machine.instance(&initial_b)
             .expect("generated initial state must exist");
         let second_initial = second.state().to_owned();
-        
+
         for target in attempts_a {
             let _ = first.transition_to(&target);
-            
+
             prop_assert_eq!(second.state(), second_initial.as_str());
         }
     }

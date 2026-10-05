@@ -36,13 +36,13 @@ pub enum StateError {
         /// The requested destination state.
         to: String,
     },
-    
+
     /// A machine instance initial state must be an existing state.
     #[error("instance initial state {state:?} does not exist")]
     UnknownInitialState {
         /// The unknown state that was specified for initializing a machine instance.
         state: String,
-    }
+    },
 }
 
 #[cfg(test)]

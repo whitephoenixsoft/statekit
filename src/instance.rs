@@ -1,5 +1,5 @@
-use std::sync::Arc;
 use crate::{Machine, MachineInner, StateError};
+use std::sync::Arc;
 
 /// The instance of a state machine.
 ///
@@ -23,7 +23,7 @@ impl MachineInstance {
             current: initial,
         })
     }
-    
+
     /// Returns the current state.
     pub fn state(&self) -> &str {
         &self.current
@@ -33,32 +33,31 @@ impl MachineInstance {
     pub fn can_transition_to(&self, target: &str) -> bool {
         self.machine.can_transition(&self.current, target)
     }
-    
+
     /// Changes the state to `target` if the transition from the current state is allowed in the machine definition.
     ///
     /// # Errors:
     ///
     /// Returns [`StateError::InvalidTransition`] when the transition is not allowed in the state machine.
     pub fn transition_to(&mut self, target: &str) -> Result<(), StateError> {
-        self.machine .validate_transition(&self.current, target)?;
+        self.machine.validate_transition(&self.current, target)?;
 
         self.current.clear();
         self.current.push_str(target);
 
         Ok(())
     }
-    
+
     /// Returns true if the state has no outgoing transitions.
     pub fn is_terminal(&self) -> bool {
         self.machine.is_terminal(self.state())
     }
-    
+
     /// Returns a shared handle to this instance's machine definition.
     pub fn machine(&self) -> Machine {
         Machine::from_inner(Arc::clone(&self.machine))
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -69,9 +68,7 @@ mod tests {
 
         #[test]
         fn initial_known_source_state_succeeds() -> Result<(), StateError> {
-            let machine = Machine::builder()
-                .try_allow("1", "2")?
-                .build()?;
+            let machine = Machine::builder().try_allow("1", "2")?.build()?;
 
             let instance = machine.instance("1");
 
@@ -82,9 +79,7 @@ mod tests {
 
         #[test]
         fn initial_known_target_only_state_succeeds() -> Result<(), StateError> {
-            let machine = Machine::builder()
-                .try_allow("1", "2")?
-                .build()?;
+            let machine = Machine::builder().try_allow("1", "2")?.build()?;
 
             let instance = machine.instance("2");
 
@@ -95,9 +90,7 @@ mod tests {
 
         #[test]
         fn initial_unknown_state_fails() -> Result<(), StateError> {
-            let machine = Machine::builder()
-                .try_allow("1", "2")?
-                .build()?;
+            let machine = Machine::builder().try_allow("1", "2")?.build()?;
 
             let instance = machine.instance("3");
 
@@ -107,16 +100,15 @@ mod tests {
         }
 
         #[test]
-        fn initial_unknown_state_fails_with_unknown_initial_state_error() -> Result<(), StateError> {
-            let machine = Machine::builder()
-                .try_allow("1", "2")?
-                .build()?;
+        fn initial_unknown_state_fails_with_unknown_initial_state_error() -> Result<(), StateError>
+        {
+            let machine = Machine::builder().try_allow("1", "2")?.build()?;
 
             let instance = machine.instance("3");
 
             assert!(matches!(
                 instance,
-                Err(StateError::UnknownInitialState { ref state }) 
+                Err(StateError::UnknownInitialState { ref state })
                     if state == "3"
             ));
 
@@ -125,9 +117,7 @@ mod tests {
 
         #[test]
         fn initial_exact_match_behavior_is_preserved() -> Result<(), StateError> {
-            let machine = Machine::builder()
-                .try_allow("1", "2")?
-                .build()?;
+            let machine = Machine::builder().try_allow("1", "2")?.build()?;
 
             let instance = machine.instance(" 1 ");
 
@@ -142,9 +132,7 @@ mod tests {
 
         #[test]
         fn state_initial_state_matches() -> Result<(), StateError> {
-            let machine = Machine::builder()
-                .try_allow("1", "2")?
-                .build()?;
+            let machine = Machine::builder().try_allow("1", "2")?.build()?;
 
             let instance = machine.instance("1")?;
 
@@ -162,7 +150,7 @@ mod tests {
 
             let mut instance = machine.instance("1")?;
 
-            instance.transition_to("2")?; 
+            instance.transition_to("2")?;
 
             assert_eq!(instance.state(), "2");
 
@@ -214,39 +202,38 @@ mod tests {
 
             Ok(())
         }
-        
+
         #[test]
-        fn can_transition_to_returns_false_when_edge_exists_from_disallowed_state(
-        ) -> Result<(), StateError> {
+        fn can_transition_to_returns_false_when_edge_exists_from_disallowed_state()
+        -> Result<(), StateError> {
             let machine = Machine::builder()
                 .try_allow("1", "2")?
                 .try_allow("2", "3")?
                 .build()?;
-        
+
             let instance = machine.instance("1")?;
-        
+
             assert!(!instance.can_transition_to("3"));
-        
+
             Ok(())
         }
-        
+
         #[test]
-        fn can_transition_to_uses_current_state_after_transition(
-        ) -> Result<(), StateError> {
+        fn can_transition_to_uses_current_state_after_transition() -> Result<(), StateError> {
             let machine = Machine::builder()
                 .try_allow("1", "2")?
                 .try_allow("2", "3")?
                 .build()?;
-        
+
             let mut instance = machine.instance("1")?;
-        
+
             assert!(instance.can_transition_to("2"));
-        
+
             instance.transition_to("2")?;
-        
+
             assert!(instance.can_transition_to("3"));
             assert!(!instance.can_transition_to("2"));
-        
+
             Ok(())
         }
     }
@@ -294,17 +281,15 @@ mod tests {
 
         #[test]
         fn transition_to_failure_when_unknown() -> Result<(), StateError> {
-            let machine = Machine::builder()
-                .try_allow("1", "2")?
-                .build()?;
+            let machine = Machine::builder().try_allow("1", "2")?.build()?;
 
             let mut instance = machine.instance("1")?;
 
             let result = instance.transition_to("4");
 
             assert!(matches!(
-                result, 
-                Err(StateError::InvalidTransition { 
+                result,
+                Err(StateError::InvalidTransition {
                     ref from,
                     ref to
                 }) if from == "1" && to == "4"
@@ -325,8 +310,8 @@ mod tests {
             let result = instance.transition_to("3");
 
             assert!(matches!(
-                result, 
-                Err(StateError::InvalidTransition { 
+                result,
+                Err(StateError::InvalidTransition {
                     ref from,
                     ref to
                 }) if from == "1" && to == "3"
@@ -337,9 +322,7 @@ mod tests {
 
         #[test]
         fn transition_to_failure_does_not_change_the_state() -> Result<(), StateError> {
-            let machine = Machine::builder()
-                .try_allow("1", "2")?
-                .build()?;
+            let machine = Machine::builder().try_allow("1", "2")?.build()?;
 
             let mut instance = machine.instance("1")?;
 
@@ -369,8 +352,8 @@ mod tests {
             let result = instance.transition_to("4");
 
             assert!(matches!(
-                result, 
-                Err(StateError::InvalidTransition { 
+                result,
+                Err(StateError::InvalidTransition {
                     ref from,
                     ref to
                 }) if from == "2" && to == "4"
@@ -381,9 +364,7 @@ mod tests {
 
         #[test]
         fn transition_to_transitions_to_terminal_state() -> Result<(), StateError> {
-            let machine = Machine::builder()
-                .try_allow("1", "2")?
-                .build()?;
+            let machine = Machine::builder().try_allow("1", "2")?.build()?;
 
             let mut instance = machine.instance("1")?;
 
@@ -428,9 +409,7 @@ mod tests {
         #[test]
         fn instance_functions_with_no_handle() -> Result<(), StateError> {
             let mut instance = {
-                let machine = Machine::builder()
-                    .try_allow("1", "2")?
-                    .build()?;
+                let machine = Machine::builder().try_allow("1", "2")?.build()?;
                 machine.instance("1")?
             };
 
@@ -445,9 +424,7 @@ mod tests {
 
         #[test]
         fn is_terminal_on_initial_returns_false_on_source() -> Result<(), StateError> {
-            let machine = Machine::builder()
-                .try_allow("1", "2")?
-                .build()?;
+            let machine = Machine::builder().try_allow("1", "2")?.build()?;
 
             let instance = machine.instance("1")?;
 
@@ -458,9 +435,7 @@ mod tests {
 
         #[test]
         fn is_terminal_on_initial_returns_true_on_terminal_state() -> Result<(), StateError> {
-            let machine = Machine::builder()
-                .try_allow("1", "2")?
-                .build()?;
+            let machine = Machine::builder().try_allow("1", "2")?.build()?;
 
             let instance = machine.instance("2")?;
 
@@ -470,7 +445,8 @@ mod tests {
         }
 
         #[test]
-        fn is_terminal_returns_false_after_transition_to_nonterminal_node() -> Result<(), StateError> {
+        fn is_terminal_returns_false_after_transition_to_nonterminal_node() -> Result<(), StateError>
+        {
             let machine = Machine::builder()
                 .try_allow("1", "2")?
                 .try_allow("2", "3")?
@@ -506,7 +482,8 @@ mod tests {
         use super::*;
 
         #[test]
-        fn instances_are_equal_when_machine_and_current_state_are_equal() -> Result<(), StateError> {
+        fn instances_are_equal_when_machine_and_current_state_are_equal() -> Result<(), StateError>
+        {
             let machine = Machine::builder()
                 .try_allow("1", "2")?
                 .try_allow("2", "3")?
@@ -521,7 +498,8 @@ mod tests {
         }
 
         #[test]
-        fn instances_are_not_equal_when_machine_and_current_state_are_different() -> Result<(), StateError> {
+        fn instances_are_not_equal_when_machine_and_current_state_are_different()
+        -> Result<(), StateError> {
             let machine = Machine::builder()
                 .try_allow("1", "2")?
                 .try_allow("2", "3")?
@@ -537,13 +515,9 @@ mod tests {
 
         #[test]
         fn instances_are_not_equal_when_machine_definitions_differ() -> Result<(), StateError> {
-            let first_machine = Machine::builder()
-                .try_allow("1", "2")?
-                .build()?;
+            let first_machine = Machine::builder().try_allow("1", "2")?.build()?;
 
-            let second_machine = Machine::builder()
-                .try_allow("1", "3")?
-                .build()?;
+            let second_machine = Machine::builder().try_allow("1", "3")?.build()?;
 
             let first = first_machine.instance("1")?;
             let second = second_machine.instance("1")?;
@@ -559,12 +533,10 @@ mod tests {
 
         #[test]
         fn machine_returns_handle_to_same_machine_inner() -> Result<(), StateError> {
-            let machine = Machine::builder()
-                .try_allow("1", "2")?
-                .build()?;
+            let machine = Machine::builder().try_allow("1", "2")?.build()?;
 
             let instance = machine.instance("1")?;
-            let returned  = instance.machine();
+            let returned = instance.machine();
 
             assert!(Arc::ptr_eq(&machine.inner, &returned.inner));
 

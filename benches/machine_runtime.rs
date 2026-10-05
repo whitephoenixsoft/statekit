@@ -1,4 +1,4 @@
-use criterion::{BenchmarkId, Criterion, criterion_group, criterion_main, BatchSize};
+use criterion::{BatchSize, BenchmarkId, Criterion, criterion_group, criterion_main};
 use statekit::Machine;
 use std::hint::black_box;
 
@@ -51,7 +51,7 @@ fn benchmark_instance_construction_terminal(c: &mut Criterion) {
     for transition_count in SIZES {
         let machine = build_linear_machine(transition_count);
         let state = format!("state_{transition_count}");
-        
+
         group.bench_with_input(
             BenchmarkId::new("terminal", transition_count),
             &transition_count,
@@ -69,7 +69,6 @@ fn benchmark_instance_construction_terminal(c: &mut Criterion) {
 
     group.finish();
 }
-
 
 fn benchmark_instance_construction_missing(c: &mut Criterion) {
     let mut group = c.benchmark_group("instance_construction");
@@ -98,17 +97,14 @@ fn benchmark_can_transition_to_allowed(c: &mut Criterion) {
 
     for transition_count in SIZES {
         let machine = build_linear_machine(transition_count);
-        let instance = machine.instance("state_0")
-            .expect("benchmark state exists");
+        let instance = machine.instance("state_0").expect("benchmark state exists");
 
         group.bench_with_input(
             BenchmarkId::new("allowed", transition_count),
             &transition_count,
             |b, _| {
                 b.iter(|| {
-                    black_box(
-                        instance.can_transition_to(black_box("state_1"))
-                    );
+                    black_box(instance.can_transition_to(black_box("state_1")));
                 });
             },
         );
@@ -117,23 +113,19 @@ fn benchmark_can_transition_to_allowed(c: &mut Criterion) {
     group.finish();
 }
 
-
 fn benchmark_can_transition_to_disallowed_existing(c: &mut Criterion) {
     let mut group = c.benchmark_group("can_transition_to");
 
     for transition_count in SIZES {
         let machine = build_linear_machine(transition_count);
-        let instance = machine.instance("state_0")
-            .expect("benchmark state exists");
+        let instance = machine.instance("state_0").expect("benchmark state exists");
 
         group.bench_with_input(
             BenchmarkId::new("disallowed_existing", transition_count),
             &transition_count,
             |b, _| {
                 b.iter(|| {
-                    black_box(
-                        instance.can_transition_to(black_box("state_2"))
-                    );
+                    black_box(instance.can_transition_to(black_box("state_2")));
                 });
             },
         );
@@ -147,17 +139,14 @@ fn benchmark_can_transition_to_missing(c: &mut Criterion) {
 
     for transition_count in SIZES {
         let machine = build_linear_machine(transition_count);
-        let instance = machine.instance("state_0")
-            .expect("benchmark state exists");
+        let instance = machine.instance("state_0").expect("benchmark state exists");
 
         group.bench_with_input(
             BenchmarkId::new("missing", transition_count),
             &transition_count,
             |b, _| {
                 b.iter(|| {
-                    black_box(
-                        instance.can_transition_to(black_box("definitely_missing"))
-                    );
+                    black_box(instance.can_transition_to(black_box("definitely_missing")));
                 });
             },
         );
@@ -178,14 +167,11 @@ fn benchmark_transition_to_allowed(c: &mut Criterion) {
             |b, _| {
                 b.iter_batched(
                     || {
-                        machine.instance(black_box("state_0"))
+                        machine
+                            .instance(black_box("state_0"))
                             .expect("benchmark state exists")
                     },
-                    |mut instance| {
-                        black_box(
-                            instance.transition_to(black_box("state_1"))
-                        )
-                    },
+                    |mut instance| black_box(instance.transition_to(black_box("state_1"))),
                     BatchSize::SmallInput,
                 );
             },
@@ -207,14 +193,11 @@ fn benchmark_transition_to_disallowed(c: &mut Criterion) {
             |b, _| {
                 b.iter_batched(
                     || {
-                        machine.instance(black_box("state_0"))
+                        machine
+                            .instance(black_box("state_0"))
                             .expect("benchmark state exists")
                     },
-                    |mut instance| {
-                        black_box(
-                            instance.transition_to(black_box("state_2"))
-                        )
-                    },
+                    |mut instance| black_box(instance.transition_to(black_box("state_2"))),
                     BatchSize::SmallInput,
                 );
             },
@@ -236,13 +219,12 @@ fn benchmark_transition_to_missing(c: &mut Criterion) {
             |b, _| {
                 b.iter_batched(
                     || {
-                        machine.instance(black_box("state_0"))
+                        machine
+                            .instance(black_box("state_0"))
                             .expect("benchmark state exists")
                     },
                     |mut instance| {
-                        black_box(
-                            instance.transition_to(black_box("definitely_missing"))
-                        )
+                        black_box(instance.transition_to(black_box("definitely_missing")))
                     },
                     BatchSize::SmallInput,
                 );
@@ -258,17 +240,14 @@ fn benchmark_is_terminal_source(c: &mut Criterion) {
 
     for transition_count in SIZES {
         let machine = build_linear_machine(transition_count);
-        let instance = machine.instance("state_0")
-            .expect("benchmark state exists");
+        let instance = machine.instance("state_0").expect("benchmark state exists");
 
         group.bench_with_input(
             BenchmarkId::new("source", transition_count),
             &transition_count,
             |b, _| {
                 b.iter(|| {
-                    black_box(
-                        instance.is_terminal()
-                    );
+                    black_box(instance.is_terminal());
                 });
             },
         );
@@ -283,7 +262,8 @@ fn benchmark_is_terminal_terminal(c: &mut Criterion) {
     for transition_count in SIZES {
         let machine = build_linear_machine(transition_count);
         let terminal = format!("state_{transition_count}");
-        let instance = machine.instance(terminal.as_str())
+        let instance = machine
+            .instance(terminal.as_str())
             .expect("benchmark state exists");
 
         group.bench_with_input(
@@ -291,9 +271,7 @@ fn benchmark_is_terminal_terminal(c: &mut Criterion) {
             &transition_count,
             |b, _| {
                 b.iter(|| {
-                    black_box(
-                        instance.is_terminal()
-                    );
+                    black_box(instance.is_terminal());
                 });
             },
         );

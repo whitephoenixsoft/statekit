@@ -1,5 +1,5 @@
-use std::sync::Arc;
 use crate::{MachineBuilder, MachineInner, MachineInstance, StateError, Transition, Transitions};
+use std::sync::Arc;
 
 /// An immutable state-machine definition.
 ///
@@ -14,27 +14,24 @@ impl Machine {
     /// Constructs a machine from validated transitions.
     pub(crate) fn new(transitions: Transitions) -> Self {
         let inner = MachineInner::new(transitions);
-        
-        Self { 
+
+        Self {
             inner: Arc::new(inner),
         }
     }
-    
+
     /// Constructs a machine handle from existing MachineInner.
     pub(crate) fn from_inner(inner: Arc<MachineInner>) -> Self {
-        
-        Self { 
-            inner,
-        }
+        Self { inner }
     }
-    
+
     /// Returns a builder for constructing a [`Machine`].
     ///
     /// This is the public entry point for creating machine definitions.
     pub fn builder() -> MachineBuilder {
         MachineBuilder::new()
     }
-    
+
     /// Returns an instance of a mutable state machine instance.
     ///
     /// # Errors
@@ -42,10 +39,7 @@ impl Machine {
     /// Returns [`StateError::UnknownInitialState`] when `initial` is not an
     /// existing state.
     pub fn instance(&self, initial: &str) -> Result<MachineInstance, StateError> {
-        MachineInstance::try_new(
-            Arc::clone(&self.inner),
-            initial.to_owned(),
-        )
+        MachineInstance::try_new(Arc::clone(&self.inner), initial.to_owned())
     }
 
     /// Returns whether the transition from `from` to `to` is allowed.
@@ -86,13 +80,13 @@ impl Machine {
     /// The iteration order is unspecified.
     #[deprecated(since = "0.2.0", note = "use `targets_from` instead")]
     pub fn targets(&self, from: &str) -> Option<impl Iterator<Item = &str>> {
-         let mut targets = self.targets_from(from).peekable();
+        let mut targets = self.targets_from(from).peekable();
 
-         if targets.peek().is_none() {
-             None
-         } else {
-             Some(targets)
-         }
+        if targets.peek().is_none() {
+            None
+        } else {
+            Some(targets)
+        }
     }
 
     /// Returns an iterator over states directly reachable from `from`.
@@ -125,7 +119,7 @@ impl Machine {
     pub fn transitions(&self) -> impl Iterator<Item = &Transition> {
         self.inner.transitions()
     }
-    
+
     ///Returns true when the state has no outgoing transitions.
     pub fn is_terminal(&self, state: &str) -> bool {
         self.inner.is_terminal(state)
@@ -374,10 +368,10 @@ mod tests {
             Ok(())
         }
     }
-    
+
     mod is_terminal {
         use super::*;
-        
+
         #[test]
         fn source_is_not_terminal() -> Result<(), StateError> {
             let machine = Machine::builder().try_allow("1", "2")?.build()?;
@@ -386,7 +380,7 @@ mod tests {
 
             Ok(())
         }
-        
+
         #[test]
         fn target_with_no_outgoing_source_is_terminal() -> Result<(), StateError> {
             let machine = Machine::builder().try_allow("1", "2")?.build()?;

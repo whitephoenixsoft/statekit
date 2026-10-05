@@ -63,7 +63,7 @@ mod tests {
     }
 
     #[test]
-    fn self_transition_returns_error()  {
+    fn self_transition_returns_error() {
         let result = Transition::try_new("1", "1");
 
         assert!(matches!(
@@ -83,7 +83,7 @@ mod tests {
     }
 
     #[test]
-    fn different_transitions_are_not_equal() -> Result<(), StateError> { 
+    fn different_transitions_are_not_equal() -> Result<(), StateError> {
         let transition1 = Transition::try_new("1", "2")?;
         let transition2 = Transition::try_new("2", "3")?;
 
@@ -91,5 +91,4 @@ mod tests {
 
         Ok(())
     }
-
 }

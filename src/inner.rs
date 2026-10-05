@@ -11,7 +11,6 @@ impl MachineInner {
     pub(crate) fn new(transitions: Transitions) -> Self {
         Self { transitions }
     }
-    
 
     /// Returns whether the transition from `from` to `to` is allowed.
     pub(crate) fn can_transition(&self, from: &str, to: &str) -> bool {
@@ -59,7 +58,7 @@ impl MachineInner {
     pub(crate) fn transitions(&self) -> impl Iterator<Item = &Transition> {
         self.transitions.iter()
     }
-    
+
     ///A state is terminal when it has no outgoing transitions.
     pub fn is_terminal(&self, state: &str) -> bool {
         self.targets_from(state).next().is_none()
@@ -90,7 +89,7 @@ mod tests {
         fn validate_transition_not_exists_returns_invalid_error() -> Result<(), StateError> {
             let mut transitions = Transitions::new();
             transitions.add(Transition::try_new("start", "finish")?);
-            
+
             let m = MachineInner::new(transitions);
 
             assert_eq!(
@@ -109,9 +108,9 @@ mod tests {
             let mut transitions = Transitions::new();
             transitions.add(Transition::try_new("start", "finish")?);
             transitions.add(Transition::try_new("finish", "start")?);
-            
+
             let m = MachineInner::new(transitions);
-            
+
             assert!(m.validate_transition("finish", "start").is_ok());
 
             Ok(())
@@ -126,7 +125,7 @@ mod tests {
             let mut transitions = Transitions::new();
             transitions.add(Transition::try_new("start", "finish")?);
             transitions.add(Transition::try_new("1", "2")?);
-            
+
             let m = MachineInner::new(transitions);
 
             assert_eq!(m.transition_count(), 2);
@@ -142,7 +141,7 @@ mod tests {
         fn can_transition_exists_returns_true() -> Result<(), StateError> {
             let mut transitions = Transitions::new();
             transitions.add(Transition::try_new("start", "finish")?);
-            
+
             let m = MachineInner::new(transitions);
 
             assert!(m.can_transition("start", "finish"));
@@ -154,7 +153,7 @@ mod tests {
         fn can_transition_not_exists_returns_false() -> Result<(), StateError> {
             let mut transitions = Transitions::new();
             transitions.add(Transition::try_new("start", "finish")?);
-            
+
             let m = MachineInner::new(transitions);
 
             assert!(!m.can_transition("start", "invalid"));
@@ -170,7 +169,7 @@ mod tests {
         fn contains_state_finds_target_only_state() -> Result<(), StateError> {
             let mut transitions = Transitions::new();
             transitions.add(Transition::try_new("start", "finish")?);
-            
+
             let m = MachineInner::new(transitions);
 
             assert!(m.contains_state("finish"));
@@ -182,7 +181,7 @@ mod tests {
         fn contains_state_rejects_unknown_state() -> Result<(), StateError> {
             let mut transitions = Transitions::new();
             transitions.add(Transition::try_new("start", "finish")?);
-            
+
             let m = MachineInner::new(transitions);
 
             assert!(!m.contains_state("other"));
@@ -194,7 +193,7 @@ mod tests {
         fn contains_state_rejects_ambiguous_state() -> Result<(), StateError> {
             let mut transitions = Transitions::new();
             transitions.add(Transition::try_new("start", "finish")?);
-            
+
             let m = MachineInner::new(transitions);
 
             assert!(!m.contains_state(" start"));
@@ -207,7 +206,7 @@ mod tests {
             let mut transitions = Transitions::new();
             transitions.add(Transition::try_new("start", "end")?);
             transitions.add(Transition::try_new("rest", "finish")?);
-            
+
             let m = MachineInner::new(transitions);
 
             assert!(m.contains_state("rest"));
@@ -224,7 +223,7 @@ mod tests {
         {
             let mut transitions = Transitions::new();
             transitions.add(Transition::try_new("start", "finish")?);
-            
+
             let m = MachineInner::new(transitions);
             let collected: Vec<_> = m.targets_from("other").collect();
 
@@ -237,7 +236,7 @@ mod tests {
         fn targets_from_one_transition_one_value() -> Result<(), StateError> {
             let mut transitions = Transitions::new();
             transitions.add(Transition::try_new("start", "finish")?);
-            
+
             let m = MachineInner::new(transitions);
             let collected: Vec<_> = m.targets_from("start").collect();
 
@@ -251,7 +250,7 @@ mod tests {
             let mut transitions = Transitions::new();
             transitions.add(Transition::try_new("start", "1")?);
             transitions.add(Transition::try_new("start", "2")?);
-            
+
             let m = MachineInner::new(transitions);
             let mut collected: Vec<_> = m.targets_from("start").collect();
             collected.sort();
@@ -267,7 +266,7 @@ mod tests {
             transitions.add(Transition::try_new("start", "1")?);
             transitions.add(Transition::try_new("start", "2")?);
             transitions.add(Transition::try_new("start", "3")?);
-            
+
             let m = MachineInner::new(transitions);
             let mut collected: Vec<_> = m.targets_from("start").collect();
             collected.sort();
@@ -281,15 +280,10 @@ mod tests {
         fn targets_from_target_only_state_returns_empty() -> Result<(), StateError> {
             let mut transitions = Transitions::new();
             transitions.add(Transition::try_new("start", "finish")?);
-            
+
             let m = MachineInner::new(transitions);
             assert!(m.contains_state("finish"));
-            assert!(
-                m
-                    .targets_from("finish")
-                    .collect::<Vec<_>>()
-                    .is_empty()
-            );
+            assert!(m.targets_from("finish").collect::<Vec<_>>().is_empty());
 
             Ok(())
         }
@@ -299,7 +293,7 @@ mod tests {
             let mut transitions = Transitions::new();
             transitions.add(Transition::try_new("start", "finish")?);
             transitions.add(Transition::try_new("start", "finish")?);
-            
+
             let m = MachineInner::new(transitions);
             assert_eq!(m.transition_count(), 1);
 
@@ -317,7 +311,7 @@ mod tests {
         fn sources_one_source_one_value() -> Result<(), StateError> {
             let mut transitions = Transitions::new();
             transitions.add(Transition::try_new("start", "finish")?);
-            
+
             let machine = MachineInner::new(transitions);
 
             let sources: Vec<_> = machine.sources().collect();
@@ -333,7 +327,7 @@ mod tests {
             transitions.add(Transition::try_new("1", "0")?);
             transitions.add(Transition::try_new("2", "0")?);
             transitions.add(Transition::try_new("3", "0")?);
-            
+
             let machine = MachineInner::new(transitions);
 
             let mut sources: Vec<_> = machine.sources().collect();
@@ -352,7 +346,7 @@ mod tests {
         fn states_one_transition_returns_2_values() -> Result<(), StateError> {
             let mut transitions = Transitions::new();
             transitions.add(Transition::try_new("1", "2")?);
-            
+
             let machine = MachineInner::new(transitions);
 
             let mut states: Vec<_> = machine.states().collect();
@@ -370,7 +364,7 @@ mod tests {
             transitions.add(Transition::try_new("1", "3")?);
             transitions.add(Transition::try_new("2", "3")?);
             transitions.add(Transition::try_new("3", "4")?);
-            
+
             let machine = MachineInner::new(transitions);
 
             let mut states: Vec<_> = machine.states().collect();
@@ -385,7 +379,7 @@ mod tests {
         fn includes_target_only_states() -> Result<(), StateError> {
             let mut transitions = Transitions::new();
             transitions.add(Transition::try_new("queued", "running")?);
-            
+
             let machine = MachineInner::new(transitions);
 
             let mut states: Vec<_> = machine.states().collect();
@@ -404,7 +398,7 @@ mod tests {
         fn one_transition_returns_matching_fields() -> Result<(), StateError> {
             let mut transitions = Transitions::new();
             transitions.add(Transition::try_new("1", "2")?);
-            
+
             let machine = MachineInner::new(transitions);
 
             let transitions2: Vec<_> = machine.transitions().collect();
@@ -419,7 +413,7 @@ mod tests {
         fn one_transition_returns_one_item() -> Result<(), StateError> {
             let mut transitions = Transitions::new();
             transitions.add(Transition::try_new("1", "2")?);
-            
+
             let machine = MachineInner::new(transitions);
 
             let transitions2: Vec<_> = machine.transitions().collect();
@@ -436,7 +430,7 @@ mod tests {
             transitions.add(Transition::try_new("2", "3")?);
             transitions.add(Transition::try_new("2", "1")?);
             transitions.add(Transition::try_new("5", "2")?);
-            
+
             let machine = MachineInner::new(transitions);
 
             let transitions2: Vec<_> = machine.transitions().collect();
@@ -446,53 +440,53 @@ mod tests {
             Ok(())
         }
     }
-    
+
     mod is_terminal {
         use super::*;
-        
+
         #[test]
         fn one_transition_target_returns_true() -> Result<(), StateError> {
             let mut transitions = Transitions::new();
             transitions.add(Transition::try_new("1", "2")?);
-            
+
             let machine = MachineInner::new(transitions);
 
             assert!(machine.is_terminal("2"));
 
             Ok(())
         }
-        
+
         #[test]
         fn one_transition_source_returns_false() -> Result<(), StateError> {
             let mut transitions = Transitions::new();
             transitions.add(Transition::try_new("1", "2")?);
-            
+
             let machine = MachineInner::new(transitions);
 
             assert!(!machine.is_terminal("1"));
 
             Ok(())
         }
-        
+
         #[test]
         fn multiple_transitions_terminal_returns_true() -> Result<(), StateError> {
             let mut transitions = Transitions::new();
             transitions.add(Transition::try_new("1", "2")?);
             transitions.add(Transition::try_new("2", "3")?);
-            
+
             let machine = MachineInner::new(transitions);
 
             assert!(machine.is_terminal("3"));
 
             Ok(())
         }
-        
+
         #[test]
         fn multiple_transitions_connected_returns_false() -> Result<(), StateError> {
             let mut transitions = Transitions::new();
             transitions.add(Transition::try_new("1", "2")?);
             transitions.add(Transition::try_new("2", "3")?);
-            
+
             let machine = MachineInner::new(transitions);
 
             assert!(!machine.is_terminal("2"));
@@ -537,5 +531,5 @@ mod tests {
 
             Ok(())
         }
-    }    
+    }
 }
