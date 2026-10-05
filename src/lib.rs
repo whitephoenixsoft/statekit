@@ -21,14 +21,14 @@
 //!         .try_allow("running", "failed")?
 //!         .build()?;
 //!
-//!         machine.validate_transition("queued", "running")?;
+//!     machine.validate_transition("queued", "running")?;
 //!
 //!     assert!(machine.can_transition("queued", "running"));
 //!     assert!(!machine.can_transition("queued", "completed"));
 //!
 //!     let mut instance = machine.instance("queued")?;
 //!
-//!   instance.transition_to("running")?;
+//!     instance.transition_to("running")?;
 //!
 //!     assert!(instance.can_transition_to("completed"));
 //!     assert!(!instance.can_transition_to("queued"));

@@ -1,7 +1,7 @@
 use crate::{Machine, MachineInner, StateError};
 use std::sync::Arc;
 
-/// The instance of a state machine.
+/// An instance of a state machine.
 ///
 /// A machine instance traverses existing states in [`Machine`].
 #[derive(Debug, PartialEq, Eq)]
