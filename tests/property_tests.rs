@@ -773,7 +773,7 @@ proptest! {
     }
 
     #[test]
-    fn failed_instant_transitions_have_no_observable_effect(
+    fn failed_instance_transitions_have_no_observable_effect(
         (transitions, probe) in transitions_with_missing_edge_from_existing_source()
     ) {
         let machine = build_machine(&transitions);

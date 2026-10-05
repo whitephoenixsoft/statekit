@@ -17,15 +17,9 @@ The purpose of this document is to outline what property tests have been defined
 
 ## CORE INVARIANT COVERAGE
 
-**INV-002 No Self Transitions**
-  → self_transition_is_always_rejected
-
 **INV-004 Logical Transition Uniqueness**
   → duplicate_transitions_collapse
   → model transition count
-
-**INV-005 Case-Sensitive State Identity**
-  → case_distinct_states_remain_distinct
 
 **INV-009 Shared Immutable Machine**
   → instances_are_independent
@@ -41,10 +35,6 @@ The purpose of this document is to outline what property tests have been defined
 
 **INV-012 Independent Instances**
   → instances_are_independent
-
-**INV-013 Machine Equality**
-  → equivalent_definitions_produce_equal_machines
-  → different_definitions_produce_unequal_machines
 
 ## Outline
 
