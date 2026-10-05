@@ -4,7 +4,7 @@ category: specification
 category-level: foundational
 version: 0.4
 status: active
-review-status: under-second-review
+review-status: reviewed
 ---
 # Statekit Specification
 
@@ -14,7 +14,7 @@ This specification defines the Statekit domain model and the behavioral contract
 
 ## Machine
 
-Machine is an immutable value-like machine definition implemented as a shared handle. It represents a definition of the allowed state transitions.
+Machine is an immutable value-like definition of the allowed state transitions. 
 ### Construction
 - Contains at least one logical transition.
 - Contains only validated state names and transitions.

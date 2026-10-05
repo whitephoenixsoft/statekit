@@ -165,7 +165,7 @@ These instances share a reference to the state machine and can work concurrently
 
 ### Semantic Equality
 
-Two machines are equal if they contain the same graph. Two instances are equal if they are in the same graph and at the same node.
+Two machines are equal when their machine definitions are equal. Two instances are equal when they reference equal machine definitions and are on the same traversal state.
 
 This allows for algorithmic use of the graph through for problem solving.
 
