@@ -231,7 +231,7 @@ fn benchmark_transition_to_missing(c: &mut Criterion) {
         let machine = build_linear_machine(transition_count);
 
         group.bench_with_input(
-            BenchmarkId::new("disallowed_existing", transition_count),
+            BenchmarkId::new("missing", transition_count),
             &transition_count,
             |b, _| {
                 b.iter_batched(
