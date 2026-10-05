@@ -30,7 +30,7 @@ assert_eq!(instance.state(), "draft");
 assert!(instance.can_transition_to("approved"));
 ```
 
-Two `MachineInstance` can also be compared for equality. As long as the machine definitions are equal, the `MachineInstance` will be equal when they share the same traversal position in its `Machine`.
+Two `MachineInstance` values can also be compared for equality. As long as the machine definitions are equal, the `MachineInstance` values will be equal when they share the same traversal position in its `Machine`.
 
 ```rust
 let machine1 = Machine::builder()
@@ -41,13 +41,14 @@ let machine2 = Machine::builder()
     .try_allow("draft", "approved")?
     .build()?;
 
-// Different machine definitions
+// Equal definitions constructed independently
 let instance1 = machine1.instance("draft")?;
 let instance2 = machine2.instance("draft")?;
 
 assert_eq!(instance1, instance2);
 
-// Same machine definition
+// Instances created from the same Machine are also equal
+// when their current states are equal.
 let instance3 = machine1.instance("draft")?;
 assert_eq!(instance1, instance3);
 ```
