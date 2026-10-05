@@ -147,4 +147,20 @@ mod tests {
             })
         );
     }
+
+    #[test]
+    fn similar_state_names_are_equal() {
+        let name1 = StateName::try_from("1").unwrap();
+        let name2 = StateName::try_from("1").unwrap();
+
+        assert_eq!(name1, name2);
+    }
+
+    #[test]
+    fn different_state_names_are_not_equal() {
+        let name1 = StateName::try_from("1").unwrap();
+        let name2 = StateName::try_from("2").unwrap();
+
+        assert_ne!(name1, name2);
+    }
 }

@@ -21,10 +21,17 @@
 //!         .try_allow("running", "failed")?
 //!         .build()?;
 //!
+//!     machine.validate_transition("queued", "running")?;
+//!
 //!     assert!(machine.can_transition("queued", "running"));
 //!     assert!(!machine.can_transition("queued", "completed"));
 //!
-//!     machine.validate_transition("queued", "running")?;
+//!     let mut instance = machine.instance("queued")?;
+//!
+//!     instance.transition_to("running")?;
+//!
+//!     assert!(instance.can_transition_to("completed"));
+//!     assert!(!instance.can_transition_to("queued"));
 //!
 //!     for transition in machine.transitions() {
 //!         println!("{} -> {}", transition.source(), transition.target());
@@ -36,11 +43,16 @@
 //!
 //! # Invariants
 //!
-//! - A machine contains at least one transition.
-//! - State names may not be empty or whitespace-only.
-//! - State names may not begin or end with Unicode whitespace.
+//! -  State names must not be empty or consist entirely of whitespace.
+//! - State names must not begin or end with Unicode whitespace.
+//! - State names are case-sensitive.
 //! - Self-transitions are rejected.
 //! - Cycles between distinct states are permitted.
+//! - A machine must contain at least one transition.
+//! - Duplicate transitions between the same source and target are stored as a single logical transition.
+//! - Transitions with non-existing edges are rejected.
+//! - Instances must be initialized with an existing state.
+//! - Instances can only transition to adjacent states.
 //!
 //! # Additional documentation
 //!
@@ -48,16 +60,20 @@
 //! and benchmark documentation.
 mod builder;
 mod error;
+mod instance;
 mod machine;
 mod transition;
 
+mod inner;
 mod state_name;
 mod transitions;
 
 pub use builder::MachineBuilder;
 pub use error::StateError;
+pub use instance::MachineInstance;
 pub use machine::Machine;
 pub use transition::Transition;
 
+pub(crate) use inner::MachineInner;
 pub(crate) use state_name::StateName;
 pub(crate) use transitions::Transitions;

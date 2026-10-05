@@ -3,7 +3,7 @@ use thiserror::Error;
 /// Errors produced when constructing or using a state machine.
 ///
 /// Each variant represents either a violated construction invariant
-/// or an invalid operation against a machine definition.
+/// or an invalid operation against a machine definition or instance.
 #[derive(Debug, Error, PartialEq, Eq)]
 pub enum StateError {
     /// The machine must contain at least one transition.
@@ -35,6 +35,13 @@ pub enum StateError {
         from: String,
         /// The requested destination state.
         to: String,
+    },
+
+    /// A machine instance initial state must be an existing state.
+    #[error("instance initial state {state:?} does not exist")]
+    UnknownInitialState {
+        /// The unknown state that was specified for initializing a machine instance.
+        state: String,
     },
 }
 

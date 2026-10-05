@@ -1,8 +1,8 @@
 [package]
 name = "statekit"
-version = "0.3.1"
+version = "0.4.0"
 edition = "2024"
-rust-version = "1.85"
+rust-version = "1.88"
 description = "An immutable state-machine for validating predefined transitions."
 license = "MIT"
 repository = "https://github.com/whitephoenixsoft/statekit"
@@ -21,9 +21,17 @@ exclude = [
 name = "machine_queries"
 harness = false
 
+[[bench]]
+name = "machine_runtime"
+harness = false
+
+[[bench]]
+name = "machine_memory"
+harness = false
+
 [dev-dependencies]
-criterion = "0.7.0"
+criterion = "0.8.2"
 proptest = "1.11"
 
 [dependencies]
-thiserror = "2"
+thiserror = "2.0.21"

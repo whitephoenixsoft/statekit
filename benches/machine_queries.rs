@@ -38,10 +38,12 @@ fn build_linear_inputs(transition_count: usize) -> Vec<(String, String)> {
         .collect()
 }
 
+const SIZES: [usize; 4] = [100, 1_000, 10_000, 100_000];
+
 fn benchmark_can_transition_existing(c: &mut Criterion) {
     let mut group = c.benchmark_group("can_transition");
 
-    for transition_count in [100, 1_000, 10_000, 100_000] {
+    for transition_count in SIZES {
         let machine = build_linear_machine(transition_count);
 
         let source = format!("state_{}", transition_count - 1);
@@ -64,7 +66,7 @@ fn benchmark_can_transition_existing(c: &mut Criterion) {
 fn benchmark_can_transition_missing(c: &mut Criterion) {
     let mut group = c.benchmark_group("can_transition");
 
-    for transition_count in [100, 1_000, 10_000, 100_000] {
+    for transition_count in SIZES {
         let machine = build_linear_machine(transition_count);
 
         let source = missing_state_like_existing(transition_count);
@@ -90,7 +92,7 @@ fn benchmark_targets_from_existing(c: &mut Criterion) {
     let mut group = c.benchmark_group("targets_from");
     group.measurement_time(Duration::from_secs(10));
 
-    for transition_count in [100, 1_000, 10_000, 100_000] {
+    for transition_count in SIZES {
         let machine = build_linear_machine(transition_count);
 
         let source = format!("state_{}", transition_count - 1);
@@ -115,7 +117,7 @@ fn benchmark_targets_from_missing(c: &mut Criterion) {
     let mut group = c.benchmark_group("targets_from");
     group.measurement_time(Duration::from_secs(10));
 
-    for transition_count in [100, 1_000, 10_000, 100_000] {
+    for transition_count in SIZES {
         let machine = build_linear_machine(transition_count);
 
         let source = missing_source_like_existing(transition_count);
@@ -140,7 +142,7 @@ fn benchmark_sources(c: &mut Criterion) {
     let mut group = c.benchmark_group("sources");
     group.measurement_time(Duration::from_secs(10));
 
-    for transition_count in [100, 1_000, 10_000, 100_000] {
+    for transition_count in SIZES {
         let machine = build_linear_machine(transition_count);
 
         group.throughput(Throughput::Elements(transition_count as u64));
@@ -163,7 +165,7 @@ fn benchmark_states(c: &mut Criterion) {
     let mut group = c.benchmark_group("states");
     group.measurement_time(Duration::from_secs(10));
 
-    for transition_count in [100, 1_000, 10_000, 100_000] {
+    for transition_count in SIZES {
         let machine = build_linear_machine(transition_count);
 
         group.throughput(Throughput::Elements(transition_count as u64));
@@ -185,7 +187,7 @@ fn benchmark_states(c: &mut Criterion) {
 fn benchmark_transitions(c: &mut Criterion) {
     let mut group = c.benchmark_group("transitions");
 
-    for transition_count in [100, 1_000, 10_000, 100_000] {
+    for transition_count in SIZES {
         let machine = build_linear_machine(transition_count);
 
         group.throughput(Throughput::Elements(transition_count as u64));
@@ -209,7 +211,7 @@ fn benchmark_transitions(c: &mut Criterion) {
 fn benchmark_contains_state_existing_source(c: &mut Criterion) {
     let mut group = c.benchmark_group("contains_state");
 
-    for transition_count in [100, 1_000, 10_000, 100_000] {
+    for transition_count in SIZES {
         let machine = build_linear_machine(transition_count);
 
         let state = "state_0";
@@ -231,7 +233,7 @@ fn benchmark_contains_state_existing_source(c: &mut Criterion) {
 fn benchmark_contains_state_target_only(c: &mut Criterion) {
     let mut group = c.benchmark_group("contains_state");
 
-    for transition_count in [100, 1_000, 10_000, 100_000] {
+    for transition_count in SIZES {
         let machine = build_linear_machine(transition_count);
 
         let state = format!("state_{}", transition_count);
@@ -253,7 +255,7 @@ fn benchmark_contains_state_target_only(c: &mut Criterion) {
 fn benchmark_contains_state_missing(c: &mut Criterion) {
     let mut group = c.benchmark_group("contains_state");
 
-    for transition_count in [100, 1_000, 10_000, 100_000] {
+    for transition_count in SIZES {
         let machine = build_linear_machine(transition_count);
 
         let state = missing_state_like_existing(transition_count);
@@ -276,7 +278,7 @@ fn benchmark_contains_state_missing(c: &mut Criterion) {
 fn benchmark_build_and_drop(c: &mut Criterion) {
     let mut group = c.benchmark_group("build_and_drop");
 
-    for transition_count in [100, 1_000, 10_000, 100_000] {
+    for transition_count in SIZES {
         let inputs = build_linear_inputs(transition_count);
 
         group.throughput(Throughput::Elements(transition_count as u64));

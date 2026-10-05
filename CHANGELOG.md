@@ -4,6 +4,25 @@ All notable changes to Statekit are documented in this file.
 
 ## [Unreleased]
 
+## [0.4.0]
+
+### Added
+
+- Added `MachineInstance` for stateful traversal of a `Machine` definition through `Machine::instance()`. Instances maintain independent traversal state and are thread-safe. See [MIGRATION.md](MIGRATION.md) for details.
+- Added `StateError::UnknownInitialState` for invalid instance construction.
+- Added `Machine::is_terminal(state)` to determine whether a state has no outgoing transitions.
+- Added memory benchmarks alongside the existing performance benchmarks. All benchmarks can be run with `cargo bench`.
+- Added v0.4 performance and memory benchmark baselines.
+
+### Documentation
+
+- Updated the README and API documentation with `MachineInstance` usage examples.
+- Updated benchmark documentation to cover instance operations and memory measurements.
+- Added a Project Core document defining Statekit's project intent, invariants, and architectural decisions.
+- Added a unit-test outline, mapping project invariants to unit and integration test evidence.
+- Updated the property-test outline to map property tests to project invariants.
+- Refined the specification to focus on domain requirements and behavioral contracts.
+
 ## [0.3.1]
 
 ### Added

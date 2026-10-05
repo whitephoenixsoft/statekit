@@ -1,6 +1,12 @@
+---
+project: statekit
+category: planning
+version: 0.4
+status: active
+review-status: reviewed
+---
+
 # Statekit Implementation Roadmap
-State: Active 
-Current Version: v0.3.x
 
 ## Purpose
 To define how statekit will evolve over next versions.
@@ -57,7 +63,7 @@ Introduce:
 - Benchmarking to measure current design properly
 - Property testing 
 
-### Phase 5 - Stateful execution (v0.4)
+### Phase 5 - Stateful execution (v0.4) -- COMPLETED
 
 **Goal** Add a machine instance for relative transitions.
 
@@ -70,9 +76,44 @@ To:
 Consider:
 - `MachineInstance` for stateful execution
 - whether `Machine` should remain the definition type or be renamed
-- adding memory benchmarks preparation for indexing changes.
+- Adding memory benchmarks preparation for indexing changes.
+- Benchmarking for instances
 
-### Phase 6 - Optimization (v0.5)
+Stateful execution:
+- MachineInstance
+- current state
+- transition_to()
+- can_transition_to()
+- failed transitions do not mutate state
+- settle ownership model
+
+### Phase 6 - Tighten Product Direction (v0.4.1)
+
+**Goal:** Review Core Project document and align direction with evidence.
+
+Consider:
+- add/modify tests to cover core to invariants
+- add traceability to application invariants
+
+### Phase 7 - Multiple Representations (v.5)
+
+> Should Statekit's public runtime model distinguish symbolic state names from internal/runtime state identity?
+
+Consider:
+A. Keep strings as state identity
+B. Make Machine generic over state identity
+C. Keep string-oriented construction but lower to Statekit-owned StateId
+
+Todo:
+Runtime state identity / lowering
+- distinguish symbolic state names from runtime identity
+- investigate StateId-style representation
+- decide whether public APIs should expose IDs
+- decide how name ↔ ID mapping works
+- evaluate whether strings remain the construction surface
+- keep generic Machine\<S\> as an alternative to compare, not the default assumption
+
+### Phase 8 - Optimization (v0.6)
 
 **Goal:** Runtime-oriented internal representation
 Evidence-driven indexing and memory tradeoffs
@@ -80,7 +121,15 @@ Evidence-driven indexing and memory tradeoffs
 Consider:
 - Performance/indexing changes for that benchmarks justify them.
 
-### Phase 7 - API Freeze (v0.9)
+Todo:
+Runtime indexing / representation optimization
+- transition membership index
+- adjacency/source index
+- state membership index
+- cached states/sources
+- memory benchmarking
+- construction/runtime/memory tradeoff analysis
+### Phase 9 - API Freeze (v0.9)
 
 No new features.
 
@@ -92,7 +141,10 @@ Answer questions:
 - Is this the API I'd be happy maintaining for five years?
 
 
-### Phase 8 - Production polish (v1.0)
+### Phase 10 - Production polish (v1.0)
 
 Only when the API seems acceptable.
+
+Consider:
+- Post 1.x direction
 

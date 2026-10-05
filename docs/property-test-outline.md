@@ -1,3 +1,10 @@
+---
+project: statekit
+category: traceability
+version: 0.4
+status: active
+review-status: reviewed
+---
 # Property Test Outline 
 
 ## Purpose
@@ -7,6 +14,27 @@ The purpose of this document is to outline what property tests have been defined
 ## Property Test Goal
 
 > Every important invariant and public graph operation has strong behavioral coverage, and the graph projections are checked against an independent model.
+
+## CORE INVARIANT COVERAGE
+
+**INV-004 Logical Transition Uniqueness**
+  → duplicate_transitions_collapse
+  → model transition count
+
+**INV-009 Shared Immutable Machine**
+  → instances_are_independent
+  → multithreaded integration coverage
+
+**INV-010 Valid Traversal**
+  → can_transition_to_agrees_with_the_edge_model
+  → model_and_instance_agree_on_attempts
+
+**INV-011 Safe Traversal Failure**
+  → failed_instance_transitions_have_no_observable_effect
+  → model_and_instance_agree_on_attempts
+
+**INV-012 Independent Instances**
+  → instances_are_independent
 
 ## Outline
 
@@ -18,6 +46,10 @@ VALIDATION
 ✔ trailing whitespace rejected
 ✔ source/target validation symmetry
 ✔ offending ambiguous value preserved
+✔ instance construction preserves its initial state
+✔ successful instance transitions update current state exactly to the target
+✔ failed instance transitions have no observable effect
+✔ shared-machine instance independence
 
 EDGE SEMANTICS
 ✔ exposed transition is queryable
@@ -30,10 +62,14 @@ REFERENCE MODEL
 ✔ states == model vertices
 ✔ sources == model sources
 ✔ targets_from == model outgoing targets
-✔ can_transition == model membershipi
+✔ can_transition == model membership
 ✔ contains_state(s) == model vertex membership
 ✔ transitions() == model edge set
 ✔ validate_transition(a, b).is_ok() == model.contains((a, b))
+✔ a.can_transition_to(b) == model.contains(a, b)
+✔ instance is_terminal() == model terminal vertice
+✔ instance transition_to()   == model.contains + mutable current state
+✔ instance can_transition_to() + transition_to() + targets + terminality == model.contains + mutable current state + targets
 
 CROSS-API CONSISTENCY
 ✔ transitions ↔ can_transition

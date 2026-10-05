@@ -111,7 +111,106 @@ fn transitions_with_missing_state()
         })
 }
 
+fn transitions_with_existing_state() -> impl Strategy<Value = (Vec<(String, String)>, String)> {
+    valid_transition_pairs().prop_flat_map(|transitions| {
+        let states = transitions
+            .iter()
+            .flat_map(|(source, target)| [source.clone(), target.clone()])
+            .collect::<Vec<_>>();
+
+        (Just(transitions), proptest::sample::select(states))
+    })
+}
+
+fn transitions_with_existing_target() -> impl Strategy<Value = (Vec<(String, String)>, String)> {
+    valid_transition_pairs().prop_flat_map(|transitions| {
+        let targets = transitions
+            .iter()
+            .map(|(_, target)| target.clone())
+            .collect::<Vec<_>>();
+
+        (Just(transitions), proptest::sample::select(targets))
+    })
+}
+
+fn transitions_with_attempt() -> impl Strategy<Value = (Vec<(String, String)>, (String, String))> {
+    valid_transition_pairs().prop_flat_map(|transitions| {
+        let states = transitions
+            .iter()
+            .flat_map(|(source, target)| [source.clone(), target.clone()])
+            .collect::<Vec<_>>();
+
+        (
+            Just(transitions),
+            (proptest::sample::select(states), valid_state_name()),
+        )
+    })
+}
+
+fn transitions_with_probe_and_existing_source()
+-> impl Strategy<Value = (Vec<(String, String)>, (String, String))> {
+    prop_oneof![
+        transitions_with_attempt(),
+        transitions_with_existing_probe(),
+    ]
+}
+
+fn transitions_with_initial_state_and_attempts()
+-> impl Strategy<Value = (Vec<(String, String)>, String, Vec<String>)> {
+    valid_transition_pairs().prop_flat_map(|transitions| {
+        let states = transitions
+            .iter()
+            .flat_map(|(source, target)| [source.clone(), target.clone()])
+            .collect::<Vec<_>>();
+        let attempt = prop_oneof![proptest::sample::select(states.clone()), valid_state_name(),];
+
+        (
+            Just(transitions),
+            proptest::sample::select(states),
+            prop::collection::vec(attempt, 0..20),
+        )
+    })
+}
+
+fn transitions_with_two_initial_states_and_two_different_attempts()
+-> impl Strategy<Value = (Vec<(String, String)>, String, String, Vec<String>)> {
+    valid_transition_pairs().prop_flat_map(|transitions| {
+        let states = transitions
+            .iter()
+            .flat_map(|(source, target)| [source.clone(), target.clone()])
+            .collect::<Vec<_>>();
+        let attempt = prop_oneof![proptest::sample::select(states.clone()), valid_state_name(),];
+
+        (
+            Just(transitions),
+            proptest::sample::select(states.clone()),
+            proptest::sample::select(states),
+            prop::collection::vec(attempt, 0..20),
+        )
+    })
+}
+
+fn transitions_with_missing_edge_from_existing_source()
+-> impl Strategy<Value = (Vec<(String, String)>, (String, String))> {
+    valid_transition_pairs()
+        .prop_flat_map(|transitions| {
+            let sources = transitions
+                .iter()
+                .map(|(source, _)| source.clone())
+                .collect::<Vec<_>>();
+
+            (
+                Just(transitions),
+                (proptest::sample::select(sources), valid_state_name()),
+            )
+        })
+        .prop_filter("probe must not already exist", |(transitions, probe)| {
+            !transitions.contains(probe)
+        })
+}
+
 proptest! {
+    #![proptest_config(ProptestConfig::with_cases(1000))]
     #[test]
     fn added_transition_is_allowed(
         (source, target) in valid_transition_pair(),
@@ -604,6 +703,184 @@ proptest! {
                 transition.source(),
                 transition.target(),
             );
+        }
+    }
+
+    #[test]
+    fn instance_construction_preserves_its_initial_state(
+        (transitions, state) in transitions_with_existing_state(),
+    ) {
+        let machine = build_machine(&transitions);
+
+        let instance = machine.instance(state.as_str())
+            .expect("instance initialized with existing state");
+
+        prop_assert_eq!(instance.state(), state);
+    }
+
+    #[test]
+    fn can_transition_to_agrees_with_the_edge_model(
+        (transitions, state) in transitions_with_existing_state(),
+        new_state in valid_state_name(),
+    ) {
+        let machine = build_machine(&transitions);
+        let model = build_model(&transitions);
+
+        let instance = machine.instance(state.as_str())
+            .expect("instance initialized with existing state");
+
+        let probe = (state, new_state.clone());
+
+        prop_assert_eq!(
+            instance.can_transition_to(&new_state),
+            model.contains(&probe)
+        );
+    }
+
+    #[test]
+    fn successful_instant_transitions_updates_current_state_to_target(
+        (transitions, probe) in transitions_with_existing_probe(),
+    ) {
+        let machine = build_machine(&transitions);
+        let (source, target) = &probe;
+
+        let mut instance = machine.instance(source.as_str())
+            .expect("instance initialized with existing state");
+
+        let result = instance.transition_to(target.as_str());
+
+        prop_assert!(result.is_ok());
+        prop_assert_eq!(instance.state(), target);
+    }
+
+    #[test]
+    fn failed_instance_transitions_have_no_observable_effect(
+        (transitions, probe) in transitions_with_missing_edge_from_existing_source()
+    ) {
+        let machine = build_machine(&transitions);
+        let (source, target) = &probe;
+
+        prop_assert!(machine.contains_state(source.as_str()));
+
+        let mut instance = machine.instance(source.as_str())
+            .expect("instance initialized with existing state");
+
+        let result = instance.transition_to(target.as_str());
+
+        prop_assert!(result.is_err());
+        prop_assert_eq!(instance.state(), source);
+    }
+
+    #[test]
+    fn model_and_instance_agree_with_terminality(
+        (transitions, target) in transitions_with_existing_target(),
+    ) {
+        let machine = build_machine(&transitions);
+        let model = build_model(&transitions);
+
+        prop_assert!(machine.contains_state(target.as_str()));
+
+        let instance = machine.instance(target.as_str())
+            .expect("instance initialized with existing state");
+
+        let is_terminal = !model
+            .iter()
+            .any(|(s,_)| *s == target);
+
+        prop_assert_eq!(instance.is_terminal(), is_terminal);
+    }
+
+    #[test]
+    fn model_and_instance_agree_with_transitions(
+        (transitions, probe) in transitions_with_probe_and_existing_source(),
+    ) {
+        let machine = build_machine(&transitions);
+        let model = build_model(&transitions);
+        let (source, target) = &probe;
+
+        prop_assert!(machine.contains_state(source.as_str()));
+
+        let mut instance = machine.instance(source.as_str())
+            .expect("instance initialized with existing state");
+
+        let result = instance.transition_to(target.as_str());
+
+        let mut current = source.clone();
+        if model.contains(&(current.clone(), target.clone())) {
+            current = target.clone();
+            prop_assert!(result.is_ok());
+        } else {
+            prop_assert!(result.is_err());
+        }
+
+        prop_assert_eq!(instance.state(), current);
+    }
+
+    #[test]
+    fn model_and_instance_agree_on_attempts(
+        (transitions, initial, attempts) in transitions_with_initial_state_and_attempts(),
+    ) {
+        let machine = build_machine(&transitions);
+        let model = build_model(&transitions);
+
+        let mut instance = machine.instance(&initial)
+            .expect("generated initial state must exist");
+
+        let mut current = initial.clone();
+
+        prop_assert!(model.iter().any(|(source, target)| source == &initial || target == &initial));
+
+        for target in attempts {
+            let expected_success = model.contains(&(current.clone(), target.clone()));
+
+            prop_assert_eq!(
+                instance.can_transition_to(&target),
+                expected_success
+            );
+
+            let result = instance.transition_to(&target);
+
+            prop_assert_eq!(
+                result.is_ok(),
+                expected_success
+            );
+
+            if expected_success {
+                current = target;
+            }
+
+            prop_assert_eq!(
+                instance.state(),
+                current.as_str()
+            );
+
+            let expected_terminal =
+    !model.iter().any(|(source, _)| {
+        source == &current
+                });
+
+            prop_assert_eq!(
+                instance.is_terminal(),
+                expected_terminal
+            );
+        }
+    }
+
+    #[test]
+    fn instances_are_independent(
+        (transitions, initial_a, initial_b, attempts_a) in transitions_with_two_initial_states_and_two_different_attempts()
+    ) {
+        let machine = build_machine(&transitions);
+        let mut first = machine.instance(&initial_a)
+            .expect("generated initial state must exist");
+        let second = machine.instance(&initial_b)
+            .expect("generated initial state must exist");
+        let second_initial = second.state().to_owned();
+
+        for target in attempts_a {
+            let _ = first.transition_to(&target);
+
+            prop_assert_eq!(second.state(), second_initial.as_str());
         }
     }
 }

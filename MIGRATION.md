@@ -4,6 +4,95 @@ This document describes breaking and behaviorally significant changes between St
 
 The newest migration information appears first.
 
+## 0.3 -> 0.4
+
+Version 0.4 adds stateful traversal through `MachineInstance`. The release is additive and requires no changes to existing 0.3 code.
+
+### New `MachineInstance` for stateful traversal of `Machine`
+
+Version 0.4 introduces `MachineInstance` to allow for traversal of `Machine` states.
+
+```rust
+let machine = Machine::builder()
+    .try_allow("draft", "approved")?
+    .try_allow("approved", "draft")?
+    .build()?;
+    
+let mut instance = machine.instance("draft")?;
+assert_eq!(instance.state(), "draft");
+
+instance.transition_to("approved")?;
+assert_eq!(instance.state(), "approved");
+assert!(instance.can_transition_to("draft"));
+
+instance.transition_to("draft")?;
+assert_eq!(instance.state(), "draft");
+assert!(instance.can_transition_to("approved"));
+```
+
+Two `MachineInstance` values can also be compared for equality. As long as the machine definitions are equal, the `MachineInstance` values will be equal when they share the same traversal position in its `Machine`.
+
+```rust
+let machine1 = Machine::builder()
+    .try_allow("draft", "approved")?
+    .build()?;
+    
+let machine2 = Machine::builder()
+    .try_allow("draft", "approved")?
+    .build()?;
+
+// Equal definitions constructed independently
+let instance1 = machine1.instance("draft")?;
+let instance2 = machine2.instance("draft")?;
+
+assert_eq!(instance1, instance2);
+
+// Instances created from the same Machine are also equal
+// when their current states are equal.
+let instance3 = machine1.instance("draft")?;
+assert_eq!(instance1, instance3);
+```
+#### `StateError::UnknownInitialState` for `MachineInstance` errors 
+
+The initial state of a `MachineInstance` must already exist in `Machine`. If initialized with a non-existent state then it will return `StateError::UnknownInitialState`.
+
+```rust
+let machine = Machine::builder()
+    .try_allow("draft", "approved")?
+    .build()?;
+    
+let result = machine.instance("unknown");
+
+if let Err(StateError::UnknownInitialState { state }) = result {
+    println!("Failed to initialize with {}!", state);
+}
+```
+### `Machine::is_terminal` for stateless terminality queries
+
+With the introduction of traversing `Machine`, `Machine::is_terminal(state)`  has been added to determine if the state has any outgoing transitions .
+
+```rust
+let machine = Machine::builder()
+    .try_allow("draft", "approved")?
+    .build()?;
+    
+assert!(!machine.is_terminal("draft"));
+assert!(machine.is_terminal("approved"));
+    
+let instance = machine.instance("draft")?;
+assert!(!instance.is_terminal());
+
+instance.transition_to("approved")?;
+assert!(instance.is_terminal());
+```
+
+### Migration summary 
+
+There is no need to change existing code for this migration. All changes are additive and allows for:
+
+- creating an instance over the machine definition 
+- determining whether a state is terminal
+
 ## 0.2 -> 0.3
 
 Version 0.3 introduces first-class transition inspection and simplifies transition-target queries.

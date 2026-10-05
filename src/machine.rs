@@ -1,4 +1,5 @@
-use crate::{MachineBuilder, StateError, Transition, Transitions};
+use crate::{MachineBuilder, MachineInner, MachineInstance, StateError, Transition, Transitions};
+use std::sync::Arc;
 
 /// An immutable state-machine definition.
 ///
@@ -6,13 +7,22 @@ use crate::{MachineBuilder, StateError, Transition, Transitions};
 /// transition has already been validated by the builder.
 #[derive(Debug, PartialEq, Eq)]
 pub struct Machine {
-    transitions: Transitions,
+    pub(crate) inner: Arc<MachineInner>,
 }
 
 impl Machine {
     /// Constructs a machine from validated transitions.
     pub(crate) fn new(transitions: Transitions) -> Self {
-        Self { transitions }
+        let inner = MachineInner::new(transitions);
+
+        Self {
+            inner: Arc::new(inner),
+        }
+    }
+
+    /// Constructs a machine handle from existing MachineInner.
+    pub(crate) fn from_inner(inner: Arc<MachineInner>) -> Self {
+        Self { inner }
     }
 
     /// Returns a builder for constructing a [`Machine`].
@@ -22,12 +32,22 @@ impl Machine {
         MachineBuilder::new()
     }
 
+    /// Returns an instance of a mutable state machine instance.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`StateError::UnknownInitialState`] when `initial` is not an
+    /// existing state.
+    pub fn instance(&self, initial: &str) -> Result<MachineInstance, StateError> {
+        MachineInstance::try_new(Arc::clone(&self.inner), initial.to_owned())
+    }
+
     /// Returns whether the transition from `from` to `to` is allowed.
     ///
     /// State names are matched exactly. This method does not trim, normalize,
     /// or otherwise modify the supplied names.
     pub fn can_transition(&self, from: &str, to: &str) -> bool {
-        self.transitions.contains(from, to)
+        self.inner.can_transition(from, to)
     }
 
     /// Validates that the transition from `from` to `to` is allowed.
@@ -39,24 +59,17 @@ impl Machine {
     /// State names are matched exactly. This method does not trim, normalize,
     /// or otherwise modify the supplied names.
     pub fn validate_transition(&self, from: &str, to: &str) -> Result<(), StateError> {
-        if self.can_transition(from, to) {
-            Ok(())
-        } else {
-            Err(StateError::InvalidTransition {
-                from: from.to_owned(),
-                to: to.to_owned(),
-            })
-        }
+        self.inner.validate_transition(from, to)
     }
 
     /// Returns the number of transitions in the state machine.
     pub fn transition_count(&self) -> usize {
-        self.transitions.len()
+        self.inner.transition_count()
     }
 
     /// Returns whether `state` appears as either endpoint of a transition.
     pub fn contains_state(&self, state: &str) -> bool {
-        self.transitions.contains_state(state)
+        self.inner.contains_state(state)
     }
 
     /// Returns an iterator over states directly reachable from `from`.
@@ -83,28 +96,33 @@ impl Machine {
     ///
     /// The iteration order is unspecified.
     pub fn targets_from(&self, from: &str) -> impl Iterator<Item = &str> {
-        self.transitions.targets_from(from)
+        self.inner.targets_from(from)
     }
 
     /// Returns an iterator over all source states.
     ///
     /// The iteration order is unspecified.
     pub fn sources(&self) -> impl Iterator<Item = &str> {
-        self.transitions.sources()
+        self.inner.sources()
     }
 
     /// Returns an iterator over all unique source and target states.
     ///
     /// The iteration order is unspecified.
     pub fn states(&self) -> impl Iterator<Item = &str> {
-        self.transitions.states()
+        self.inner.states()
     }
 
     /// Returns an iterator over all the transitions in the state machine.
     ///
     /// The iteration order is unspecified.
     pub fn transitions(&self) -> impl Iterator<Item = &Transition> {
-        self.transitions.iter()
+        self.inner.transitions()
+    }
+
+    ///Returns true when the `state` has no outgoing transitions.
+    pub fn is_terminal(&self, state: &str) -> bool {
+        self.inner.is_terminal(state)
     }
 }
 
@@ -141,19 +159,6 @@ mod tests {
                     to: "invalid".to_string(),
                 })
             );
-
-            Ok(())
-        }
-
-        #[test]
-        fn validate_transition_cyclic_is_valid() -> Result<(), StateError> {
-            let builder = Machine::builder()
-                .try_allow("start", "finish")?
-                .try_allow("finish", "start")?;
-
-            let m = builder.build()?;
-
-            assert!(m.validate_transition("finish", "start").is_ok());
 
             Ok(())
         }
@@ -228,17 +233,6 @@ mod tests {
         }
 
         #[test]
-        fn contains_state_rejects_ambiguous_state() -> Result<(), StateError> {
-            let builder = Machine::builder().try_allow("start", "finish")?;
-
-            let m = builder.build()?;
-
-            assert!(!m.contains_state(" start"));
-
-            Ok(())
-        }
-
-        #[test]
         fn contains_state_finds_source_state() -> Result<(), StateError> {
             let builder = Machine::builder()
                 .try_allow("start", "end")?
@@ -279,67 +273,6 @@ mod tests {
 
             Ok(())
         }
-
-        #[test]
-        fn targets_from_one_source_returns_two_targets() -> Result<(), StateError> {
-            let builder = Machine::builder()
-                .try_allow("start", "1")?
-                .try_allow("start", "2")?;
-
-            let m = builder.build()?;
-            let mut collected: Vec<_> = m.targets_from("start").collect();
-            collected.sort();
-
-            assert_eq!(collected, vec!["1", "2"]);
-
-            Ok(())
-        }
-
-        #[test]
-        fn targets_from_one_source_returns_three_targets() -> Result<(), StateError> {
-            let builder = Machine::builder()
-                .try_allow("start", "1")?
-                .try_allow("start", "2")?
-                .try_allow("start", "3")?;
-
-            let m = builder.build()?;
-            let mut collected: Vec<_> = m.targets_from("start").collect();
-            collected.sort();
-
-            assert_eq!(collected, vec!["1", "2", "3"]);
-
-            Ok(())
-        }
-
-        #[test]
-        fn targets_from_target_only_state_returns_empty() -> Result<(), StateError> {
-            let machine = Machine::builder().try_allow("start", "finish")?.build()?;
-
-            assert!(machine.contains_state("finish"));
-            assert!(
-                machine
-                    .targets_from("finish")
-                    .collect::<Vec<_>>()
-                    .is_empty()
-            );
-
-            Ok(())
-        }
-
-        #[test]
-        fn targets_from_duplicate_transition_is_stored_once() -> Result<(), StateError> {
-            let machine = Machine::builder()
-                .try_allow("start", "finish")?
-                .try_allow("start", "finish")?
-                .build()?;
-
-            assert_eq!(machine.transition_count(), 1);
-
-            let targets: Vec<_> = machine.targets_from("start").collect();
-            assert_eq!(targets, vec!["finish"]);
-
-            Ok(())
-        }
     }
 
     mod targets {
@@ -372,17 +305,6 @@ mod tests {
         use super::*;
 
         #[test]
-        fn sources_one_source_one_value() -> Result<(), StateError> {
-            let machine = Machine::builder().try_allow("start", "finish")?.build()?;
-
-            let sources: Vec<_> = machine.sources().collect();
-
-            assert_eq!(sources, vec!["start"]);
-
-            Ok(())
-        }
-
-        #[test]
         fn returns_all_source_states() -> Result<(), StateError> {
             let machine = Machine::builder()
                 .try_allow("1", "0")?
@@ -403,18 +325,6 @@ mod tests {
         use super::*;
 
         #[test]
-        fn states_one_transition_returns_2_values() -> Result<(), StateError> {
-            let machine = Machine::builder().try_allow("1", "2")?.build()?;
-
-            let mut states: Vec<_> = machine.states().collect();
-            states.sort();
-
-            assert_eq!(states, vec!["1", "2"]);
-
-            Ok(())
-        }
-
-        #[test]
         fn returns_unique_source_and_target_states() -> Result<(), StateError> {
             let machine = Machine::builder()
                 .try_allow("1", "2")?
@@ -427,18 +337,6 @@ mod tests {
             states.sort();
 
             assert_eq!(states, vec!["1", "2", "3", "4"]);
-
-            Ok(())
-        }
-
-        #[test]
-        fn includes_target_only_states() -> Result<(), StateError> {
-            let machine = Machine::builder().try_allow("queued", "running")?.build()?;
-
-            let mut states: Vec<_> = machine.states().collect();
-            states.sort();
-
-            assert_eq!(states, vec!["queued", "running"]);
 
             Ok(())
         }
@@ -469,19 +367,49 @@ mod tests {
 
             Ok(())
         }
+    }
+
+    mod is_terminal {
+        use super::*;
 
         #[test]
-        fn multiple_transitions_returns_correct_count() -> Result<(), StateError> {
-            let machine = Machine::builder()
-                .try_allow("1", "2")?
-                .try_allow("2", "3")?
-                .try_allow("2", "1")?
-                .try_allow("5", "2")?
-                .build()?;
+        fn source_is_not_terminal() -> Result<(), StateError> {
+            let machine = Machine::builder().try_allow("1", "2")?.build()?;
 
-            let transitions: Vec<_> = machine.transitions().collect();
+            assert!(!machine.is_terminal("1"));
 
-            assert_eq!(transitions.len(), 4);
+            Ok(())
+        }
+
+        #[test]
+        fn target_with_no_outgoing_source_is_terminal() -> Result<(), StateError> {
+            let machine = Machine::builder().try_allow("1", "2")?.build()?;
+
+            assert!(machine.is_terminal("2"));
+
+            Ok(())
+        }
+    }
+
+    mod equality {
+        use super::*;
+
+        #[test]
+        fn similar_machines_are_equal() -> Result<(), StateError> {
+            let machine1 = Machine::builder().try_allow("1", "2")?.build()?;
+            let machine2 = Machine::builder().try_allow("1", "2")?.build()?;
+
+            assert_eq!(machine1, machine2);
+
+            Ok(())
+        }
+
+        #[test]
+        fn different_machines_are_not_equal() -> Result<(), StateError> {
+            let machine1 = Machine::builder().try_allow("1", "2")?.build()?;
+            let machine2 = Machine::builder().try_allow("1", "3")?.build()?;
+
+            assert_ne!(machine1, machine2);
 
             Ok(())
         }
