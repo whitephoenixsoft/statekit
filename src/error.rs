@@ -38,9 +38,9 @@ pub enum StateError {
     },
     
     /// A machine instance initial state must be an existing state.
-    #[error("The instance initial state {state:?} does not exist")]
+    #[error("instance initial state {state:?} does not exist")]
     UnknownInitialState {
-        /// The unknown state that was specified for intializing a machine instance.
+        /// The unknown state that was specified for initializing a machine instance.
         state: String,
     }
 }

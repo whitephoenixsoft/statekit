@@ -126,7 +126,7 @@ impl Machine {
         self.inner.transitions()
     }
     
-    ///Returns true wheb the state has no outgoing transitions.
+    ///Returns true when the state has no outgoing transitions.
     pub fn is_terminal(&self, state: &str) -> bool {
         self.inner.is_terminal(state)
     }

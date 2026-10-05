@@ -3,7 +3,7 @@ use crate::{Machine, MachineInner, StateError};
 
 /// The instance of a state machine.
 ///
-/// A machine instance is always on a valid state. All states have already been validated and part of a transaction. The instance can only transition through exisiting edges.
+/// A machine instance traverses existing states in [`Machine`].
 #[derive(Debug, PartialEq, Eq)]
 pub struct MachineInstance {
     machine: Arc<MachineInner>,
@@ -11,7 +11,7 @@ pub struct MachineInstance {
 }
 
 impl MachineInstance {
-    /// Returns an MachineInstance. Returns a [`StateError::UnknownInitialState`]
+    /// Returns a MachineInstance. Returns a [`StateError::UnknownInitialState`]
     /// if `initial` is not an existing state.
     pub(crate) fn try_new(machine: Arc<MachineInner>, initial: String) -> Result<Self, StateError> {
         if !machine.contains_state(initial.as_str()) {
@@ -34,7 +34,7 @@ impl MachineInstance {
         self.machine.can_transition(&self.current, target)
     }
 
-    /// Changes the state to `target` if the source and target is an allowed machine transition.
+    /// Changes the state to `target` if the transition from the current state is an allowed in the machine definition.
     ///
     /// # Errors:
     ///
