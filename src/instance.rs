@@ -33,8 +33,8 @@ impl MachineInstance {
     pub fn can_transition_to(&self, target: &str) -> bool {
         self.machine.can_transition(&self.current, target)
     }
-
-    /// Changes the state to `target` if the transition from the current state is an allowed in the machine definition.
+    
+    /// Changes the state to `target` if the transition from the current state is allowed in the machine definition.
     ///
     /// # Errors:
     ///

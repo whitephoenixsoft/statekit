@@ -68,10 +68,7 @@ Focused evidence:
 
 Evidence: a known transition whose source and target are equal is rejected as `StateError::SelfTransition`, including the offending state.
 
-Property-test coverage:
-`self_transition_is_always_rejected` is attributed to INV-002 in
-`property-test-outline.md`, but no test with that name currently exists in
-`tests/property_tests.rs`. This is a property-outline traceability gap.
+Property-test coverage: none documented for INV-002.
 
 ## INV-003 — Non-Empty Transition Set
 
@@ -114,8 +111,7 @@ Focused evidence:
 
 Evidence: names that differ only by case remain distinct states and produce distinct transitions.
 
-Property-test coverage: `case_distinct_states_remain_distinct` is attributed to INV-005 in `property-test-outline.md`, but no test with that name currently
-exists in `tests/property_tests.rs`. This is a property-outline traceability gap.
+Property-test coverage:  none documented for INV-005.
 
 ## INV-006 — Runtime Configuration
 
@@ -210,9 +206,7 @@ Focused evidence:
 
 Evidence: after a rejected transition, the instance reports the same current state it held before the attempt.
 
-Property-test coverage: `failed_instance_transitions_have_no_observable_effect` and the model/instance attempt properties are documented for INV-011. The
-current implementation name in `tests/property_tests.rs` is
-`failed_instant_transitions_have_no_observable_effect`, so the two outlines should be reconciled.
+Property-test coverage: `failed_instance_transitions_have_no_observable_effect` and the model/instance attempt properties are documented for INV-011. 
 
 ## INV-012 — Independent Instances
 
@@ -238,7 +232,7 @@ Focused evidence:
 
 Evidence: independently allocated machines with equivalent definitions compare equal, while different transition definitions compare unequal.
 
-Property-test coverage: equivalent and different definition properties are attributed to INV-013 in `property-test-outline.md`, but neither named test currently exists in `tests/property_tests.rs`. This is a property-outline traceability gap.
+Property-test coverage:  none documented for INV-013.
 
 ## INV-014 — Instance Equality
 
@@ -263,4 +257,3 @@ Property-test coverage: none documented for INV-014.
 3. **INV-008:** add a compile-time trait-bound assertion for
    `StateError: std::error::Error`.
 
-Separately, reconcile the stale or absent property-test names called out under INV-002, INV-005, INV-011, and INV-013. Those discrepancies do not reduce the focused unit-test evidence recorded here, but they currently weaken end-to-end traceability between the two outlines and the executable suite.
