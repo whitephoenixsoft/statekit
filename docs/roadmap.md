@@ -3,7 +3,7 @@ project: statekit
 category: planning
 version: 0.4
 status: active
-review-status: reviewed
+review-status: needs-review
 ---
 
 # Statekit Implementation Roadmap

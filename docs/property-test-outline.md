@@ -3,7 +3,7 @@ project: statekit
 category: traceability
 version: 0.4
 status: active
-review-status: reviewed
+review-status: needs-review
 ---
 # Property Test Outline 
 

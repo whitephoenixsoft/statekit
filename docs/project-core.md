@@ -3,7 +3,7 @@ project: statekit
 category: foundation
 version: 0.4
 status: active
-review-status: reviewed
+review-status: needs-review
 ---
 # Project Core 
 ## Purpose
