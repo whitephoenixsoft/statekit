@@ -208,6 +208,7 @@ Statekit is built with help from the Rust ecosystem and uses the following crate
 - [`thiserror`](https://crates.io/crates/thiserror) — ergonomic error definitions
 - [`proptest`](https://crates.io/crates/proptest) — property-based testing
 - [`criterion`](https://crates.io/crates/criterion) — benchmarking
+- - [`trybuild`](https://crates.io/crates/trybuild) — UI testing
 
 Thank you to the maintainers and contributors of these projects.
 
