@@ -30,7 +30,7 @@ assert_eq!(instance.state(), "draft");
 assert!(instance.can_transition_to("approved"));
 ```
 
-Two `MachineInstance` values can also be compared for equality. As long as the machine definitions are equal, the `MachineInstance` values will be equal when they share the same traversal position in its `Machine`.
+Two `MachineInstance` values are equal when their machine definitions and current states are equal.
 
 ```rust
 let machine1 = Machine::builder()
@@ -69,7 +69,7 @@ if let Err(StateError::UnknownInitialState { state }) = result {
 ```
 ### `Machine::is_terminal` for stateless terminality queries
 
-With the introduction of traversing `Machine`, `Machine::is_terminal(state)`  has been added to determine if the state has any outgoing transitions .
+Version 0.4 introduces `Machine::is_terminal(state)` to determine whether a state has no outgoing transitions.
 
 ```rust
 let machine = Machine::builder()
@@ -79,7 +79,7 @@ let machine = Machine::builder()
 assert!(!machine.is_terminal("draft"));
 assert!(machine.is_terminal("approved"));
     
-let instance = machine.instance("draft")?;
+let mut instance = machine.instance("draft")?;
 assert!(!instance.is_terminal());
 
 instance.transition_to("approved")?;
@@ -88,10 +88,10 @@ assert!(instance.is_terminal());
 
 ### Migration summary 
 
-There is no need to change existing code for this migration. All changes are additive and allows for:
+Version 0.4 is additive and requires no changes to existing v0.3 code. 
 
-- creating an instance over the machine definition 
-- determining whether a state is terminal
+- An instance over the machine definition can be created.
+- Whether a state is terminal can be determined.
 
 ## 0.2 -> 0.3
 

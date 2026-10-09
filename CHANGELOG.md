@@ -4,6 +4,10 @@ All notable changes to Statekit are documented in this file.
 
 ## [Unreleased]
 
+### Documentation 
+
+- Corrected README and MIGRATION document wording and examples.
+
 ## [0.4.0]
 
 ### Added

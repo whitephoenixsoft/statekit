@@ -41,7 +41,7 @@ statekit = "0.4"
 
 ### Validation Example
 
-There are two ways to use statekit. 
+There are two ways to use Statekit. 
 
 It can be used statelessly:
 
@@ -90,7 +90,7 @@ fn main() -> Result<(), StateError> {
 
 ### Inspecting a Machine
 
-Machines can be inspected without exposing their internal storage.
+Statekit exposes transition information so applications can build additional functionality around their state-machine definitions.
 
 ```rust
 for source in machine.sources() {
@@ -124,6 +124,21 @@ for transition in machine.transitions() {
 
 Iteration order is unspecified.
 
+### Terminality
+
+`Machine::is_terminal(state)` determines whether a specified state has outgoing transitions. `MachineInstance::is_terminal()` checks the instance's current state.
+
+```rust
+let machine = Machine::builder()
+        .try_allow("queued", "running")?
+        .build()?;
+
+let instance = machine.instance("running")?;
+
+assert!(machine.is_terminal("running"));
+assert!(instance.is_terminal());
+```
+
 ## Invariants
 
 - State names must not be empty or consist entirely of whitespace.
@@ -133,9 +148,9 @@ Iteration order is unspecified.
 - Cycles between distinct states are permitted.
 - A machine must contain at least one transition.
 - Duplicate transitions between the same source and target are stored as a single logical transition.
-- Transitions with non-existing edges are rejected.
+- A transition attempt is rejected unless it is allowed by the machine definition.
 - Instances must be initialized with an existing state.
-- Instances can only transition to adjacent states.
+- Instances can transition only to target states permitted by the machine definition.
 
 ## Validation
 
@@ -157,17 +172,17 @@ Once constructed, a machine cannot be modified.
 
 This allows a machine definition to be reused safely without callers mutating its transition structure.
 
-### Thread Safe Traversal
+### Concurrency Support
 
-An instance can be created from the stateless machine to traverse the states using adjacent edges. 
+An instance can be created from the stateless machine definition to traverse the states permitted by the machine definition. 
 
-These instances share a reference to the state machine and can work concurrently even if the state machine is out of scope.
+These instances share the machine definition and can work concurrently even if the machine definition handle has been dropped. 
+
+Synchronization of mutable instances is the responsibility of the host application.
 
 ### Semantic Equality
 
 Two machines are equal when their machine definitions are equal. Two instances are equal when they reference equal machine definitions and are on the same traversal state.
-
-This allows for algorithmic use of the graph through for problem solving.
 
 ## What It Is Not
 
