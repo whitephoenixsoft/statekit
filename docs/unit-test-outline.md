@@ -10,7 +10,7 @@ review-status: needs-review
 
 ## Purpose
 
-This document maps the Project Core invariants to focused unit and integration tests. It records direct, example-based evidence and identifies where the current suite does not directly prove an invariant.
+This document maps the Project Core invariants to focused unit tests, integration tests, and compile-time API-contract tests. It records direct, example-based evidence and identifies where the current suite does not directly prove an invariant.
 
 Property tests are intentionally tracked separately in [`property-test-outline.md`](property-test-outline.md). A property test may strengthen an invariant across generated inputs, but it does not replace a missing focused test in this outline.
 
@@ -20,39 +20,44 @@ Property tests are intentionally tracked separately in [`property-test-outline.m
 - **Partial** — focused tests exercise part of the invariant, but an important claim remains implicit or untested.
 - **Missing direct evidence** — no focused test directly asserts the invariant.
 
-Test paths and names below describe the current suite. Internal unit tests live under `src/`; external-consumer integration tests live under `tests/`.
+Test paths and names below describe the current suite. Internal unit tests live under `src/`; external-consumer integration tests and compile-time API tests live under `tests/`.
 
 ## Coverage Summary
 
-| Invariant | Focused-test evidence | Status |
-| --- | --- | --- |
-| INV-001 Machine Immutability | No mutation API is exposed; sharing is exercised | Partial |
-| INV-002 No Self Transitions | Known self-transition inputs are rejected | Direct |
-| INV-003 Non-Empty Transition Set | Empty builds are rejected | Direct |
-| INV-004 Logical Transition Uniqueness | Duplicate transitions collapse | Direct |
-| INV-005 Case-Sensitive State Identity | Case-distinct names remain distinct | Direct |
-| INV-006 Runtime Configuration | Construction is public, but focused tests use literals | Partial |
-| INV-007 Earliest Valid Error Detection | Construction errors occur at `try_allow` or `build` | Direct |
-| INV-008 Standard Error Integration | Variants and display text are tested | Partial |
-| INV-009 Shared Immutable Machine | Instances retain and share one machine definition | Direct |
-| INV-010 Valid Traversal | Allowed traversal succeeds and disallowed traversal fails | Direct |
-| INV-011 Safe Traversal Failure | Failed traversal preserves current state | Direct |
-| INV-012 Independent Instances | One instance's traversal does not alter another | Direct |
-| INV-013 Machine Equality | Equality follows definition rather than allocation | Direct |
-| INV-014 Instance Equality | Equality follows machine definition and current state | Direct |
+| Invariant                              | Focused-test evidence                                           | Status  |
+| -------------------------------------- | --------------------------------------------------------------- | ------- |
+| INV-001 Machine Immutability           | Private field access and mutable transition access are rejected | Direct  |
+| INV-002 No Self Transitions            | Known self-transition inputs are rejected                       | Direct  |
+| INV-003 Non-Empty Transition Set       | Empty builds are rejected                                       | Direct  |
+| INV-004 Logical Transition Uniqueness  | Duplicate transitions collapse                                  | Direct  |
+| INV-005 Case-Sensitive State Identity  | Case-distinct names remain distinct                             | Direct  |
+| INV-006 Runtime Configuration          | Construction is public, but focused tests use literals          | Partial |
+| INV-007 Earliest Valid Error Detection | Construction errors occur at `try_allow` or `build`             | Direct  |
+| INV-008 Standard Error Integration     | Variants and display text are tested                            | Partial |
+| INV-009 Shared Immutable Machine       | Instances retain and share one machine definition               | Direct  |
+| INV-010 Valid Traversal                | Allowed traversal succeeds and disallowed traversal fails       | Direct  |
+| INV-011 Safe Traversal Failure         | Failed traversal preserves current state                        | Direct  |
+| INV-012 Independent Instances          | One instance's traversal does not alter another                 | Direct  |
+| INV-013 Machine Equality               | Equality follows definition rather than allocation              | Direct  |
+| INV-014 Instance Equality              | Equality follows machine definition and current state           | Direct  |
 
 ## INV-001 — Machine Immutability
 
-**Status:** Partial
+**Status:** Direct
 
 Focused evidence:
 
 - `src/instance.rs::machine_returns_handle_to_same_machine_inner`
 - `tests/transition_tests.rs::independent_multi_threaded_instances`
+- `tests/ui/pass/machine_construction.rs::main`
+- `tests/ui/fail/machine_internal_access.rs::main`
+- `tests/ui/fail/machine_transition_mutation.rs::main`
 
 Evidence: instances can retain and share a built machine definition, and the public `Machine` API exposes inspection and instance construction without an obvious mutation operation.
 
-Missing direct evidence: ordinary runtime unit tests cannot prove that a public mutation path is absent. Add a compile-fail/API-surface test (for example with `trybuild`) if this invariant should have executable direct evidence.
+Compile-time tests verify that external consumers cannot access `Machine::inner` and that `Machine::transitions()` returns shared references that cannot be assigned to mutable transition references.
+
+`machine_construction.rs` verifies supported public construction and inspection rather than immutability itself.
 
 Property-test coverage: none documented for INV-001 in `property-test-outline.md`.
 
@@ -250,10 +255,8 @@ Property-test coverage: none documented for INV-014.
 
 ## Missing Direct Evidence Backlog
 
-1. **INV-001:** add a compile-fail/API-surface test proving that a built
-   `Machine` cannot be mutated through the public API.
-2. **INV-006:** add an external-consumer test that constructs a machine from a
+1. **INV-006:** add an external-consumer test that constructs a machine from a
    runtime-owned transition collection rather than literals.
-3. **INV-008:** add a compile-time trait-bound assertion for
+2. **INV-008:** add a compile-time trait-bound assertion for
    `StateError: std::error::Error`.
 
