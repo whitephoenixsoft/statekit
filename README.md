@@ -126,7 +126,7 @@ Iteration order is unspecified.
 
 ### Terminality
 
-`Machine::is_terminal(state)` determines whether a specified state has outgoing transitions. `MachineInstance::is_terminal()` checks the instance's current state.
+`Machine::is_terminal(state)` determines whether a specified state has no outgoing transitions. `MachineInstance::is_terminal()` checks the instance's current state.
 
 ```rust
 let machine = Machine::builder()
@@ -208,7 +208,7 @@ Statekit is built with help from the Rust ecosystem and uses the following crate
 - [`thiserror`](https://crates.io/crates/thiserror) — ergonomic error definitions
 - [`proptest`](https://crates.io/crates/proptest) — property-based testing
 - [`criterion`](https://crates.io/crates/criterion) — benchmarking
-- - [`trybuild`](https://crates.io/crates/trybuild) — UI testing
+- [`trybuild`](https://crates.io/crates/trybuild) — UI testing
 
 Thank you to the maintainers and contributors of these projects.
 
