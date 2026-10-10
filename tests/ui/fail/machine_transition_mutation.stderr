@@ -1,0 +1,10 @@
+error[E0308]: mismatched types
+  --> tests/ui/fail/machine_transition_mutation.rs:10:47
+   |
+10 |     let mutable_transition: &mut Transition = transition;
+   |                             ---------------   ^^^^^^^^^^ types differ in mutability
+   |                             |
+   |                             expected due to this
+   |
+   = note: expected mutable reference `&mut Transition`
+                      found reference `&Transition`
