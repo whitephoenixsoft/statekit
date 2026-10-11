@@ -24,22 +24,22 @@ Test paths and names below describe the current suite. Internal unit tests live 
 
 ## Coverage Summary
 
-| Invariant                              | Focused-test evidence                                           | Status  |
-| -------------------------------------- | --------------------------------------------------------------- | ------- |
-| INV-001 Machine Immutability           | Private field access and mutable transition access are rejected | Direct  |
-| INV-002 No Self Transitions            | Known self-transition inputs are rejected                       | Direct  |
-| INV-003 Non-Empty Transition Set       | Empty builds are rejected                                       | Direct  |
-| INV-004 Logical Transition Uniqueness  | Duplicate transitions collapse                                  | Direct  |
-| INV-005 Case-Sensitive State Identity  | Case-distinct names remain distinct                             | Direct  |
-| INV-006 Runtime Configuration          | Construction is public, but focused tests use literals          | Partial |
-| INV-007 Earliest Valid Error Detection | Construction errors occur at `try_allow` or `build`             | Direct  |
-| INV-008 Standard Error Integration     | Variants and display text are tested                            | Partial |
-| INV-009 Shared Immutable Machine       | Instances retain and share one machine definition               | Direct  |
-| INV-010 Valid Traversal                | Allowed traversal succeeds and disallowed traversal fails       | Direct  |
-| INV-011 Safe Traversal Failure         | Failed traversal preserves current state                        | Direct  |
-| INV-012 Independent Instances          | One instance's traversal does not alter another                 | Direct  |
-| INV-013 Machine Equality               | Equality follows definition rather than allocation              | Direct  |
-| INV-014 Instance Equality              | Equality follows machine definition and current state           | Direct  |
+| Invariant                              | Focused-test evidence                                                           | Status  |
+| -------------------------------------- | ------------------------------------------------------------------------------- | ------- |
+| INV-001 Machine Immutability           | Private field access and mutable transition access are rejected                 | Direct  |
+| INV-002 No Self Transitions            | Known self-transition inputs are rejected                                       | Direct  |
+| INV-003 Non-Empty Transition Set       | Empty builds are rejected                                                       | Direct  |
+| INV-004 Logical Transition Uniqueness  | Duplicate transitions collapse                                                  | Direct  |
+| INV-005 Case-Sensitive State Identity  | Case-distinct names remain distinct                                             | Direct  |
+| INV-006 Runtime Configuration          | Construction is public, but focused tests use literals                          | Partial |
+| INV-007 Earliest Valid Error Detection | Construction errors occur at `try_allow` or `build`                             | Direct  |
+| INV-008 Standard Error Integration     | Error variants, Display messages, and std::error::Error implementation verified | Direct  |
+| INV-009 Shared Immutable Machine       | Instances retain and share one machine definition                               | Direct  |
+| INV-010 Valid Traversal                | Allowed traversal succeeds and disallowed traversal fails                       | Direct  |
+| INV-011 Safe Traversal Failure         | Failed traversal preserves current state                                        | Direct  |
+| INV-012 Independent Instances          | One instance's traversal does not alter another                                 | Direct  |
+| INV-013 Machine Equality               | Equality follows definition rather than allocation                              | Direct  |
+| INV-014 Instance Equality              | Equality follows machine definition and current state                           | Direct  |
 
 ## INV-001 — Machine Immutability
 
@@ -152,7 +152,7 @@ Property-test coverage: validation properties cover whitespace rejection and pre
 
 ## INV-008 — Standard Error Integration
 
-**Status:** Partial
+**Status:** Direct
 
 Focused evidence:
 
@@ -162,11 +162,10 @@ Focused evidence:
 - `src/error.rs::invalid_transition_display_message_includes_endpoints`
 - focused `matches!` assertions throughout `src/builder.rs`,
   `src/instance.rs`, and `tests/transition_tests.rs`
+- `tests/error_tests.rs::verify_std_error_compliance`
 
 Evidence: callers can match concrete `StateError` variants and obtain stable,
-useful display messages.
-
-Missing direct evidence: no focused compile-time assertion currently requires `StateError: std::error::Error`. Add a small generic trait-bound test to prove standard Rust error integration independently of the `thiserror` derive.
+useful display messages. A compile-time trait-bound assertion verifies that `StateError` implements `std::error::Error`.
 
 Property-test coverage: generated tests match several error variants and payloads, but INV-008 is not mapped in `property-test-outline.md`.
 
@@ -257,6 +256,3 @@ Property-test coverage: none documented for INV-014.
 
 1. **INV-006:** add an external-consumer test that constructs a machine from a
    runtime-owned transition collection rather than literals.
-2. **INV-008:** add a compile-time trait-bound assertion for
-   `StateError: std::error::Error`.
-
