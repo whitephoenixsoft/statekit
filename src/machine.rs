@@ -28,16 +28,42 @@ impl Machine {
     /// Returns a builder for constructing a [`Machine`].
     ///
     /// This is the public entry point for creating machine definitions.
+    /// 
+    /// # Examples
+    /// ```
+    /// use statekit::{Machine, StateError};
+    /// 
+    /// let machine = Machine::builder()
+    ///     .try_allow("a", "b")?
+    ///     .build()?;
+    ///
+    /// assert!(machine.can_transition("a", "b"));
+    /// # Ok::<(), StateError>(())
+    /// ```
     pub fn builder() -> MachineBuilder {
         MachineBuilder::new()
     }
 
-    /// Returns an instance of a mutable state machine instance.
+    /// Creates a mutable machine instance initialized to the specified state.
     ///
     /// # Errors
     ///
     /// Returns [`StateError::UnknownInitialState`] when `initial` is not an
     /// existing state.
+    /// 
+    /// # Examples
+    /// ```
+    /// use statekit::{Machine, StateError};
+    /// 
+    /// let machine = Machine::builder()
+    ///     .try_allow("a", "b")?
+    ///     .build()?;
+    /// 
+    /// let instance = machine.instance("a")?;
+    /// 
+    /// assert_eq!(instance.state(), "a");
+    /// # Ok::<(), StateError>(())
+    /// ```
     pub fn instance(&self, initial: &str) -> Result<MachineInstance, StateError> {
         MachineInstance::try_new(Arc::clone(&self.inner), initial.to_owned())
     }
