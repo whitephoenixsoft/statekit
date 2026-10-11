@@ -24,7 +24,7 @@ Examples include:
 
 Statekit is under active development.
 
-Current release: v0.4.
+Current release: v0.4.1
 
 Statekit follows semantic versioning. As a pre-1.0 crate, its public API may evolve between minor releases.
 
@@ -34,7 +34,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-statekit = "0.4"
+statekit = "0.4.1"
 ```
 
 ## Examples
