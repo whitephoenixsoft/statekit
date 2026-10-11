@@ -4,9 +4,14 @@ All notable changes to Statekit are documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- Added `trybuild` compile-time API tests to further verify invariants and for more testing coverage.
+
 ### Documentation 
 
 - Corrected README and MIGRATION document wording and examples.
+- Update unit test outline with additional coverage support.
 
 ## [0.4.0]
 
