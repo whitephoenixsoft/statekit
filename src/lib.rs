@@ -30,6 +30,7 @@
 //!
 //!     instance.transition_to("running")?;
 //!
+//!     assert_eq!(instance.state(), "running");
 //!     assert!(instance.can_transition_to("completed"));
 //!     assert!(!instance.can_transition_to("queued"));
 //!
