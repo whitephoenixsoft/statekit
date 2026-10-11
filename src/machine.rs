@@ -120,7 +120,7 @@ impl Machine {
         self.inner.transitions()
     }
 
-    ///Returns true when the `state` has no outgoing transitions.
+    /// Returns true when the `state` has no outgoing transitions.
     pub fn is_terminal(&self, state: &str) -> bool {
         self.inner.is_terminal(state)
     }
@@ -386,6 +386,15 @@ mod tests {
             let machine = Machine::builder().try_allow("1", "2")?.build()?;
 
             assert!(machine.is_terminal("2"));
+
+            Ok(())
+        }
+        
+        #[test]
+        fn unknown_source_is_terminal() -> Result<(), StateError> {
+            let machine = Machine::builder().try_allow("1", "2")?.build()?;
+
+            assert!(machine.is_terminal("not-exist"));
 
             Ok(())
         }
