@@ -121,6 +121,24 @@ impl Machine {
     /// including when `from` is unknown or appears only as a transition target.
     ///
     /// The iteration order is unspecified.
+    ///
+    /// # Examples
+    /// ```
+    /// use statekit::{Machine, StateError};
+    ///
+    /// let machine = Machine::builder()
+    ///     .try_allow("a", "b")?
+    ///     .try_allow("a", "c")?
+    ///     .build()?;
+    ///
+    /// let mut targets: Vec<_> = machine.targets_from("a").collect();
+    /// targets.sort_unstable();
+    ///
+    /// assert_eq!(targets, vec!["b", "c"]);
+    /// assert_eq!(machine.targets_from("c").count(), 0);
+    /// assert_eq!(machine.targets_from("unknown").count(), 0);
+    /// # Ok::<(), StateError>(())
+    /// ```
     pub fn targets_from(&self, from: &str) -> impl Iterator<Item = &str> {
         self.inner.targets_from(from)
     }
