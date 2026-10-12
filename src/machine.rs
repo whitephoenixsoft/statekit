@@ -143,9 +143,26 @@ impl Machine {
         self.inner.targets_from(from)
     }
 
-    /// Returns an iterator over all source states.
+    /// Returns an iterator over all unique states that have at least one outgoing transition.
     ///
     /// The iteration order is unspecified.
+    ///
+    /// # Examples
+    /// ```
+    /// use statekit::{Machine, StateError};
+    ///
+    /// let machine = Machine::builder()
+    ///     .try_allow("a", "b")?
+    ///     .try_allow("a", "c")?
+    ///     .try_allow("b", "c")?
+    ///     .build()?;
+    ///
+    /// let mut sources: Vec<_> = machine.sources().collect();
+    /// sources.sort_unstable();
+    ///
+    /// assert_eq!(sources, vec!["a", "b"]);
+    /// # Ok::<(), StateError>(())
+    /// ```
     pub fn sources(&self) -> impl Iterator<Item = &str> {
         self.inner.sources()
     }
@@ -153,6 +170,23 @@ impl Machine {
     /// Returns an iterator over all unique source and target states.
     ///
     /// The iteration order is unspecified.
+    ///
+    /// # Examples
+    /// ```
+    /// use statekit::{Machine, StateError};
+    ///
+    /// let machine = Machine::builder()
+    ///     .try_allow("a", "b")?
+    ///     .try_allow("a", "c")?
+    ///     .try_allow("b", "c")?
+    ///     .build()?;
+    ///
+    /// let mut states: Vec<_> = machine.states().collect();
+    /// states.sort_unstable();
+    ///
+    /// assert_eq!(states, vec!["a", "b", "c"]);
+    /// # Ok::<(), StateError>(())
+    /// ```
     pub fn states(&self) -> impl Iterator<Item = &str> {
         self.inner.states()
     }
