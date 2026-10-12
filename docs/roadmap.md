@@ -94,6 +94,8 @@ Stateful execution:
 Consider:
 - add/modify tests to cover core to invariants
 - add traceability to application invariants
+- additional doc tests 
+- make readme and migration examples part of the executable tests
 
 ### Phase 7 - Multiple Representations (v.5)
 
