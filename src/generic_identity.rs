@@ -10,13 +10,14 @@ use std::error::Error;
 use std::fmt;
 use std::hash::Hash;
 use std::sync::Arc;
+use std::cmp::Eq;
 
 /// An immutable machine whose states use a consumer-defined identity type.
 ///
 /// The default identity is `String`. Prefer [`Machine::builder`] for validated
 /// string names, or [`Machine::builder_with_identity`] for custom identities.
 #[derive(Debug, PartialEq, Eq)]
-pub struct Machine<S = String> {
+pub struct Machine<S: std::hash::Hash + std::cmp::Eq = String> {
     transitions: Arc<HashSet<Transition<S>>>,
 }
 
@@ -208,11 +209,11 @@ where
 
 /// A builder for a [`Machine`] in this experimental module.
 #[derive(Debug)]
-pub struct MachineBuilder<S = String> {
+pub struct MachineBuilder<S: std::hash::Hash  = String> {
     transitions: HashSet<Transition<S>>,
 }
 
-impl<S> MachineBuilder<S> {
+impl<S: std::hash::Hash> MachineBuilder<S> {
     fn new() -> Self {
         Self {
             transitions: HashSet::new(),
@@ -304,12 +305,12 @@ impl Transition<String> {
 
 /// A mutable traversal position over an immutable generic machine.
 #[derive(Debug, PartialEq, Eq)]
-pub struct MachineInstance<S = String> {
+pub struct MachineInstance<S: std::hash::Hash + std::cmp::Eq  = String> {
     transitions: Arc<HashSet<Transition<S>>>,
     current: S,
 }
 
-impl<S> MachineInstance<S> {
+impl<S: std::hash::Hash + std::cmp::Eq> MachineInstance<S> {
     /// Returns the current identity by reference.
     pub fn state_identity(&self) -> &S {
         &self.current
