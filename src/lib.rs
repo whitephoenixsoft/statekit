@@ -68,6 +68,13 @@ mod inner;
 mod state_name;
 mod transitions;
 
+/// Experimental generic-identity machine API used by the research spike.
+///
+/// The stable string-oriented API remains available at the crate root. This
+/// module lets the spike compare that API with a separately named generic
+/// structural machine without changing the root `Machine` type.
+pub mod generic_identity;
+
 pub use builder::MachineBuilder;
 pub use error::StateError;
 pub use instance::MachineInstance;
