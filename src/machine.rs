@@ -223,6 +223,20 @@ impl Machine {
     /// configured outgoing transitions.
     ///
     /// Use [`Machine::contains_state`] to check whether a state exists.
+    ///
+    /// # Examples
+    /// ```
+    /// use statekit::{Machine, StateError};
+    ///
+    /// let machine = Machine::builder()
+    ///     .try_allow("a", "b")?
+    ///     .build()?;
+    ///
+    /// assert!(!machine.is_terminal("a"));
+    /// assert!(machine.is_terminal("b"));
+    /// assert!(machine.is_terminal("unknown"));
+    /// # Ok::<(), StateError>(())
+    /// ```
     pub fn is_terminal(&self, state: &str) -> bool {
         self.inner.is_terminal(state)
     }
