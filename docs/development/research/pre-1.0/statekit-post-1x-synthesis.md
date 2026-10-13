@@ -2,7 +2,7 @@
 project: statekit
 category: research
 status: draft
-review-status: needs-review
+review-status: reviewed
 ---
 
 # Statekit Post-1.0: Structural Analysis, Engine Integration, and Cargo Features
