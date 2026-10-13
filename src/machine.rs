@@ -216,8 +216,13 @@ impl Machine {
     pub fn transitions(&self) -> impl Iterator<Item = &Transition> {
         self.inner.transitions()
     }
-
-    /// Returns true when the `state` has no outgoing transitions.
+    
+    /// Returns whether `state` has no outgoing transitions.
+    ///
+    /// Unknown states are also considered terminal because they have no
+    /// configured outgoing transitions.
+    ///
+    /// Use [`Machine::contains_state`] to check whether a state exists.
     pub fn is_terminal(&self, state: &str) -> bool {
         self.inner.is_terminal(state)
     }
