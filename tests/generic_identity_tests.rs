@@ -10,7 +10,7 @@ enum Phase {
     Done,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 struct NumericState(u32);
 
 #[test]
@@ -65,10 +65,13 @@ fn numeric_newtype_identity_supports_borrowed_structure_iteration() {
         .build()
         .expect("non-empty machine");
 
+    let mut transitions: Vec<_> = machine.transitions().map(|t| (t.source_identity(), t.target_identity())).collect();
+    transitions.sort();
+
     assert!(machine.contains_state_identity(&NumericState(3)));
     assert_eq!(machine.targets_from_identity(&NumericState(1)).count(), 1);
     assert_eq!(
-        machine.transitions().next().unwrap().source_identity(),
+        transitions[0].0,
         &NumericState(1)
     );
 }
