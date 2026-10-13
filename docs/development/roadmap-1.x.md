@@ -16,7 +16,7 @@ All decisions here are likely to change at any time.
 
 ## Phases
 
-### Phase 1 - Additional Identity (v1.1)
+### Phase 1 - Structural Introspection (v1.1)
 
 **Goal:** Statekit validates, inspects, and safely traverses data-defined state machines.
 
