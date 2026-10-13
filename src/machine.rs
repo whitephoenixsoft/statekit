@@ -194,6 +194,25 @@ impl Machine {
     /// Returns an iterator over all the transitions in the state machine.
     ///
     /// The iteration order is unspecified.
+    ///
+    /// # Examples
+    /// ```
+    /// use statekit::{Machine, StateError};
+    ///
+    /// let machine = Machine::builder()
+    ///     .try_allow("a", "b")?
+    ///     .try_allow("b", "c")?
+    ///     .build()?;
+    ///
+    /// let mut edges: Vec<_> = machine
+    ///     .transitions()
+    ///     .map(|transition| (transition.source(), transition.target()))
+    ///     .collect();
+    /// edges.sort_unstable();
+    ///
+    /// assert_eq!(edges, vec![("a", "b"), ("b", "c")]);
+    /// # Ok::<(), StateError>(())
+    /// ```
     pub fn transitions(&self) -> impl Iterator<Item = &Transition> {
         self.inner.transitions()
     }
