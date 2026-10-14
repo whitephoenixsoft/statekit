@@ -102,18 +102,14 @@ Consider:
 > Should Statekit's public runtime model distinguish symbolic state names from internal/runtime state identity?
 
 Consider:
-A. Keep strings as state identity
-B. Make Machine generic over state identity
-C. Keep string-oriented construction but lower to Statekit-owned StateId
+- Explore one shared structural core with string and generic identity-facing APIs.
 
 Todo:
 Runtime state identity / lowering
-- distinguish symbolic state names from runtime identity
-- investigate StateId-style representation
-- decide whether public APIs should expose IDs
-- decide how name ↔ ID mapping works
-- evaluate whether strings remain the construction surface
-- keep generic Machine\<S\> as an alternative to compare, not the default assumption
+- keep original Machine public API
+- define generic IdentityMachine\<S\> as an alternative to compare, not the default assumption
+- reference MachineInner and make it generic 
+- change Machine to call MachineInner\<S\> with StateName as the type
 
 ### Phase 8 - Optimization (v0.6)
 
