@@ -173,3 +173,10 @@ Instances on equal machine definitions and in the same state are equal. This is 
 **Supports:** I-003
 **Preserves:** INV-007, INV-008
 **Reason:** Keeping all possible conditions from reporting errors keeps the complexity of the code supporting it down. It also allows errors to be treated as exceptions.
+
+**D-013: Statekit as a Foundational Data Structure**
+>Statekit is a specialized, invariant-preserving structure for representing, inspecting, and traversing state relationships—not an application-specific state-machine framework.»
+
+Supports: I-002, I-003, I-005
+Preserves: BI-001, BI-002
+Reason: A focused structural foundation keeps Statekit small, reusable, evolvable, and correct while avoiding unnecessary execution semantics, domain policy, and framework complexity.
