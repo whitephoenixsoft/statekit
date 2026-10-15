@@ -77,7 +77,7 @@ impl MachineBuilder {
         Ok(Machine::new(self.transitions))
     }
 
-    /// Returns the number of transitions added to the state machine.
+    /// Returns the number of unique transitions added to the state machine.
     pub fn transition_count(&self) -> usize {
         self.transitions.len()
     }
