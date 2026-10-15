@@ -78,12 +78,13 @@ impl Machine {
 
     /// Validates that the transition from `from` to `to` is allowed.
     ///
+    /// State names are matched exactly. This method does not trim, normalize,
+    /// or otherwise modify the supplied names.
+    ///
     /// # Errors
     ///
     /// Returns [`StateError::InvalidTransition`] when the machine does not
     /// contain the requested transition.
-    /// State names are matched exactly. This method does not trim, normalize,
-    /// or otherwise modify the supplied names.
     ///
     /// # Examples
     /// ```
