@@ -52,6 +52,19 @@ impl MachineBuilder {
     ///   Unicode whitespace.
     /// - [`StateError::SelfTransition`] if a transition has identical endpoints.
     /// - [`StateError::EmptyState`] if an endpoint is empty or whitespace-only.
+    ///
+    /// # Examples
+    /// ```
+    /// use statekit::{Machine, StateError};
+    ///
+    /// let result = Machine::builder().try_allow("a", "a");
+    ///
+    /// assert!(matches!(
+    ///     result,
+    ///     Err(StateError::SelfTransition { state }) if state == "a"
+    /// ));
+    /// # Ok::<(), StateError>(())
+    /// ```
     pub fn try_allow(
         mut self,
         from: impl AsRef<str>,
@@ -69,6 +82,19 @@ impl MachineBuilder {
     /// # Errors
     ///
     /// Returns [`StateError::NoTransitions`] if no transitions were configured.
+    ///
+    /// # Examples
+    /// ```
+    /// use statekit::{Machine, StateError};
+    ///
+    /// let builder = Machine::builder();
+    ///
+    /// assert!(matches!(
+    ///     builder.build(),
+    ///     Err(StateError::NoTransitions)
+    /// ));
+    /// # Ok::<(), StateError>(())
+    /// ```
     pub fn build(self) -> Result<Machine, StateError> {
         if self.transitions.is_empty() {
             return Err(StateError::NoTransitions);
