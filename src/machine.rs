@@ -84,6 +84,28 @@ impl Machine {
     /// contain the requested transition.
     /// State names are matched exactly. This method does not trim, normalize,
     /// or otherwise modify the supplied names.
+    ///
+    /// # Examples
+    /// ```
+    /// use statekit::{Machine, StateError};
+    ///
+    /// let machine = Machine::builder()
+    ///     .try_allow("a", "b")?
+    ///     .build()?;
+    ///
+    /// let result = machine.validate_transition("a", "invalid");
+    ///
+    /// assert_eq!(
+    ///     result,
+    ///     Err(StateError::InvalidTransition {
+    ///         from: "a".to_owned(),
+    ///         to: "invalid".to_owned(),
+    ///     })
+    /// );
+    ///
+    /// machine.validate_transition("a", "b")?;
+    /// # Ok::<(), StateError>(())
+    /// ```
     pub fn validate_transition(&self, from: &str, to: &str) -> Result<(), StateError> {
         self.inner.validate_transition(from, to)
     }
