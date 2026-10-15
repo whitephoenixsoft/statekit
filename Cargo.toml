@@ -9,7 +9,7 @@ repository = "https://github.com/whitephoenixsoft/statekit"
 homepage = "https://github.com/whitephoenixsoft/statekit"
 documentation = "https://docs.rs/statekit"
 readme = "README.md"
-keywords = ["state-machine", "fsm", "workflow", "state"]
+keywords = ["state-machine", "fsm", "validation", "graph", "data-structure"]
 categories = ["data-structures"]
 
 exclude = [
