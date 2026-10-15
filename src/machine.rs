@@ -72,6 +72,20 @@ impl Machine {
     ///
     /// State names are matched exactly. This method does not trim, normalize,
     /// or otherwise modify the supplied names.
+    ///
+    /// # Examples
+    /// ```
+    /// use statekit::{Machine, StateError};
+    ///
+    /// let machine = Machine::builder()
+    ///     .try_allow("a", "b")?
+    ///     .build()?;
+    ///
+    /// assert!(machine.can_transition("a", "b"));
+    /// assert!(!machine.can_transition("A", "b"));
+    /// assert!(!machine.can_transition("a ", "b"));
+    /// # Ok::<(), StateError>(())
+    /// ```
     pub fn can_transition(&self, from: &str, to: &str) -> bool {
         self.inner.can_transition(from, to)
     }
