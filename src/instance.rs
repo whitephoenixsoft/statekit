@@ -53,7 +53,7 @@ impl MachineInstance {
     /// 
     /// assert_eq!(
     ///     result,
-    ///    Err(StateError::InvalidTransition {
+    ///     Err(StateError::InvalidTransition {
     ///         from: "a".to_owned(),
     ///         to: "invalid".to_owned(),
     ///     })
