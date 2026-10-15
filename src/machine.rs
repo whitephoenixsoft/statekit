@@ -152,7 +152,6 @@ impl Machine {
     ///
     /// let machine = Machine::builder()
     ///     .try_allow("a", "b")?
-    ///     .try_allow("a", "b")?
     ///     .try_allow("b", "c")?
     ///     .build()?;
     ///
