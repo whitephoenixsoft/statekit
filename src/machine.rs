@@ -126,11 +126,40 @@ impl Machine {
     }
 
     /// Returns the number of transitions in the state machine.
+    ///
+    /// # Examples
+    /// ```
+    /// use statekit::{Machine, StateError};
+    ///
+    /// let machine = Machine::builder()
+    ///     .try_allow("a", "b")?
+    ///     .try_allow("a", "b")?
+    ///     .try_allow("b", "c")?
+    ///     .build()?;
+    ///
+    /// assert_eq!(machine.transition_count(), 2);
+    /// # Ok::<(), StateError>(())
+    /// ```
     pub fn transition_count(&self) -> usize {
         self.inner.transition_count()
     }
 
     /// Returns whether `state` appears as either endpoint of a transition.
+    ///
+    /// # Examples
+    /// ```
+    /// use statekit::{Machine, StateError};
+    ///
+    /// let machine = Machine::builder()
+    ///     .try_allow("a", "b")?
+    ///     .try_allow("a", "b")?
+    ///     .try_allow("b", "c")?
+    ///     .build()?;
+    ///
+    /// assert!(machine.contains_state("c"));
+    /// assert!(!machine.contains_state("unknown"));
+    /// # Ok::<(), StateError>(())
+    /// ```
     pub fn contains_state(&self, state: &str) -> bool {
         self.inner.contains_state(state)
     }
