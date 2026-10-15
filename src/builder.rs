@@ -93,7 +93,6 @@ impl MachineBuilder {
     ///     builder.build(),
     ///     Err(StateError::NoTransitions)
     /// ));
-    /// # Ok::<(), StateError>(())
     /// ```
     pub fn build(self) -> Result<Machine, StateError> {
         if self.transitions.is_empty() {
@@ -104,11 +103,37 @@ impl MachineBuilder {
     }
 
     /// Returns the number of unique transitions added to the state machine.
+    ///
+    /// # Examples
+    /// ```
+    /// use statekit::{Machine, StateError};
+    ///
+    /// let builder = Machine::builder()
+    ///     .try_allow("a", "b")?
+    ///     .try_allow("a", "b")?
+    ///     .try_allow("b", "c")?;
+    ///
+    /// assert_eq!(builder.transition_count(), 2);
+    /// # Ok::<(), StateError>(())
+    /// ```
     pub fn transition_count(&self) -> usize {
         self.transitions.len()
     }
 
     /// Returns the number of unique states used by the configured transitions.
+    ///
+    /// # Examples
+    /// ```
+    /// use statekit::{Machine, StateError};
+    ///
+    /// let builder = Machine::builder()
+    ///     .try_allow("a", "b")?
+    ///     .try_allow("a", "c")?
+    ///     .try_allow("b", "c")?;
+    ///
+    /// assert_eq!(builder.state_count(), 3);
+    /// # Ok::<(), StateError>(())
+    /// ```
     pub fn state_count(&self) -> usize {
         self.transitions.state_count()
     }
