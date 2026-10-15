@@ -1,9 +1,10 @@
 use crate::{Machine, MachineInner, StateError};
 use std::sync::Arc;
 
-/// An instance of a state machine.
+/// A mutable state-machine instance backed by an immutable [`Machine`] definition.
 ///
-/// A machine instance traverses existing states in [`Machine`].
+/// Each instance maintains its own current state while sharing the
+/// underlying machine definition with other instances.
 #[derive(Debug, PartialEq, Eq)]
 pub struct MachineInstance {
     machine: Arc<MachineInner>,
@@ -34,7 +35,9 @@ impl MachineInstance {
         self.machine.can_transition(&self.current, target)
     }
 
-    /// Changes the state to `target` if the transition from the current state is allowed in the machine definition. If the transition is rejected, the current state remains unchanged.
+    /// Changes the state to `target` if the transition is allowed. 
+    ///
+    /// If the transition is rejected, the current state remains unchanged.
     ///
     /// # Errors
     ///
