@@ -31,6 +31,25 @@ impl MachineInstance {
     }
 
     /// Returns true if the instance can transition to `target`.
+    ///
+    /// # Examples
+    /// ```
+    /// use statekit::{Machine, StateError};
+    /// 
+    /// let machine = Machine::builder()
+    ///     .try_allow("a", "b")?
+    ///     .try_allow("b", "c")?
+    ///     .build()?;
+    ///
+    /// let mut instance = machine.instance("a")?;
+    /// assert!(instance.can_transition_to("b"));
+    /// assert!(!instance.can_transition_to("c"));
+    ///
+    /// instance.transition_to("b")?;
+    /// assert!(instance.can_transition_to("c"));
+    /// assert!(!instance.can_transition_to("b"));
+    /// # Ok::<(), StateError>(())
+    /// ```
     pub fn can_transition_to(&self, target: &str) -> bool {
         self.machine.can_transition(&self.current, target)
     }
