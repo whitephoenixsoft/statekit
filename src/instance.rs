@@ -134,6 +134,22 @@ impl MachineInstance {
     }
 
     /// Returns a shared handle to this instance's machine definition.
+    ///
+    /// # Examples
+    /// ```
+    /// use statekit::{Machine, StateError};
+    ///
+    /// let machine = Machine::builder()
+    ///     .try_allow("a", "b")?
+    ///     .build()?;
+    ///
+    /// let instance = machine.instance("a")?;
+    /// let shared = instance.machine();
+    /// drop(machine);
+    ///
+    /// assert!(shared.can_transition("a", "b"));
+    /// # Ok::<(), StateError>(())
+    /// ```
     pub fn machine(&self) -> Machine {
         Machine::from_inner(Arc::clone(&self.machine))
     }
