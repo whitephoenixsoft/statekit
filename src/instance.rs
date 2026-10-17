@@ -26,6 +26,22 @@ impl MachineInstance {
     }
 
     /// Returns the current state.
+    ///
+    /// # Examples
+    /// ```
+    /// use statekit::{Machine, StateError};
+    ///
+    /// let machine = Machine::builder()
+    ///     .try_allow("a", "b")?
+    ///     .build()?;
+    ///
+    /// let mut instance = machine.instance("a")?;
+    /// assert_eq!(instance.state(), "a");
+    ///
+    /// instance.transition_to("b")?;
+    /// assert_eq!(instance.state(), "b");
+    /// # Ok::<(), StateError>(())
+    /// ```
     pub fn state(&self) -> &str {
         &self.current
     }
@@ -97,6 +113,22 @@ impl MachineInstance {
     }
 
     /// Returns true if the state has no outgoing transitions.
+    ///
+    /// # Examples
+    /// ```
+    /// use statekit::{Machine, StateError};
+    ///
+    /// let machine = Machine::builder()
+    ///     .try_allow("a", "b")?
+    ///     .build()?;
+    ///
+    /// let mut instance = machine.instance("a")?;
+    /// assert!(!instance.is_terminal());
+    ///
+    /// instance.transition_to("b")?;
+    /// assert!(instance.is_terminal());
+    /// # Ok::<(), StateError>(())
+    /// ```
     pub fn is_terminal(&self) -> bool {
         self.machine.is_terminal(self.state())
     }
