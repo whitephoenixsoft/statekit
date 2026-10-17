@@ -51,7 +51,7 @@ impl MachineInstance {
     /// # Examples
     /// ```
     /// use statekit::{Machine, StateError};
-    /// 
+    ///
     /// let machine = Machine::builder()
     ///     .try_allow("a", "b")?
     ///     .try_allow("b", "c")?
@@ -70,25 +70,25 @@ impl MachineInstance {
         self.machine.can_transition(&self.current, target)
     }
 
-    /// Changes the state to `target` if the transition is allowed. 
+    /// Changes the state to `target` if the transition is allowed.
     ///
     /// If the transition is rejected, the current state remains unchanged.
     ///
     /// # Errors
     ///
     /// Returns [`StateError::InvalidTransition`] when the transition is not allowed in the state machine.
-    /// 
+    ///
     /// # Examples
     /// ```
     /// use statekit::{Machine, StateError};
-    /// 
+    ///
     /// let machine = Machine::builder()
     ///     .try_allow("a", "b")?
     ///     .build()?;
-    /// 
+    ///
     /// let mut instance = machine.instance("a")?;
     /// let result = instance.transition_to("invalid");
-    /// 
+    ///
     /// assert_eq!(
     ///     result,
     ///     Err(StateError::InvalidTransition {
@@ -96,9 +96,9 @@ impl MachineInstance {
     ///         to: "invalid".to_owned(),
     ///     })
     /// );
-    /// 
+    ///
     /// assert_eq!(instance.state(), "a");
-    /// 
+    ///
     /// instance.transition_to("b")?;
     /// assert_eq!(instance.state(), "b");
     /// # Ok::<(), StateError>(())

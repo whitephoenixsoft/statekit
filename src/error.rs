@@ -29,7 +29,7 @@ pub enum StateError {
     /// The machine must contain at least one transition.
     #[error("state machine must define at least one transition")]
     NoTransitions,
-    
+
     /// A state name must not be empty or whitespace-only.
     #[error("state name cannot be empty or whitespace-only")]
     EmptyState,
@@ -138,10 +138,10 @@ mod tests {
             "transition from \"\\nstart\" to \"finish\\t\" is not allowed"
         );
     }
-    
+
     #[test]
     fn unknown_initial_state_display_message_includes_state() {
-        let error =    StateError::UnknownInitialState {
+        let error = StateError::UnknownInitialState {
             state: "missing".to_owned(),
         };
 

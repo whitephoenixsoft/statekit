@@ -28,11 +28,11 @@ impl Machine {
     /// Returns a builder for constructing a [`Machine`].
     ///
     /// This is the public entry point for creating machine definitions.
-    /// 
+    ///
     /// # Examples
     /// ```
     /// use statekit::{Machine, StateError};
-    /// 
+    ///
     /// let machine = Machine::builder()
     ///     .try_allow("a", "b")?
     ///     .build()?;
@@ -50,17 +50,17 @@ impl Machine {
     ///
     /// Returns [`StateError::UnknownInitialState`] when `initial` is not an
     /// existing state.
-    /// 
+    ///
     /// # Examples
     /// ```
     /// use statekit::{Machine, StateError};
-    /// 
+    ///
     /// let machine = Machine::builder()
     ///     .try_allow("a", "b")?
     ///     .build()?;
-    /// 
+    ///
     /// let instance = machine.instance("a")?;
-    /// 
+    ///
     /// assert_eq!(instance.state(), "a");
     /// # Ok::<(), StateError>(())
     /// ```
@@ -281,7 +281,7 @@ impl Machine {
     pub fn transitions(&self) -> impl Iterator<Item = &Transition> {
         self.inner.transitions()
     }
-    
+
     /// Returns whether `state` has no outgoing transitions.
     ///
     /// Unknown states are also considered terminal because they have no
@@ -570,7 +570,7 @@ mod tests {
 
             Ok(())
         }
-        
+
         #[test]
         fn unknown_source_is_terminal() -> Result<(), StateError> {
             let machine = Machine::builder().try_allow("1", "2")?.build()?;
