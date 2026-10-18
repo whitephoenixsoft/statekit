@@ -92,28 +92,39 @@ Stateful execution:
 **Goal:** Review Core Project document and align direction with evidence.
 
 Consider:
+- analysis of product identity and direction (done)
+- add traceability to application invariants (done)
+- additional doc tests (done)
 - add/modify tests to cover core to invariants
-- add traceability to application invariants
-- additional doc tests 
 - make readme and migration examples part of the executable tests
 
 ### Phase 7 - Data Structure Conversion (v0.5)
 
-**Goal:** Convert statekit into a pure data-structure
+**Goal:** Establish Statekit as a general, immutable state-transition data structure without imposing consumer-specific configuration restrictions.
 
 Consider: 
 - updating the project core to remove opinionated restrictions
 - adding `try_state` to add an independent list of states
 - updating iterators to support new infrastructure
 - updating specification to match the new architecture
+- adding additional property tests to cover new invariants
+
+Todo:
+- Self-transitions are valid
+- A machine nay have zero transitions
+- States may exist independently of transitions
+- A completely empty machine is valid
+- Machine equality includes both states and transitions
+- An instance still requires a know initial state
+- Transition endpoints may continue to introduce state implicitly
 
 ### Phase 8 - Data Structure Tests and Benchmarks (v0.5.1)
 
 **Goal:** Update property tests and benchmarks
 
 Consider:
-- adding additional property tests to cover new invariants
 - adding new memory benchmarks
+- expanding property tests for better coverage
 - adding new performance benchmarks
 - updating benchmark documents
 
@@ -123,21 +134,22 @@ Consider:
 
 Consider:
 - exploring one shared structural core with string and generic identity-facing APIs.
+- adding additional property tests to cover new implementation
 
 Todo:
 Runtime state identity / lowering
 - keep original Machine public API
 - define generic IdentityMachine\<S\> as an alternative to compare, not the default assumption
 - reference MachineInner and make it generic 
-- change Machine to call MachineInner\<S\> with StateName as the type
+- potentially change Machine to call MachineInner\<S\> with StateName as the type
 
 ## Phase 10 - Multiple Representation Tests and Benchmarks (v0.6.1)
 
 **Goal:** Update property tests and benchmarks
 
 Consider:
-- adding additional property tests to cover new implementation
 - adding new memory benchmarks
+- expanding property tests for better coverage
 - adding new performance benchmarks
 - updating benchmark documents
 
@@ -152,7 +164,7 @@ Consider:
 - publishing updated benchmark document
 
 Todo:
-Runtime indexing / representation optimization
+Runtime indexing / representation optimization. Examples include:
 - transition membership index
 - adjacency/source index
 - state membership index
