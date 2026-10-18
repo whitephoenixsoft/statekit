@@ -112,7 +112,7 @@ Runtime state identity / lowering
 - reference MachineInner and make it generic 
 - change Machine to call MachineInner\<S\> with StateName as the type
 
-### Phase 8 - Data Structure Clean up
+### Phase 8 - Data Structure Clean up (v0.5.1)
 
 **Goal:** refine project core to focus statekit as a reusable data structure.
 
