@@ -103,6 +103,7 @@ Consider:
 
 Consider:
 - Explore one shared structural core with string and generic identity-facing APIs.
+- Removing self transition validation to as a way to better support generic structures
 
 Todo:
 Runtime state identity / lowering
@@ -111,7 +112,14 @@ Runtime state identity / lowering
 - reference MachineInner and make it generic 
 - change Machine to call MachineInner\<S\> with StateName as the type
 
-### Phase 8 - Optimization (v0.6)
+### Phase 8 - Data Structure Clean up
+
+**Goal:** refine project core to focus statekit as a reusable data structure.
+
+Consider: 
+- Fix tests and documents to make statekit allow self transitions
+
+### Phase 9 - Optimization (v0.6)
 
 **Goal:** Runtime-oriented internal representation
 Evidence-driven indexing and memory tradeoffs
@@ -127,7 +135,7 @@ Runtime indexing / representation optimization
 - cached states/sources
 - memory benchmarking
 - construction/runtime/memory tradeoff analysis
-### Phase 9 - API Freeze (v0.9)
+### Phase 10 - API Freeze (v0.9)
 
 No new features.
 
@@ -139,7 +147,7 @@ Answer questions:
 - Is this the API I'd be happy maintaining for five years?
 
 
-### Phase 10 - Production polish (v1.0)
+### Phase 11 - Production polish (v1.0)
 
 Only when the API seems acceptable.
 
