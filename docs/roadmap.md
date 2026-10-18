@@ -97,13 +97,32 @@ Consider:
 - additional doc tests 
 - make readme and migration examples part of the executable tests
 
-### Phase 7 - Multiple Representations (v.5)
+### Phase 7 - Data Structure Conversion (v0.5)
 
-> Should Statekit's public runtime model distinguish symbolic state names from internal/runtime state identity?
+**Goal:** Convert statekit into a pure data-structure
+
+Consider: 
+- updating the project core to remove opinionated restrictions
+- adding `try_state` to add an independent list of states
+- updating iterators to support new infrastructure
+- updating specification to match the new architecture
+
+### Phase 8 - Data Structure Tests and Benchmarks (v0.5.1)
+
+**Goal:** Update property tests and benchmarks
 
 Consider:
-- Explore one shared structural core with string and generic identity-facing APIs.
-- Removing self transition validation to as a way to better support generic structures
+- adding additional property tests to cover new invariants
+- adding new memory benchmarks
+- adding new performance benchmarks
+- updating benchmark documents
+
+### Phase 9 - Multiple Representations (v0.6)
+
+**Goal:** Update the public runtime model to support different state identities
+
+Consider:
+- exploring one shared structural core with string and generic identity-facing APIs.
 
 Todo:
 Runtime state identity / lowering
@@ -112,20 +131,25 @@ Runtime state identity / lowering
 - reference MachineInner and make it generic 
 - change Machine to call MachineInner\<S\> with StateName as the type
 
-### Phase 8 - Data Structure Clean up (v0.5.1)
+## Phase 10 - Multiple Representation Tests and Benchmarks (v0.6.1)
 
-**Goal:** refine project core to focus statekit as a reusable data structure.
+**Goal:** Update property tests and benchmarks
 
-Consider: 
-- Fix tests and documents to make statekit allow self transitions
+Consider:
+- adding additional property tests to cover new implementation
+- adding new memory benchmarks
+- adding new performance benchmarks
+- updating benchmark documents
 
-### Phase 9 - Optimization (v0.6)
+### Phase 11 - Optimization (v0.7)
 
 **Goal:** Runtime-oriented internal representation
 Evidence-driven indexing and memory tradeoffs
 
 Consider:
-- Performance/indexing changes for that benchmarks justify them.
+- performance/indexing changes for that benchmarks justify them.
+- keeping only indexes that justify the tradeoff
+- publishing updated benchmark document
 
 Todo:
 Runtime indexing / representation optimization
@@ -135,7 +159,8 @@ Runtime indexing / representation optimization
 - cached states/sources
 - memory benchmarking
 - construction/runtime/memory tradeoff analysis
-### Phase 10 - API Freeze (v0.9)
+
+### Phase 12 - API Freeze (v0.9)
 
 No new features.
 
@@ -147,10 +172,11 @@ Answer questions:
 - Is this the API I'd be happy maintaining for five years?
 
 
-### Phase 11 - Production polish (v1.0)
+### Phase 13 - Production polish (v1.0)
 
 Only when the API seems acceptable.
 
 Consider:
-- Post 1.x direction
+- publshing post 1.x direction and direction
+- removing all deprecated API functions
 
