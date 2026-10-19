@@ -111,11 +111,11 @@ Consider:
 
 Todo:
 - Self-transitions are valid
-- A machine nay have zero transitions
+- A machine may have zero transitions
 - States may exist independently of transitions
 - A completely empty machine is valid
 - Machine equality includes both states and transitions
-- An instance still requires a know initial state
+- An instance still requires a known initial state
 - Transition endpoints may continue to introduce state implicitly
 
 ### Phase 8 - Data Structure Tests and Benchmarks (v0.5.1)
@@ -189,6 +189,6 @@ Answer questions:
 Only when the API seems acceptable.
 
 Consider:
-- publshing post 1.x direction and direction
+- publishing post 1.x direction
 - removing all deprecated API functions
 
