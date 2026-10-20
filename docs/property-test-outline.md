@@ -17,9 +17,15 @@ The purpose of this document is to outline what property tests have been defined
 
 ## CORE INVARIANT COVERAGE
 
+**INV-002 No Self Transition**
+  → self_transition_is_rejected
+
 **INV-004 Logical Transition Uniqueness**
   → duplicate_transitions_collapse
   → model transition count
+
+**INV-005 Case-Sensitive State Identity**
+  → case_distinct_names_are_different
 
 **INV-009 Shared Immutable Machine**
   → instances_are_independent
@@ -36,6 +42,13 @@ The purpose of this document is to outline what property tests have been defined
 **INV-012 Independent Instances**
   → instances_are_independent
 
+**INV-013 Machine Equality**
+  → duplicate_machines_are_equal
+  → different_machines_are_not_equal
+
+**INV-014 Instance Equality**
+  → instances_are_equal_when_machine_definition_and_states_are_equal
+
 ## Outline
 
 VALIDATION
@@ -50,6 +63,10 @@ VALIDATION
 ✔ successful instance transitions update current state exactly to the target
 ✔ failed instance transitions have no observable effect
 ✔ shared-machine instance independence
+✔ self transitions are rejected
+✔ logically equal machine definitions are equal
+✔ instances are equal when state and machine definitions are equal
+✔ case dinstinct names are not treated differently
 
 EDGE SEMANTICS
 ✔ exposed transition is queryable
