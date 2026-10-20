@@ -242,6 +242,27 @@ proptest! {
     }
 
     #[test]
+    fn case_distinct_names_are_different(
+        source in valid_state_name(),
+        target in valid_state_name(),
+    ) {
+        let machine = Machine::builder()
+            .try_allow(&source, &target)
+            .and_then(|builder| builder.build());
+
+        let upper_source = source.to_uppercase();
+        let upper_target = target.to_uppercase();
+
+        prop_assume!(source != upper_source);
+        prop_assume!(target != upper_target);
+
+        let machine = machine.unwrap();
+
+        prop_assert!(!machine.can_transition(&upper_source, &target));
+        prop_assert!(!machine.can_transition(&source, &upper_target));
+    }
+
+    #[test]
     fn whitespace_only_source_is_rejected(
         source in whitespace_only_state_name(),
         target in valid_state_name(),
