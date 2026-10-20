@@ -929,4 +929,19 @@ proptest! {
             prop_assert_eq!(second.state(), second_initial.as_str());
         }
     }
+
+    #[test]
+    fn instances_are_equal_on_machine_definition_and_current_instance(
+        (transitions, probe) in transitions_with_probe_and_existing_source(),
+    ) {
+        let machine1 = build_machine(&transitions);
+        let machine2 = build_machine(&transitions);
+
+        let (source, _) = &probe;
+        let first = machine1.instance(&source.as_str());
+        let second = machine2.instance(&source.as_str());
+
+        prop_assert_eq!(first, second);
+    }
+
 }
