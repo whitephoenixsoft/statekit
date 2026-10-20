@@ -24,7 +24,6 @@ Plan:
 - Update the Project Core to reflect new values and invariants.
 
 Consider:
-- sources_to(state) - an iterator over unique states with a direct transition to the supplied state.
 - roots() - states with zero incoming transitions.
 - terminals() - states with zero outgoing transitions.
 

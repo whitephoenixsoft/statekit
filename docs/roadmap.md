@@ -105,6 +105,8 @@ Consider:
 Consider: 
 - updating the project core to remove opinionated restrictions
 - adding `try_state` to add an independent list of states
+- adding `sources_to` for incoming states
+- adding `is_isolated` for orphaned single states
 - updating iterators to support new infrastructure
 - updating specification to match the new architecture
 - adding additional property tests to cover new invariants
