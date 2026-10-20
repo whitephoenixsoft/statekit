@@ -5,7 +5,6 @@ version: 0.4
 status: active
 review-status: needs-review
 ---
-
 # Unit Test Outline
 
 ## Purpose
@@ -59,8 +58,6 @@ Compile-time tests verify that external consumers cannot access `Machine::inner`
 
 `machine_construction.rs` verifies supported public construction and inspection rather than immutability itself.
 
-Property-test coverage: none documented for INV-001 in `property-test-outline.md`.
-
 ## INV-002 — No Self Transitions
 
 **Status:** Direct
@@ -73,8 +70,6 @@ Focused evidence:
 
 Evidence: a known transition whose source and target are equal is rejected as `StateError::SelfTransition`, including the offending state.
 
-Property-test coverage: none documented for INV-002.
-
 ## INV-003 — Non-Empty Transition Set
 
 **Status:** Direct
@@ -85,8 +80,6 @@ Focused evidence:
 - `src/builder.rs::build_empty_returns_no_transitions`
 
 Evidence: building without a transition returns `StateError::NoTransitions`.
-
-Property-test coverage: none documented for INV-003.
 
 ## INV-004 — Logical Transition Uniqueness
 
@@ -99,8 +92,6 @@ Focused evidence:
 - `src/machine_inner.rs::targets_from_duplicate_transition_is_stored_once`
 
 Evidence: adding the same source-target pair more than once leaves one logical transition and one outgoing target.
-
-Property-test coverage: `duplicate_transitions_collapse` and reference-model transition cardinality are documented for INV-004.
 
 ## INV-005 — Case-Sensitive State Identity
 
@@ -116,8 +107,6 @@ Focused evidence:
 
 Evidence: names that differ only by case remain distinct states and produce distinct transitions.
 
-Property-test coverage:  none documented for INV-005.
-
 ## INV-006 — Runtime Configuration
 
 **Status:** Direct
@@ -129,8 +118,6 @@ Focused evidence:
 - `tests/transition_tests.rs::machine_can_be_built_from_runtime_owned_transitions`
 
 Evidence: an external consumer can construct and inspect a machine through the public builder API. An external consumer builds a machine from runtime-owned String pairs, discards the original configuration before calling build(), and verifies that the resulting machine preserves the configured transitions.
-
-Property-test coverage: generated transition vectors demonstrate data-driven construction throughout `tests/property_tests.rs`, but INV-006 is not mapped in `property-test-outline.md`.
 
 ## INV-007 — Earliest Valid Error Detection
 
@@ -145,8 +132,6 @@ Focused evidence:
 - `src/instance.rs::initial_unknown_state_fails_with_unknown_initial_state_error`
 
 Evidence: invalid transition endpoints and self-transitions fail when added by `try_allow`; an empty transition set fails at `build`; an unknown initial state fails when instance construction first makes it invalid.
-
-Property-test coverage: validation properties cover whitespace rejection and preservation of offending values, but INV-007 is not explicitly mapped in `property-test-outline.md`.
 
 ## INV-008 — Standard Error Integration
 
@@ -165,8 +150,6 @@ Focused evidence:
 Evidence: callers can match concrete `StateError` variants and obtain stable,
 useful display messages. A compile-time trait-bound assertion verifies that `StateError` implements `std::error::Error`.
 
-Property-test coverage: generated tests match several error variants and payloads, but INV-008 is not mapped in `property-test-outline.md`.
-
 ## INV-009 — Shared Immutable Machine
 
 **Status:** Direct
@@ -178,9 +161,6 @@ Focused evidence:
 - `tests/transition_tests.rs::independent_multi_threaded_instances`
 
 Evidence: an instance retains the shared machine allocation after the original handle is gone, and separate instances can use that definition on different threads without definition mutation.
-
-Property-test coverage: `instances_are_independent` is documented for INV-009; the outline also cites multithreaded integration coverage, which is the focused
-integration test above rather than a property test.
 
 ## INV-010 — Valid Traversal
 
@@ -196,8 +176,6 @@ Focused evidence:
 
 Evidence: configured edges permit traversal, while missing or unreachable edges return an error based on the instance's current state.
 
-Property-test coverage: `can_transition_to_agrees_with_the_edge_model` and the model/instance attempt properties are documented for INV-010.
-
 ## INV-011 — Safe Traversal Failure
 
 **Status:** Direct
@@ -207,8 +185,6 @@ Focused evidence:
 - `src/instance.rs::transition_to_failure_does_not_change_the_state`
 
 Evidence: after a rejected transition, the instance reports the same current state it held before the attempt.
-
-Property-test coverage: `failed_instance_transitions_have_no_observable_effect` and the model/instance attempt properties are documented for INV-011. 
 
 ## INV-012 — Independent Instances
 
@@ -221,8 +197,6 @@ Focused evidence:
 
 Evidence: moving one instance does not change another instance created from the same machine, including when the instances move on separate threads.
 
-Property-test coverage: `instances_are_independent` is documented for INV-012.
-
 ## INV-013 — Machine Equality
 
 **Status:** Direct
@@ -233,8 +207,6 @@ Focused evidence:
 - `src/machine.rs::different_machines_are_not_equal`
 
 Evidence: independently allocated machines with equivalent definitions compare equal, while different transition definitions compare unequal.
-
-Property-test coverage:  none documented for INV-013.
 
 ## INV-014 — Instance Equality
 
@@ -247,8 +219,6 @@ Focused evidence:
 - `src/instance.rs::instances_are_not_equal_when_machine_definitions_differ`
 
 Evidence: instances compare equal when both their machine definitions and current states are equal. A different current state or machine definition makes them unequal.
-
-Property-test coverage: none documented for INV-014.
 
 ## Missing Direct Evidence Backlog
 

@@ -29,7 +29,6 @@ The purpose of this document is to outline what property tests have been defined
 
 **INV-009 Shared Immutable Machine**
   → instances_are_independent
-  → multithreaded integration coverage
 
 **INV-010 Valid Traversal**
   → can_transition_to_agrees_with_the_edge_model
