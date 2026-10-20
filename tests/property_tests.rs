@@ -65,6 +65,20 @@ fn transitions_with_existing_probe()
         })
 }
 
+fn transition_and_its_upper_copy()
+-> impl Strategy<Value = ((String, String), (String, String))> {
+    valid_transition_pair()
+        .prop_map(|(source, target)| {
+            let copy = (source.to_uppercase(), target.to_uppercase());
+            let transition = (source, target);
+
+            (transition, copy)
+        })
+        .prop_filter("transition fields must not be equal", |(t1, t2)| {
+            t1.0 != t2.0 && t1.1 != t2.1
+        })
+}
+
 fn transitions_with_missing_probe()
 -> impl Strategy<Value = (Vec<(String, String)>, (String, String))> {
     valid_transition_pairs()
@@ -243,20 +257,15 @@ proptest! {
 
     #[test]
     fn case_distinct_names_are_different(
-        source in valid_state_name(),
-        target in valid_state_name(),
+        (probe1, probe2) in transition_and_its_upper_copy(),
     ) {
+        let (source, target) = &probe1;
         let machine = Machine::builder()
             .try_allow(&source, &target)
             .and_then(|builder| builder.build());
 
-        let upper_source = source.to_uppercase();
-        let upper_target = target.to_uppercase();
-
-        prop_assume!(source != upper_source);
-        prop_assume!(target != upper_target);
-
         let machine = machine.unwrap();
+        let (upper_source, upper_target) = &probe2;
 
         prop_assert!(!machine.can_transition(&upper_source, &target));
         prop_assert!(!machine.can_transition(&source, &upper_target));
@@ -482,6 +491,17 @@ proptest! {
         let machine2 = build_machine(&transitions);
 
         prop_assert_eq!(machine, machine2);
+    }
+
+    #[test]
+    fn different_machines_are_not_equal(
+        transitions1 in valid_transition_pairs(),
+        transitions2 in valid_transition_pairs(),
+    ) {
+        let machine = build_machine(&transitions1);
+        let machine2 = build_machine(&transitions2);
+
+        prop_assert_ne!(machine, machine2);
     }
 
     #[test]
@@ -931,15 +951,17 @@ proptest! {
     }
 
     #[test]
-    fn instances_are_equal_on_machine_definition_and_current_instance(
+    fn instances_are_equal_on_machine_definition_and_states_are_equal(
         (transitions, probe) in transitions_with_probe_and_existing_source(),
     ) {
         let machine1 = build_machine(&transitions);
         let machine2 = build_machine(&transitions);
 
         let (source, _) = &probe;
-        let first = machine1.instance(&source.as_str());
-        let second = machine2.instance(&source.as_str());
+        let first = machine1.instance(&source.as_str())
+            .expect("generated initial state must exist");
+        let second = machine2.instance(&source.as_str())
+            .expect("generated initial state must exist");
 
         prop_assert_eq!(first, second);
     }
