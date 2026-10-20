@@ -475,6 +475,16 @@ proptest! {
     }
 
     #[test]
+    fn duplicate_machines_are_equal(
+        transitions in valid_transition_pairs(),
+    ) {
+        let machine = build_machine(&transitions);
+        let machine2 = build_machine(&transitions);
+
+        prop_assert_eq!(machine, machine2);
+    }
+
+    #[test]
     fn model_based_valid_transitions_yields_equivalent_transition_count(
         transitions in valid_transition_pairs(),
     ) {
