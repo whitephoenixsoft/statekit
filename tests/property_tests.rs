@@ -951,7 +951,7 @@ proptest! {
     }
 
     #[test]
-    fn instances_are_equal_on_machine_definition_and_states_are_equal(
+    fn instances_are_equal_when_machine_definition_and_states_are_equal(
         (transitions, probe) in transitions_with_probe_and_existing_source(),
     ) {
         let machine1 = build_machine(&transitions);
