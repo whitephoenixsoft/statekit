@@ -227,6 +227,21 @@ proptest! {
     }
 
     #[test]
+    fn self_transition_is_rejected(
+        input_state in valid_state_name(),
+    ) {
+        let result = Machine::builder()
+            .try_allow(&input_state, &input_state);
+
+        let is_self_transition = matches!(
+            result,
+            Err(StateError::SelfTransition { state }) if state == input_state 
+        );
+
+        prop_assert!(is_self_transition);
+    }
+
+    #[test]
     fn whitespace_only_source_is_rejected(
         source in whitespace_only_state_name(),
         target in valid_state_name(),
