@@ -65,7 +65,7 @@ VALIDATION
 ✔ self transitions are rejected
 ✔ logically equal machine definitions are equal
 ✔ instances are equal when state and machine definitions are equal
-✔ case dinstinct names are not treated differently
+✔ case distinct names are treated as distinct identities 
 
 EDGE SEMANTICS
 ✔ exposed transition is queryable
