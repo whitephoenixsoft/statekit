@@ -5,4 +5,6 @@ fn main() -> Result<(), StateError> {
     
 
     // END DOCUMENTATION EXAMPLE
+
+    Ok(())
 }
