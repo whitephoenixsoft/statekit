@@ -50,6 +50,19 @@ fn trailing_whitespace_state_name() -> impl Strategy<Value = String> {
     ("[ \t]{1,4}", valid_state_name()).prop_map(|(whitespace, name)| format!("{name}{whitespace}"))
 }
 
+fn different_transitions() -> impl Strategy<Value = (Vec<(String, String)>, Vec<(String, String)>)> {
+    (valid_transition_pairs(), valid_transition_pair())
+        .prop_filter("original transition must not contain additional entry", |(transitions, data)| {
+            !transitions.contains(data)
+        })
+        .prop_map(|(transitions, additional_transition)| {
+            let mut different_transitions = transitions.clone();
+            different_transitions.push(additional_transition);
+
+            (transitions, different_transitions)
+        })
+}
+
 fn transitions_with_existing_probe()
 -> impl Strategy<Value = (Vec<(String, String)>, (String, String))> {
     valid_transition_pairs()
@@ -495,8 +508,7 @@ proptest! {
 
     #[test]
     fn different_machines_are_not_equal(
-        transitions1 in valid_transition_pairs(),
-        transitions2 in valid_transition_pairs(),
+        (transitions1, transitions2) in different_transitions(),
     ) {
         let machine = build_machine(&transitions1);
         let machine2 = build_machine(&transitions2);
