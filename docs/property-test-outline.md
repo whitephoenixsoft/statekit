@@ -26,6 +26,7 @@ The purpose of this document is to outline what property tests have been defined
 
 **INV-005 Case-Sensitive State Identity**
   → case_distinct_names_are_different
+  → case_distinct_names_can_coexist_together
 
 **INV-009 Shared Immutable Machine**
   → instances_are_independent

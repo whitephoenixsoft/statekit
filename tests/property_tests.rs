@@ -285,6 +285,20 @@ proptest! {
     }
 
     #[test]
+    fn case_distinct_names_can_coexist_together(
+        (probe1, probe2) in transition_and_its_upper_copy(),
+    ) {
+        let (source, target) = &probe1;
+        let (source2, target2) = &probe2;
+        let result = Machine::builder()
+            .try_allow(&source, &target)
+                .expect("valid entry")
+            .try_allow(&source2, &target2);
+
+        prop_assert!(result.is_ok());
+    }
+
+    #[test]
     fn whitespace_only_source_is_rejected(
         source in whitespace_only_state_name(),
         target in valid_state_name(),
