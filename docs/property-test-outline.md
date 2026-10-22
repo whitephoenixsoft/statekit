@@ -84,7 +84,7 @@ REFERENCE MODEL
 ✔ transitions() == model edge set
 ✔ validate_transition(a, b).is_ok() == model.contains((a, b))
 ✔ a.can_transition_to(b) == model.contains(a, b)
-✔ instance is_terminal() == model terminal vertice
+✔ instance is_terminal() == model terminal vertex
 ✔ instance transition_to()   == model.contains + mutable current state
 ✔ instance can_transition_to() + transition_to() + targets + terminality == model.contains + mutable current state + targets
 
