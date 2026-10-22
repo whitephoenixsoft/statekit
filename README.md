@@ -97,7 +97,7 @@ for source in machine.sources() {
     println!("{source}");
 
     for target in machine.targets_from(source) {
-        println!("  -> {target}");
+        println!(" -> {target}");
     }
 }
 ```
@@ -130,7 +130,7 @@ Iteration order is unspecified.
 
 ```rust
 let machine = Machine::builder()
-        .try_allow("queued", "running")?
+	.try_allow("queued", "running")?
         .build()?;
 
 let instance = machine.instance("running")?;
