@@ -50,11 +50,13 @@ fn trailing_whitespace_state_name() -> impl Strategy<Value = String> {
     ("[ \t]{1,4}", valid_state_name()).prop_map(|(whitespace, name)| format!("{name}{whitespace}"))
 }
 
-fn different_transitions() -> impl Strategy<Value = (Vec<(String, String)>, Vec<(String, String)>)> {
+fn different_transitions() -> impl Strategy<Value = (Vec<(String, String)>, Vec<(String, String)>)>
+{
     (valid_transition_pairs(), valid_transition_pair())
-        .prop_filter("original transition must not contain additional entry", |(transitions, data)| {
-            !transitions.contains(data)
-        })
+        .prop_filter(
+            "original transition must not contain additional entry",
+            |(transitions, data)| !transitions.contains(data),
+        )
         .prop_map(|(transitions, additional_transition)| {
             let mut different_transitions = transitions.clone();
             different_transitions.push(additional_transition);
@@ -78,8 +80,7 @@ fn transitions_with_existing_probe()
         })
 }
 
-fn transition_and_its_upper_copy()
--> impl Strategy<Value = ((String, String), (String, String))> {
+fn transition_and_its_upper_copy() -> impl Strategy<Value = ((String, String), (String, String))> {
     valid_transition_pair()
         .prop_map(|(source, target)| {
             let copy = (source.to_uppercase(), target.to_uppercase());
@@ -262,7 +263,7 @@ proptest! {
 
         let is_self_transition = matches!(
             result,
-            Err(StateError::SelfTransition { state }) if state == input_state 
+            Err(StateError::SelfTransition { state }) if state == input_state
         );
 
         prop_assert!(is_self_transition);

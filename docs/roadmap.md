@@ -95,7 +95,7 @@ Consider:
 - analysis of product identity and direction (done)
 - add traceability to application invariants (done)
 - additional doc tests (done)
-- add/modify tests to cover core to invariants
+- add/modify tests to cover core to invariants (done)
 - make readme and migration examples part of the executable tests
 
 ### Phase 7 - Data Structure Conversion (v0.5)
