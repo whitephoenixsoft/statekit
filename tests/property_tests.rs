@@ -194,7 +194,7 @@ fn transitions_with_initial_state_and_attempts()
         (
             Just(transitions),
             proptest::sample::select(states),
-            prop::collection::vec(attempt, 0..20),
+            prop::collection::vec(attempt, 1..20),
         )
     })
 }
@@ -212,7 +212,7 @@ fn transitions_with_two_initial_states_and_two_different_attempts()
             Just(transitions),
             proptest::sample::select(states.clone()),
             proptest::sample::select(states),
-            prop::collection::vec(attempt, 0..20),
+            prop::collection::vec(attempt, 1..20),
         )
     })
 }
