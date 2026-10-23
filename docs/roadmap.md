@@ -96,7 +96,8 @@ Consider:
 - add traceability to application invariants (done)
 - additional doc tests (done)
 - add/modify tests to cover core to invariants (done)
-- make readme and migration examples part of the executable tests (done)
+- make current readme and migration examples part of the executable tests. (done)
+- add historical document examples to preserve traceability. Mark each file with provenance information.
 
 ### Phase 7 - Data Structure Conversion (v0.5)
 
