@@ -97,7 +97,11 @@ Consider:
 - additional doc tests (done)
 - add/modify tests to cover core to invariants (done)
 - make current readme and migration examples part of the executable tests. (done)
-- add historical document examples to preserve traceability. Mark each file with provenance information.
+- add passing historical document examples to preserve traceability. Mark each file with provenance information. (done)
+
+Cleanup:
+- Changelog 
+- Final review 
 
 ### Phase 7 - Data Structure Conversion (v0.5)
 
@@ -130,6 +134,7 @@ Consider:
 - expanding property tests for better coverage
 - adding new performance benchmarks
 - updating benchmark documents
+- adding failing historical document examples to preserve traceability. Mark each file with provenance information.
 
 ### Phase 9 - Multiple Representations (v0.6)
 
