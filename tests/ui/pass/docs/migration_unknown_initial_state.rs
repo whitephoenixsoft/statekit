@@ -1,3 +1,7 @@
+// Source: MIGRATION.md
+// Section: `StateError::UnknownInitialState` for `MachineInstance` errors 
+// Compatibility: current
+// Introduced: 0.4
 use statekit::{Machine, StateError};
 
 fn main() -> Result<(), StateError> {

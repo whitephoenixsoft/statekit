@@ -1,3 +1,7 @@
+// Source: README.md
+// Section: Validation Example
+// Compatibility: current
+// Introduced: 0.4
 use statekit::{Machine, StateError};
 
 fn main() -> Result<(), StateError> {

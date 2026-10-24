@@ -1,3 +1,7 @@
+// Source: MIGRATION.md
+// Section: `Machine::is_terminal` for stateless terminality queries
+// Compatibility: current
+// Introduced: 0.4
 use statekit::{Machine, StateError};
 
 fn main() -> Result<(), StateError> {

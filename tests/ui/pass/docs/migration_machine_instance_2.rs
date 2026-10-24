@@ -1,3 +1,7 @@
+// Source: MIGRATION.md
+// Section: New `MachineInstance` for stateful traversal of `Machine`
+// Compatibility: current
+// Introduced: 0.4
 use statekit::{Machine, StateError};
 
 fn main() -> Result<(), StateError> {
