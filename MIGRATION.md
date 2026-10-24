@@ -143,7 +143,7 @@ for target in targets {
 ```
 
 ```rust
-let mut targets = machine.targets_from("source");
+let mut targets = machine.targets_from("no_source");
 
 if targets.next().is_none() {
     println!("no outgoing transitions");
@@ -151,7 +151,7 @@ if targets.next().is_none() {
 ```
 
 ```rust
-let targets: Vec<_> = machine.targets_from("source").collect();
+let targets: Vec<_> = machine.targets_from("no_source").collect();
 
 if targets.is_empty() {
     println!("no outgoing transitions");
@@ -173,7 +173,7 @@ match err {
 Version 0.3:
 ```rust
 match err {
-    StateError::AmbiguousStateName { state } => { println!("{state}"); }
+    Err(StateError::AmbiguousStateName { state }) => { println!("{state}"); }
     _ => {}
 }
 ```
