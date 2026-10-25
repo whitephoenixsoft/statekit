@@ -297,7 +297,7 @@ proptest! {
             .try_allow(&source2, &target2);
 
         prop_assert!(result.is_ok());
-        
+
         let machine = result
             .expect("case-distinct transition should be accepted")
             .build()
