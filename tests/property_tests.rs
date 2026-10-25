@@ -4,6 +4,7 @@ use std::collections::HashSet;
 use statekit::{Machine, StateError};
 
 type Model = HashSet<(String, String)>;
+type GeneratedInput = Vec<(String, String)>;
 
 fn build_machine(transitions: &[(String, String)]) -> Machine {
     let mut builder = Machine::builder();
@@ -50,7 +51,7 @@ fn trailing_whitespace_state_name() -> impl Strategy<Value = String> {
     ("[ \t]{1,4}", valid_state_name()).prop_map(|(whitespace, name)| format!("{name}{whitespace}"))
 }
 
-fn different_transitions() -> impl Strategy<Value = (Vec<(String, String)>, Vec<(String, String)>)>
+fn different_transitions() -> impl Strategy<Value = (GeneratedInput, GeneratedInput)>
 {
     (valid_transition_pairs(), valid_transition_pair())
         .prop_filter(
@@ -275,14 +276,14 @@ proptest! {
     ) {
         let (source, target) = &probe1;
         let machine = Machine::builder()
-            .try_allow(&source, &target)
+            .try_allow(source, target)
             .and_then(|builder| builder.build());
 
         let machine = machine.unwrap();
         let (upper_source, upper_target) = &probe2;
 
-        prop_assert!(!machine.can_transition(&upper_source, &target));
-        prop_assert!(!machine.can_transition(&source, &upper_target));
+        prop_assert!(!machine.can_transition(upper_source, target));
+        prop_assert!(!machine.can_transition(source, upper_target));
     }
 
     #[test]
@@ -292,9 +293,9 @@ proptest! {
         let (source, target) = &probe1;
         let (source2, target2) = &probe2;
         let result = Machine::builder()
-            .try_allow(&source, &target)
+            .try_allow(source, target)
                 .expect("valid entry")
-            .try_allow(&source2, &target2);
+            .try_allow(source2, target2);
 
         prop_assert!(result.is_ok());
 
@@ -994,9 +995,9 @@ proptest! {
         let machine2 = build_machine(&transitions);
 
         let (source, _) = &probe;
-        let first = machine1.instance(&source.as_str())
+        let first = machine1.instance(source.as_str())
             .expect("generated initial state must exist");
-        let second = machine2.instance(&source.as_str())
+        let second = machine2.instance(source.as_str())
             .expect("generated initial state must exist");
 
         prop_assert_eq!(first, second);
