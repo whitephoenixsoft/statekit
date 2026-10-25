@@ -92,44 +92,95 @@ Stateful execution:
 **Goal:** Review Core Project document and align direction with evidence.
 
 Consider:
-- add/modify tests to cover core to invariants
-- add traceability to application invariants
+- analysis of product identity and direction (done)
+- add traceability to application invariants (done)
+- additional doc tests (done)
+- add/modify tests to cover core to invariants (done)
+- make current readme and migration examples part of the executable tests. (done)
+- add passing historical document examples to preserve traceability. Mark each file with provenance information. (done)
 
-### Phase 7 - Multiple Representations (v.5)
+Cleanup:
+- Changelog (done)
+- Final review 
 
-> Should Statekit's public runtime model distinguish symbolic state names from internal/runtime state identity?
+### Phase 7 - Data Structure Conversion (v0.5)
+
+**Goal:** Establish Statekit as a general, immutable state-transition data structure without imposing consumer-specific configuration restrictions.
+
+Consider: 
+- updating the project core to remove opinionated restrictions
+- adding `try_state` to add an independent list of states
+- adding `sources_to` for incoming states
+- adding `is_isolated` for orphaned single states
+- updating iterators to support new infrastructure
+- updating specification to match the new architecture
+- adding additional property tests to cover new invariants
+
+Todo:
+- Self-transitions are valid
+- A machine may have zero transitions
+- States may exist independently of transitions
+- A completely empty machine is valid
+- Machine equality includes both states and transitions
+- An instance still requires a known initial state
+- Transition endpoints may continue to introduce state implicitly
+
+### Phase 8 - Data Structure Tests and Benchmarks (v0.5.1)
+
+**Goal:** Update property tests and benchmarks
 
 Consider:
-A. Keep strings as state identity
-B. Make Machine generic over state identity
-C. Keep string-oriented construction but lower to Statekit-owned StateId
+- adding new memory benchmarks
+- expanding property tests for better coverage
+- adding new performance benchmarks
+- updating benchmark documents
+- adding failing historical document examples to preserve traceability. Mark each file with provenance information.
+
+### Phase 9 - Multiple Representations (v0.6)
+
+**Goal:** Update the public runtime model to support different state identities
+
+Consider:
+- exploring one shared structural core with string and generic identity-facing APIs.
+- adding additional property tests to cover new implementation
 
 Todo:
 Runtime state identity / lowering
-- distinguish symbolic state names from runtime identity
-- investigate StateId-style representation
-- decide whether public APIs should expose IDs
-- decide how name ↔ ID mapping works
-- evaluate whether strings remain the construction surface
-- keep generic Machine\<S\> as an alternative to compare, not the default assumption
+- keep original Machine public API
+- define generic IdentityMachine\<S\> as an alternative to compare, not the default assumption
+- reference MachineInner and make it generic 
+- potentially change Machine to call MachineInner\<S\> with StateName as the type
 
-### Phase 8 - Optimization (v0.6)
+## Phase 10 - Multiple Representation Tests and Benchmarks (v0.6.1)
+
+**Goal:** Update property tests and benchmarks
+
+Consider:
+- adding new memory benchmarks
+- expanding property tests for better coverage
+- adding new performance benchmarks
+- updating benchmark documents
+
+### Phase 11 - Optimization (v0.7)
 
 **Goal:** Runtime-oriented internal representation
 Evidence-driven indexing and memory tradeoffs
 
 Consider:
-- Performance/indexing changes for that benchmarks justify them.
+- performance/indexing changes for that benchmarks justify them.
+- keeping only indexes that justify the tradeoff
+- publishing updated benchmark document
 
 Todo:
-Runtime indexing / representation optimization
+Runtime indexing / representation optimization. Examples include:
 - transition membership index
 - adjacency/source index
 - state membership index
 - cached states/sources
 - memory benchmarking
 - construction/runtime/memory tradeoff analysis
-### Phase 9 - API Freeze (v0.9)
+
+### Phase 12 - API Freeze (v0.9)
 
 No new features.
 
@@ -141,10 +192,11 @@ Answer questions:
 - Is this the API I'd be happy maintaining for five years?
 
 
-### Phase 10 - Production polish (v1.0)
+### Phase 13 - Production polish (v1.0)
 
 Only when the API seems acceptable.
 
 Consider:
-- Post 1.x direction
+- publishing post 1.x direction
+- removing all deprecated API functions
 

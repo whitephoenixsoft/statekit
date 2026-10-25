@@ -24,7 +24,7 @@ Examples include:
 
 Statekit is under active development.
 
-Current release: v0.4.
+Current release: v0.4.1
 
 Statekit follows semantic versioning. As a pre-1.0 crate, its public API may evolve between minor releases.
 
@@ -34,14 +34,14 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-statekit = "0.4"
+statekit = "0.4.1"
 ```
 
 ## Examples
 
 ### Validation Example
 
-There are two ways to use statekit. 
+There are two ways to use Statekit. 
 
 It can be used statelessly:
 
@@ -90,14 +90,14 @@ fn main() -> Result<(), StateError> {
 
 ### Inspecting a Machine
 
-Machines can be inspected without exposing their internal storage.
+Statekit exposes transition information so applications can build additional functionality around their state-machine definitions.
 
 ```rust
 for source in machine.sources() {
     println!("{source}");
 
     for target in machine.targets_from(source) {
-        println!("  -> {target}");
+        println!(" -> {target}");
     }
 }
 ```
@@ -124,6 +124,21 @@ for transition in machine.transitions() {
 
 Iteration order is unspecified.
 
+### Terminality
+
+`Machine::is_terminal(state)` determines whether a specified state has no outgoing transitions. `MachineInstance::is_terminal()` checks the instance's current state.
+
+```rust
+let machine = Machine::builder()
+	.try_allow("queued", "running")?
+        .build()?;
+
+let instance = machine.instance("running")?;
+
+assert!(machine.is_terminal("running"));
+assert!(instance.is_terminal());
+```
+
 ## Invariants
 
 - State names must not be empty or consist entirely of whitespace.
@@ -133,9 +148,9 @@ Iteration order is unspecified.
 - Cycles between distinct states are permitted.
 - A machine must contain at least one transition.
 - Duplicate transitions between the same source and target are stored as a single logical transition.
-- Transitions with non-existing edges are rejected.
+- A transition attempt is rejected unless it is allowed by the machine definition.
 - Instances must be initialized with an existing state.
-- Instances can only transition to adjacent states.
+- Instances can transition only to target states permitted by the machine definition.
 
 ## Validation
 
@@ -157,17 +172,17 @@ Once constructed, a machine cannot be modified.
 
 This allows a machine definition to be reused safely without callers mutating its transition structure.
 
-### Thread Safe Traversal
+### Concurrency Support
 
-An instance can be created from the stateless machine to traverse the states using adjacent edges. 
+An instance can be created from the stateless machine definition to traverse the states permitted by the machine definition. 
 
-These instances share a reference to the state machine and can work concurrently even if the state machine is out of scope.
+These instances share the machine definition and can work concurrently even if the machine definition handle has been dropped. 
+
+Synchronization of mutable instances is the responsibility of the host application.
 
 ### Semantic Equality
 
 Two machines are equal when their machine definitions are equal. Two instances are equal when they reference equal machine definitions and are on the same traversal state.
-
-This allows for algorithmic use of the graph through for problem solving.
 
 ## What It Is Not
 
@@ -193,6 +208,7 @@ Statekit is built with help from the Rust ecosystem and uses the following crate
 - [`thiserror`](https://crates.io/crates/thiserror) — ergonomic error definitions
 - [`proptest`](https://crates.io/crates/proptest) — property-based testing
 - [`criterion`](https://crates.io/crates/criterion) — benchmarking
+- [`trybuild`](https://crates.io/crates/trybuild) — UI testing
 
 Thank you to the maintainers and contributors of these projects.
 

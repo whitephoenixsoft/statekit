@@ -28,16 +28,42 @@ impl Machine {
     /// Returns a builder for constructing a [`Machine`].
     ///
     /// This is the public entry point for creating machine definitions.
+    ///
+    /// # Examples
+    /// ```
+    /// use statekit::{Machine, StateError};
+    ///
+    /// let machine = Machine::builder()
+    ///     .try_allow("a", "b")?
+    ///     .build()?;
+    ///
+    /// assert!(machine.can_transition("a", "b"));
+    /// # Ok::<(), StateError>(())
+    /// ```
     pub fn builder() -> MachineBuilder {
         MachineBuilder::new()
     }
 
-    /// Returns an instance of a mutable state machine instance.
+    /// Creates a mutable machine instance initialized to the specified state.
     ///
     /// # Errors
     ///
     /// Returns [`StateError::UnknownInitialState`] when `initial` is not an
     /// existing state.
+    ///
+    /// # Examples
+    /// ```
+    /// use statekit::{Machine, StateError};
+    ///
+    /// let machine = Machine::builder()
+    ///     .try_allow("a", "b")?
+    ///     .build()?;
+    ///
+    /// let instance = machine.instance("a")?;
+    ///
+    /// assert_eq!(instance.state(), "a");
+    /// # Ok::<(), StateError>(())
+    /// ```
     pub fn instance(&self, initial: &str) -> Result<MachineInstance, StateError> {
         MachineInstance::try_new(Arc::clone(&self.inner), initial.to_owned())
     }
@@ -46,28 +72,93 @@ impl Machine {
     ///
     /// State names are matched exactly. This method does not trim, normalize,
     /// or otherwise modify the supplied names.
+    ///
+    /// # Examples
+    /// ```
+    /// use statekit::{Machine, StateError};
+    ///
+    /// let machine = Machine::builder()
+    ///     .try_allow("a", "b")?
+    ///     .build()?;
+    ///
+    /// assert!(machine.can_transition("a", "b"));
+    /// assert!(!machine.can_transition("A", "b"));
+    /// assert!(!machine.can_transition("a ", "b"));
+    /// # Ok::<(), StateError>(())
+    /// ```
     pub fn can_transition(&self, from: &str, to: &str) -> bool {
         self.inner.can_transition(from, to)
     }
 
     /// Validates that the transition from `from` to `to` is allowed.
     ///
+    /// State names are matched exactly. This method does not trim, normalize,
+    /// or otherwise modify the supplied names.
+    ///
     /// # Errors
     ///
     /// Returns [`StateError::InvalidTransition`] when the machine does not
     /// contain the requested transition.
-    /// State names are matched exactly. This method does not trim, normalize,
-    /// or otherwise modify the supplied names.
+    ///
+    /// # Examples
+    /// ```
+    /// use statekit::{Machine, StateError};
+    ///
+    /// let machine = Machine::builder()
+    ///     .try_allow("a", "b")?
+    ///     .build()?;
+    ///
+    /// let result = machine.validate_transition("a", "invalid");
+    ///
+    /// assert_eq!(
+    ///     result,
+    ///     Err(StateError::InvalidTransition {
+    ///         from: "a".to_owned(),
+    ///         to: "invalid".to_owned(),
+    ///     })
+    /// );
+    ///
+    /// machine.validate_transition("a", "b")?;
+    /// # Ok::<(), StateError>(())
+    /// ```
     pub fn validate_transition(&self, from: &str, to: &str) -> Result<(), StateError> {
         self.inner.validate_transition(from, to)
     }
 
     /// Returns the number of transitions in the state machine.
+    ///
+    /// # Examples
+    /// ```
+    /// use statekit::{Machine, StateError};
+    ///
+    /// let machine = Machine::builder()
+    ///     .try_allow("a", "b")?
+    ///     .try_allow("a", "b")?
+    ///     .try_allow("b", "c")?
+    ///     .build()?;
+    ///
+    /// assert_eq!(machine.transition_count(), 2);
+    /// # Ok::<(), StateError>(())
+    /// ```
     pub fn transition_count(&self) -> usize {
         self.inner.transition_count()
     }
 
     /// Returns whether `state` appears as either endpoint of a transition.
+    ///
+    /// # Examples
+    /// ```
+    /// use statekit::{Machine, StateError};
+    ///
+    /// let machine = Machine::builder()
+    ///     .try_allow("a", "b")?
+    ///     .try_allow("b", "c")?
+    ///     .build()?;
+    ///
+    /// assert!(machine.contains_state("c"));
+    /// assert!(!machine.contains_state("unknown"));
+    /// # Ok::<(), StateError>(())
+    /// ```
     pub fn contains_state(&self, state: &str) -> bool {
         self.inner.contains_state(state)
     }
@@ -95,13 +186,48 @@ impl Machine {
     /// including when `from` is unknown or appears only as a transition target.
     ///
     /// The iteration order is unspecified.
+    ///
+    /// # Examples
+    /// ```
+    /// use statekit::{Machine, StateError};
+    ///
+    /// let machine = Machine::builder()
+    ///     .try_allow("a", "b")?
+    ///     .try_allow("a", "c")?
+    ///     .build()?;
+    ///
+    /// let mut targets: Vec<_> = machine.targets_from("a").collect();
+    /// targets.sort_unstable();
+    ///
+    /// assert_eq!(targets, vec!["b", "c"]);
+    /// assert_eq!(machine.targets_from("c").count(), 0);
+    /// assert_eq!(machine.targets_from("unknown").count(), 0);
+    /// # Ok::<(), StateError>(())
+    /// ```
     pub fn targets_from(&self, from: &str) -> impl Iterator<Item = &str> {
         self.inner.targets_from(from)
     }
 
-    /// Returns an iterator over all source states.
+    /// Returns an iterator over all unique states that have at least one outgoing transition.
     ///
     /// The iteration order is unspecified.
+    ///
+    /// # Examples
+    /// ```
+    /// use statekit::{Machine, StateError};
+    ///
+    /// let machine = Machine::builder()
+    ///     .try_allow("a", "b")?
+    ///     .try_allow("a", "c")?
+    ///     .try_allow("b", "c")?
+    ///     .build()?;
+    ///
+    /// let mut sources: Vec<_> = machine.sources().collect();
+    /// sources.sort_unstable();
+    ///
+    /// assert_eq!(sources, vec!["a", "b"]);
+    /// # Ok::<(), StateError>(())
+    /// ```
     pub fn sources(&self) -> impl Iterator<Item = &str> {
         self.inner.sources()
     }
@@ -109,6 +235,23 @@ impl Machine {
     /// Returns an iterator over all unique source and target states.
     ///
     /// The iteration order is unspecified.
+    ///
+    /// # Examples
+    /// ```
+    /// use statekit::{Machine, StateError};
+    ///
+    /// let machine = Machine::builder()
+    ///     .try_allow("a", "b")?
+    ///     .try_allow("a", "c")?
+    ///     .try_allow("b", "c")?
+    ///     .build()?;
+    ///
+    /// let mut states: Vec<_> = machine.states().collect();
+    /// states.sort_unstable();
+    ///
+    /// assert_eq!(states, vec!["a", "b", "c"]);
+    /// # Ok::<(), StateError>(())
+    /// ```
     pub fn states(&self) -> impl Iterator<Item = &str> {
         self.inner.states()
     }
@@ -116,11 +259,49 @@ impl Machine {
     /// Returns an iterator over all the transitions in the state machine.
     ///
     /// The iteration order is unspecified.
+    ///
+    /// # Examples
+    /// ```
+    /// use statekit::{Machine, StateError};
+    ///
+    /// let machine = Machine::builder()
+    ///     .try_allow("a", "b")?
+    ///     .try_allow("b", "c")?
+    ///     .build()?;
+    ///
+    /// let mut edges: Vec<_> = machine
+    ///     .transitions()
+    ///     .map(|transition| (transition.source(), transition.target()))
+    ///     .collect();
+    /// edges.sort_unstable();
+    ///
+    /// assert_eq!(edges, vec![("a", "b"), ("b", "c")]);
+    /// # Ok::<(), StateError>(())
+    /// ```
     pub fn transitions(&self) -> impl Iterator<Item = &Transition> {
         self.inner.transitions()
     }
 
-    ///Returns true when the `state` has no outgoing transitions.
+    /// Returns whether `state` has no outgoing transitions.
+    ///
+    /// Unknown states are also considered terminal because they have no
+    /// configured outgoing transitions.
+    ///
+    /// Use [`Machine::contains_state`] to check whether a state exists.
+    ///
+    /// # Examples
+    /// ```
+    /// use statekit::{Machine, StateError};
+    ///
+    /// let machine = Machine::builder()
+    ///     .try_allow("a", "b")?
+    ///     .build()?;
+    ///
+    /// assert!(!machine.is_terminal("a"));
+    /// assert!(machine.is_terminal("b"));
+    /// assert!(machine.is_terminal("unknown"));
+    /// # Ok::<(), StateError>(())
+    /// ```
     pub fn is_terminal(&self, state: &str) -> bool {
         self.inner.is_terminal(state)
     }
@@ -386,6 +567,15 @@ mod tests {
             let machine = Machine::builder().try_allow("1", "2")?.build()?;
 
             assert!(machine.is_terminal("2"));
+
+            Ok(())
+        }
+
+        #[test]
+        fn unknown_source_is_terminal() -> Result<(), StateError> {
+            let machine = Machine::builder().try_allow("1", "2")?.build()?;
+
+            assert!(machine.is_terminal("not-exist"));
 
             Ok(())
         }

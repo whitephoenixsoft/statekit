@@ -52,6 +52,19 @@ impl MachineBuilder {
     ///   Unicode whitespace.
     /// - [`StateError::SelfTransition`] if a transition has identical endpoints.
     /// - [`StateError::EmptyState`] if an endpoint is empty or whitespace-only.
+    ///
+    /// # Examples
+    /// ```
+    /// use statekit::{Machine, StateError};
+    ///
+    /// let result = Machine::builder().try_allow("a", "a");
+    ///
+    /// assert!(matches!(
+    ///     result,
+    ///     Err(StateError::SelfTransition { state }) if state == "a"
+    /// ));
+    /// # Ok::<(), StateError>(())
+    /// ```
     pub fn try_allow(
         mut self,
         from: impl AsRef<str>,
@@ -69,6 +82,18 @@ impl MachineBuilder {
     /// # Errors
     ///
     /// Returns [`StateError::NoTransitions`] if no transitions were configured.
+    ///
+    /// # Examples
+    /// ```
+    /// use statekit::{Machine, StateError};
+    ///
+    /// let builder = Machine::builder();
+    ///
+    /// assert!(matches!(
+    ///     builder.build(),
+    ///     Err(StateError::NoTransitions)
+    /// ));
+    /// ```
     pub fn build(self) -> Result<Machine, StateError> {
         if self.transitions.is_empty() {
             return Err(StateError::NoTransitions);
@@ -77,12 +102,38 @@ impl MachineBuilder {
         Ok(Machine::new(self.transitions))
     }
 
-    /// Returns the number of transitions added to the state machine.
+    /// Returns the number of unique transitions added to the state machine.
+    ///
+    /// # Examples
+    /// ```
+    /// use statekit::{Machine, StateError};
+    ///
+    /// let builder = Machine::builder()
+    ///     .try_allow("a", "b")?
+    ///     .try_allow("a", "b")?
+    ///     .try_allow("b", "c")?;
+    ///
+    /// assert_eq!(builder.transition_count(), 2);
+    /// # Ok::<(), StateError>(())
+    /// ```
     pub fn transition_count(&self) -> usize {
         self.transitions.len()
     }
 
     /// Returns the number of unique states used by the configured transitions.
+    ///
+    /// # Examples
+    /// ```
+    /// use statekit::{Machine, StateError};
+    ///
+    /// let builder = Machine::builder()
+    ///     .try_allow("a", "b")?
+    ///     .try_allow("a", "c")?
+    ///     .try_allow("b", "c")?;
+    ///
+    /// assert_eq!(builder.state_count(), 3);
+    /// # Ok::<(), StateError>(())
+    /// ```
     pub fn state_count(&self) -> usize {
         self.transitions.state_count()
     }

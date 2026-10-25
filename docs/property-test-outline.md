@@ -17,13 +17,19 @@ The purpose of this document is to outline what property tests have been defined
 
 ## CORE INVARIANT COVERAGE
 
+**INV-002 No Self Transition**
+  → self_transition_is_rejected
+
 **INV-004 Logical Transition Uniqueness**
   → duplicate_transitions_collapse
   → model transition count
 
+**INV-005 Case-Sensitive State Identity**
+  → case_distinct_names_are_different
+  → case_distinct_names_can_coexist_together
+
 **INV-009 Shared Immutable Machine**
   → instances_are_independent
-  → multithreaded integration coverage
 
 **INV-010 Valid Traversal**
   → can_transition_to_agrees_with_the_edge_model
@@ -35,6 +41,13 @@ The purpose of this document is to outline what property tests have been defined
 
 **INV-012 Independent Instances**
   → instances_are_independent
+
+**INV-013 Machine Equality**
+  → duplicate_machines_are_equal
+  → different_machines_are_not_equal
+
+**INV-014 Instance Equality**
+  → instances_are_equal_when_machine_definition_and_states_are_equal
 
 ## Outline
 
@@ -50,6 +63,10 @@ VALIDATION
 ✔ successful instance transitions update current state exactly to the target
 ✔ failed instance transitions have no observable effect
 ✔ shared-machine instance independence
+✔ self transitions are rejected
+✔ logically equal machine definitions are equal
+✔ instances are equal when state and machine definitions are equal
+✔ case distinct names are treated as distinct identities 
 
 EDGE SEMANTICS
 ✔ exposed transition is queryable
@@ -67,7 +84,7 @@ REFERENCE MODEL
 ✔ transitions() == model edge set
 ✔ validate_transition(a, b).is_ok() == model.contains((a, b))
 ✔ a.can_transition_to(b) == model.contains(a, b)
-✔ instance is_terminal() == model terminal vertice
+✔ instance is_terminal() == model terminal vertex
 ✔ instance transition_to()   == model.contains + mutable current state
 ✔ instance can_transition_to() + transition_to() + targets + terminality == model.contains + mutable current state + targets
 

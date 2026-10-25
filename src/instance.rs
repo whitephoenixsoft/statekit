@@ -1,9 +1,10 @@
 use crate::{Machine, MachineInner, StateError};
 use std::sync::Arc;
 
-/// An instance of a state machine.
+/// A mutable state-machine instance backed by an immutable [`Machine`] definition.
 ///
-/// A machine instance traverses existing states in [`Machine`].
+/// Each instance maintains its own current state while sharing the
+/// underlying machine definition with other instances.
 #[derive(Debug, PartialEq, Eq)]
 pub struct MachineInstance {
     machine: Arc<MachineInner>,
@@ -25,20 +26,83 @@ impl MachineInstance {
     }
 
     /// Returns the current state.
+    ///
+    /// # Examples
+    /// ```
+    /// use statekit::{Machine, StateError};
+    ///
+    /// let machine = Machine::builder()
+    ///     .try_allow("a", "b")?
+    ///     .build()?;
+    ///
+    /// let mut instance = machine.instance("a")?;
+    /// assert_eq!(instance.state(), "a");
+    ///
+    /// instance.transition_to("b")?;
+    /// assert_eq!(instance.state(), "b");
+    /// # Ok::<(), StateError>(())
+    /// ```
     pub fn state(&self) -> &str {
         &self.current
     }
 
     /// Returns true if the instance can transition to `target`.
+    ///
+    /// # Examples
+    /// ```
+    /// use statekit::{Machine, StateError};
+    ///
+    /// let machine = Machine::builder()
+    ///     .try_allow("a", "b")?
+    ///     .try_allow("b", "c")?
+    ///     .build()?;
+    ///
+    /// let mut instance = machine.instance("a")?;
+    /// assert!(instance.can_transition_to("b"));
+    /// assert!(!instance.can_transition_to("c"));
+    ///
+    /// instance.transition_to("b")?;
+    /// assert!(instance.can_transition_to("c"));
+    /// assert!(!instance.can_transition_to("b"));
+    /// # Ok::<(), StateError>(())
+    /// ```
     pub fn can_transition_to(&self, target: &str) -> bool {
         self.machine.can_transition(&self.current, target)
     }
 
-    /// Changes the state to `target` if the transition from the current state is allowed in the machine definition.
+    /// Changes the state to `target` if the transition is allowed.
     ///
-    /// # Errors:
+    /// If the transition is rejected, the current state remains unchanged.
+    ///
+    /// # Errors
     ///
     /// Returns [`StateError::InvalidTransition`] when the transition is not allowed in the state machine.
+    ///
+    /// # Examples
+    /// ```
+    /// use statekit::{Machine, StateError};
+    ///
+    /// let machine = Machine::builder()
+    ///     .try_allow("a", "b")?
+    ///     .build()?;
+    ///
+    /// let mut instance = machine.instance("a")?;
+    /// let result = instance.transition_to("invalid");
+    ///
+    /// assert_eq!(
+    ///     result,
+    ///     Err(StateError::InvalidTransition {
+    ///         from: "a".to_owned(),
+    ///         to: "invalid".to_owned(),
+    ///     })
+    /// );
+    ///
+    /// assert_eq!(instance.state(), "a");
+    ///
+    /// instance.transition_to("b")?;
+    /// assert_eq!(instance.state(), "b");
+    /// # Ok::<(), StateError>(())
+    /// ```
     pub fn transition_to(&mut self, target: &str) -> Result<(), StateError> {
         self.machine.validate_transition(&self.current, target)?;
 
@@ -49,11 +113,43 @@ impl MachineInstance {
     }
 
     /// Returns true if the state has no outgoing transitions.
+    ///
+    /// # Examples
+    /// ```
+    /// use statekit::{Machine, StateError};
+    ///
+    /// let machine = Machine::builder()
+    ///     .try_allow("a", "b")?
+    ///     .build()?;
+    ///
+    /// let mut instance = machine.instance("a")?;
+    /// assert!(!instance.is_terminal());
+    ///
+    /// instance.transition_to("b")?;
+    /// assert!(instance.is_terminal());
+    /// # Ok::<(), StateError>(())
+    /// ```
     pub fn is_terminal(&self) -> bool {
         self.machine.is_terminal(self.state())
     }
 
     /// Returns a shared handle to this instance's machine definition.
+    ///
+    /// # Examples
+    /// ```
+    /// use statekit::{Machine, StateError};
+    ///
+    /// let machine = Machine::builder()
+    ///     .try_allow("a", "b")?
+    ///     .build()?;
+    ///
+    /// let instance = machine.instance("a")?;
+    /// let shared = instance.machine();
+    /// drop(machine);
+    ///
+    /// assert!(shared.can_transition("a", "b"));
+    /// # Ok::<(), StateError>(())
+    /// ```
     pub fn machine(&self) -> Machine {
         Machine::from_inner(Arc::clone(&self.machine))
     }

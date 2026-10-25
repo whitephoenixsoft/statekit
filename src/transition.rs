@@ -30,11 +30,41 @@ impl Transition {
     }
 
     /// Returns the source state of the transition.
+    ///
+    /// # Examples
+    /// ```
+    /// use statekit::{Machine, StateError};
+    ///
+    /// let machine = Machine::builder()
+    ///     .try_allow("a", "b")?
+    ///     .build()?;
+    ///
+    /// let transition = machine.transitions().next().unwrap();
+    /// let source = transition.source();
+    ///
+    /// assert_eq!(source, "a");
+    /// # Ok::<(), StateError>(())
+    /// ```
     pub fn source(&self) -> &str {
         self.source.as_str()
     }
 
     /// Returns the target state of the transition.
+    ///
+    /// # Examples
+    /// ```
+    /// use statekit::{Machine, StateError};
+    ///
+    /// let machine = Machine::builder()
+    ///     .try_allow("a", "b")?
+    ///     .build()?;
+    ///
+    /// let transition = machine.transitions().next().unwrap();
+    /// let target = transition.target();
+    ///
+    /// assert_eq!(target, "b");
+    /// # Ok::<(), StateError>(())
+    /// ```
     pub fn target(&self) -> &str {
         self.target.as_str()
     }

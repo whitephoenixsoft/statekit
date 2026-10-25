@@ -4,13 +4,33 @@ use thiserror::Error;
 ///
 /// Each variant represents either a violated construction invariant
 /// or an invalid operation against a machine definition or instance.
+///
+/// Callers can match on variants to handle specific failures without
+/// relying on their human-readable [`Display`](std::fmt::Display) messages.
+///
+/// # Examples
+/// ```
+/// use statekit::{Machine, StateError};
+///
+/// let machine = Machine::builder()
+///     .try_allow("a", "b")?
+///     .build()?;
+///
+/// let result = machine.instance("unknown");
+///
+/// assert!(matches!(
+///     result,
+///     Err(StateError::UnknownInitialState { state }) if state == "unknown"
+/// ));
+/// # Ok::<(), StateError>(())
+/// ```
 #[derive(Debug, Error, PartialEq, Eq)]
 pub enum StateError {
     /// The machine must contain at least one transition.
     #[error("state machine must define at least one transition")]
     NoTransitions,
 
-    /// A state name must not be empty.
+    /// A state name must not be empty or whitespace-only.
     #[error("state name cannot be empty or whitespace-only")]
     EmptyState,
 
@@ -116,6 +136,18 @@ mod tests {
         assert_eq!(
             error.to_string(),
             "transition from \"\\nstart\" to \"finish\\t\" is not allowed"
+        );
+    }
+
+    #[test]
+    fn unknown_initial_state_display_message_includes_state() {
+        let error = StateError::UnknownInitialState {
+            state: "missing".to_owned(),
+        };
+
+        assert_eq!(
+            error.to_string(),
+            "instance initial state \"missing\" does not exist"
         );
     }
 }

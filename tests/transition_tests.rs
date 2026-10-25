@@ -187,3 +187,30 @@ fn independent_multi_threaded_instances() -> Result<(), StateError> {
 
     Ok(())
 }
+
+#[test]
+fn machine_can_be_built_from_runtime_owned_transitions() -> Result<(), StateError> {
+    let mut builder = Machine::builder();
+
+    {
+        let transitions: Vec<(String, String)> = vec![
+            (String::from("queued"), String::from("running")),
+            (String::from("running"), String::from("completed")),
+            (String::from("running"), String::from("failed")),
+        ];
+
+        for (source, target) in &transitions {
+            builder = builder.try_allow(source, target)?;
+        }
+    }
+
+    let machine = builder.build()?;
+
+    assert_eq!(machine.transition_count(), 3);
+    assert!(machine.can_transition("queued", "running"));
+    assert!(machine.can_transition("running", "completed"));
+    assert!(machine.can_transition("running", "failed"));
+    assert!(!machine.can_transition("completed", "running"));
+
+    Ok(())
+}

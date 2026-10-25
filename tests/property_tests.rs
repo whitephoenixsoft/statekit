@@ -4,6 +4,7 @@ use std::collections::HashSet;
 use statekit::{Machine, StateError};
 
 type Model = HashSet<(String, String)>;
+type GeneratedInput = Vec<(String, String)>;
 
 fn build_machine(transitions: &[(String, String)]) -> Machine {
     let mut builder = Machine::builder();
@@ -50,6 +51,21 @@ fn trailing_whitespace_state_name() -> impl Strategy<Value = String> {
     ("[ \t]{1,4}", valid_state_name()).prop_map(|(whitespace, name)| format!("{name}{whitespace}"))
 }
 
+fn different_transitions() -> impl Strategy<Value = (GeneratedInput, GeneratedInput)>
+{
+    (valid_transition_pairs(), valid_transition_pair())
+        .prop_filter(
+            "original transition must not contain additional entry",
+            |(transitions, data)| !transitions.contains(data),
+        )
+        .prop_map(|(transitions, additional_transition)| {
+            let mut different_transitions = transitions.clone();
+            different_transitions.push(additional_transition);
+
+            (transitions, different_transitions)
+        })
+}
+
 fn transitions_with_existing_probe()
 -> impl Strategy<Value = (Vec<(String, String)>, (String, String))> {
     valid_transition_pairs()
@@ -62,6 +78,19 @@ fn transitions_with_existing_probe()
             let probe = transitions[index].clone();
 
             (transitions, probe)
+        })
+}
+
+fn transition_and_its_upper_copy() -> impl Strategy<Value = ((String, String), (String, String))> {
+    valid_transition_pair()
+        .prop_map(|(source, target)| {
+            let copy = (source.to_uppercase(), target.to_uppercase());
+            let transition = (source, target);
+
+            (transition, copy)
+        })
+        .prop_filter("transition fields must not be equal", |(t1, t2)| {
+            t1.0 != t2.0 && t1.1 != t2.1
         })
 }
 
@@ -167,7 +196,7 @@ fn transitions_with_initial_state_and_attempts()
         (
             Just(transitions),
             proptest::sample::select(states),
-            prop::collection::vec(attempt, 0..20),
+            prop::collection::vec(attempt, 1..20),
         )
     })
 }
@@ -185,7 +214,7 @@ fn transitions_with_two_initial_states_and_two_different_attempts()
             Just(transitions),
             proptest::sample::select(states.clone()),
             proptest::sample::select(states),
-            prop::collection::vec(attempt, 0..20),
+            prop::collection::vec(attempt, 1..20),
         )
     })
 }
@@ -224,6 +253,60 @@ proptest! {
         let machine = machine.unwrap();
 
         prop_assert!(machine.can_transition(&source, &target));
+    }
+
+    #[test]
+    fn self_transition_is_rejected(
+        input_state in valid_state_name(),
+    ) {
+        let result = Machine::builder()
+            .try_allow(&input_state, &input_state);
+
+        let is_self_transition = matches!(
+            result,
+            Err(StateError::SelfTransition { state }) if state == input_state
+        );
+
+        prop_assert!(is_self_transition);
+    }
+
+    #[test]
+    fn case_distinct_names_are_different(
+        (probe1, probe2) in transition_and_its_upper_copy(),
+    ) {
+        let (source, target) = &probe1;
+        let machine = Machine::builder()
+            .try_allow(source, target)
+            .and_then(|builder| builder.build());
+
+        let machine = machine.unwrap();
+        let (upper_source, upper_target) = &probe2;
+
+        prop_assert!(!machine.can_transition(upper_source, target));
+        prop_assert!(!machine.can_transition(source, upper_target));
+    }
+
+    #[test]
+    fn case_distinct_names_can_coexist_together(
+        (probe1, probe2) in transition_and_its_upper_copy(),
+    ) {
+        let (source, target) = &probe1;
+        let (source2, target2) = &probe2;
+        let result = Machine::builder()
+            .try_allow(source, target)
+                .expect("valid entry")
+            .try_allow(source2, target2);
+
+        prop_assert!(result.is_ok());
+
+        let machine = result
+            .expect("case-distinct transition should be accepted")
+            .build()
+            .expect("machine should contain transitions");
+
+        prop_assert!(machine.can_transition(source, target));
+        prop_assert!(machine.can_transition(source2, target2));
+        prop_assert_eq!(machine.transition_count(), 2);
     }
 
     #[test]
@@ -436,6 +519,26 @@ proptest! {
 
             prop_assert!(targets.all(|target| machine.can_transition(source, target)));
         }
+    }
+
+    #[test]
+    fn duplicate_machines_are_equal(
+        transitions in valid_transition_pairs(),
+    ) {
+        let machine = build_machine(&transitions);
+        let machine2 = build_machine(&transitions);
+
+        prop_assert_eq!(machine, machine2);
+    }
+
+    #[test]
+    fn different_machines_are_not_equal(
+        (transitions1, transitions2) in different_transitions(),
+    ) {
+        let machine = build_machine(&transitions1);
+        let machine2 = build_machine(&transitions2);
+
+        prop_assert_ne!(machine, machine2);
     }
 
     #[test]
@@ -883,4 +986,21 @@ proptest! {
             prop_assert_eq!(second.state(), second_initial.as_str());
         }
     }
+
+    #[test]
+    fn instances_are_equal_when_machine_definition_and_states_are_equal(
+        (transitions, probe) in transitions_with_probe_and_existing_source(),
+    ) {
+        let machine1 = build_machine(&transitions);
+        let machine2 = build_machine(&transitions);
+
+        let (source, _) = &probe;
+        let first = machine1.instance(source.as_str())
+            .expect("generated initial state must exist");
+        let second = machine2.instance(source.as_str())
+            .expect("generated initial state must exist");
+
+        prop_assert_eq!(first, second);
+    }
+
 }

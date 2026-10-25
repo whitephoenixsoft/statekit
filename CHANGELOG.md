@@ -3,6 +3,21 @@
 All notable changes to Statekit are documented in this file.
 
 ## [Unreleased]
+## [0.4.1]
+
+### Added
+
+- Added doc tests to each of the public API functions.
+- Added `trybuild` compile-time API tests to further verify invariants and for more testing coverage.
+- Added more unit test, integration tests, and property tests.
+
+### Documentation 
+
+- Statekit project keywords have been updated to include validation, graph, and data-structure.
+- Updated README and added section Terminality to include examples on how to use `is_terminal`.
+- Corrected README and MIGRATION document wording and examples.
+- Updated property test and unit test outlines with additional coverage support. They also now represent the source of truth for the traceability of each.
+- Updated project roadmap to include next canditates for the next few releases.
 
 ## [0.4.0]
 
