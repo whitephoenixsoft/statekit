@@ -100,7 +100,7 @@ Consider:
 - add passing historical document examples to preserve traceability. Mark each file with provenance information. (done)
 
 Cleanup:
-- Changelog 
+- Changelog (done)
 - Final review 
 
 ### Phase 7 - Data Structure Conversion (v0.5)
