@@ -1,5 +1,5 @@
 // Source: README.md
-// Section: Validation Example
+// Section: Inspecting a Machine
 // Compatibility: current
 // Introduced: 0.4
 use statekit::{Machine, StateError};
