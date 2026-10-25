@@ -164,15 +164,15 @@ if targets.is_empty() {
 
 Version 0.2:
 ```rust
-match err {
-    StateError::AmbiguousStateName => { println!("{err}"); }
+match result {
+    Err(StateError::AmbiguousStateName) => { println!("{err}"); }
     _ => {}
 }
 ```
 
 Version 0.3:
 ```rust
-match err {
+match result {
     Err(StateError::AmbiguousStateName { state }) => { println!("{state}"); }
     _ => {}
 }
