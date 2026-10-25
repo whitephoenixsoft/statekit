@@ -1,9 +1,9 @@
 ---
 project: statekit
 category: planning
-version: 0.4
+version: 0.5
 status: active
-review-status: reviewed
+review-status: needs-review
 ---
 
 # Statekit Implementation Roadmap
@@ -87,7 +87,7 @@ Stateful execution:
 - failed transitions do not mutate state
 - settle ownership model
 
-### Phase 6 - Tighten Product Direction (v0.4.1)
+### Phase 6 - Tighten Product Direction (v0.4.1) -- COMPLETED 
 
 **Goal:** Review Core Project document and align direction with evidence.
 
@@ -101,22 +101,27 @@ Consider:
 
 Cleanup:
 - Changelog (done)
-- Final review 
+- Final review (done)
 
-### Phase 7 - Data Structure Conversion (v0.5)
+### Phase 7 - Data Structure Conversion 
 
 **Goal:** Establish Statekit as a general, immutable state-transition data structure without imposing consumer-specific configuration restrictions.
 
-Consider: 
+Consider:
 - updating the project core to remove opinionated restrictions
-- adding `try_state` to add an independent list of states
-- adding `sources_to` for incoming states
-- adding `is_isolated` for orphaned single states
 - updating iterators to support new infrastructure
 - updating specification to match the new architecture
-- adding additional property tests to cover new invariants
 
 Todo:
+- update specification
+- change existing validation to match Invariant changes
+- update unit tests
+- update property tests
+- update README 
+- update test outlines
+- move broken document example tests to compile-test fail doc folder 
+
+Items to address:
 - Self-transitions are valid
 - A machine may have zero transitions
 - States may exist independently of transitions
@@ -125,7 +130,23 @@ Todo:
 - An instance still requires a known initial state
 - Transition endpoints may continue to introduce state implicitly
 
-### Phase 8 - Data Structure Tests and Benchmarks (v0.5.1)
+### Phase 8 - Additional Data Structure Functions (v0.5)
+
+**Goal:** Add API that further support for direct neighbor analysis.
+
+Consider: 
+- adding `try_state` to add an independent list of states
+- adding `sources_to` for incoming states
+- adding `is_isolated` for orphaned single states
+
+Todo:
+- update specification 
+- adding additional property tests to cover new invariants
+- update outline documents
+- update README with new examples 
+- add doc tests
+
+### Phase 9 - Data Structure Tests and Benchmarks (v0.5.1)
 
 **Goal:** Update property tests and benchmarks
 
@@ -136,7 +157,7 @@ Consider:
 - updating benchmark documents
 - adding failing historical document examples to preserve traceability. Mark each file with provenance information.
 
-### Phase 9 - Multiple Representations (v0.6)
+### Phase 10 - Multiple Representations (v0.6)
 
 **Goal:** Update the public runtime model to support different state identities
 
@@ -151,7 +172,7 @@ Runtime state identity / lowering
 - reference MachineInner and make it generic 
 - potentially change Machine to call MachineInner\<S\> with StateName as the type
 
-## Phase 10 - Multiple Representation Tests and Benchmarks (v0.6.1)
+## Phase 11 - Multiple Representation Tests and Benchmarks (v0.6.1)
 
 **Goal:** Update property tests and benchmarks
 
@@ -161,7 +182,7 @@ Consider:
 - adding new performance benchmarks
 - updating benchmark documents
 
-### Phase 11 - Optimization (v0.7)
+### Phase 12 - Optimization (v0.7)
 
 **Goal:** Runtime-oriented internal representation
 Evidence-driven indexing and memory tradeoffs
@@ -180,7 +201,7 @@ Runtime indexing / representation optimization. Examples include:
 - memory benchmarking
 - construction/runtime/memory tradeoff analysis
 
-### Phase 12 - API Freeze (v0.9)
+### Phase 13 - API Freeze (v0.9)
 
 No new features.
 
@@ -192,7 +213,7 @@ Answer questions:
 - Is this the API I'd be happy maintaining for five years?
 
 
-### Phase 13 - Production polish (v1.0)
+### Phase 14 - Production polish (v1.0)
 
 Only when the API seems acceptable.
 
