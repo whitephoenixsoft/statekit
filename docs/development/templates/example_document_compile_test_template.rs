@@ -1,6 +1,6 @@
 // Source: <filename of where the example lives>
 // Section: <section in the filename of the example>
-// Compatibility: [current | historical]
+// Compatibility: [current | <version of last successful compilation>]
 // Introduced: <version number>
 // Superseded: <version number>
 // Reason: <reason of supersession>
