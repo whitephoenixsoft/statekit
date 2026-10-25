@@ -20,7 +20,7 @@ use thiserror::Error;
 ///
 /// assert!(matches!(
 ///     result,
-///    Err(StateError::UnknownInitialState { state }) if state == "unknown"
+///     Err(StateError::UnknownInitialState { state }) if state == "unknown"
 /// ));
 /// # Ok::<(), StateError>(())
 /// ```
