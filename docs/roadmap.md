@@ -107,6 +107,8 @@ Cleanup:
 
 **Goal:** Establish Statekit as a general, immutable state-transition data structure without imposing consumer-specific configuration restrictions.
 
+Not a release.
+
 Consider:
 - updating the project core to remove opinionated restrictions
 - updating iterators to support new infrastructure
