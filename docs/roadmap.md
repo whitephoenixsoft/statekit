@@ -145,6 +145,7 @@ Todo:
 - update outline documents
 - update README with new examples 
 - add doc tests
+- update GitHub description 
 
 ### Phase 9 - Data Structure Tests and Benchmarks (v0.5.1)
 
