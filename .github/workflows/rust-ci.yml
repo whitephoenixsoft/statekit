@@ -1,0 +1,48 @@
+
+name: Rust CI
+
+on:
+  workflow_dispatch:
+
+  pull_request:
+    branches:
+      - develop
+      - main
+
+  push:
+    branches:
+      - develop
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify Statekit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        run: |
+          rustup update stable
+          rustup default stable
+          rustup component add rustfmt clippy
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: Run Clippy
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+      - name: Run unit, integration, property and UI tests
+        run: cargo test --all-features --locked
+
+      - name: Run documentation tests
+        run: cargo test --doc --all-features --locked
+
+      - name: Verify package
+        run: cargo package --locked
