@@ -51,8 +51,7 @@ fn trailing_whitespace_state_name() -> impl Strategy<Value = String> {
     ("[ \t]{1,4}", valid_state_name()).prop_map(|(whitespace, name)| format!("{name}{whitespace}"))
 }
 
-fn different_transitions() -> impl Strategy<Value = (GeneratedInput, GeneratedInput)>
-{
+fn different_transitions() -> impl Strategy<Value = (GeneratedInput, GeneratedInput)> {
     (valid_transition_pairs(), valid_transition_pair())
         .prop_filter(
             "original transition must not contain additional entry",
