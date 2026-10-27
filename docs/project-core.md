@@ -1,7 +1,7 @@
 ---
 project: statekit
 category: foundation
-version: 0.4
+version: 0.5
 status: active
 review-status: needs-review
 ---
@@ -14,8 +14,7 @@ It is not intended to replace specifications, roadmaps, tests, benchmarks, sourc
 
 ## Project Identity
 
-Statekit is an immutable state transition validator
-for applications that model workflow as data.
+A lightweight, immutable structure for validating, inspecting, and analyzing directed state relationships.
 
 ## Intents
 
@@ -50,10 +49,10 @@ Scheduling and synchronization policy belong to the host application.
 **INV-001: Machine Immutability**
 A built state machine is immutable.
 
-**INV-002: No Self Transitions**
+**(Retired)** INV-002: No Self Transitions
 Self transitions are rejected.
 
-**INV-003: Non-Empty Transition Set**
+**(Retired)** INV-003: Non-Empty Transition Set
 A valid machine contains at least one transition.
 
 **INV-004: Logical Transition Uniqueness**
