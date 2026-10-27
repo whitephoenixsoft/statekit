@@ -204,7 +204,7 @@ fn report_retained_instance_memory(map: &BTreeMap<usize, BTreeMap<usize, MemoryM
     println!("\n=== Instance Retained Memory ===\n");
     println!("transitions\tinstances\tretained\tbytes/instance");
     for (count, map2) in map.iter() {
-        for (_, m) in map2.iter() {
+        for m in map2.values() {
             println!(
                 "{count:>11}\t{:<11}\t{:<15}\t{:<.2}",
                 m.instance_count,
@@ -234,7 +234,7 @@ fn report_instance_construction_allocations(
     println!("\n=== Instance Allocated Memory ===\n");
     println!("transitions\tinstances\tallocated\tbytes/instance");
     for (count, map2) in map.iter() {
-        for (_, m) in map2.iter() {
+        for m in map2.values() {
             println!(
                 "{count:>11}\t{:<11}\t{:<15}\t{:<.2}",
                 m.instance_count,
@@ -262,7 +262,7 @@ fn report_instance_allocation_count(map: &BTreeMap<usize, BTreeMap<usize, Memory
     println!("\n=== Instance Allocation Count ===\n");
     println!("transitions\tinstances\tcount\tallocations/instance");
     for (count, map2) in map.iter() {
-        for (_, m) in map2.iter() {
+        for m in map2.values() {
             println!(
                 "{count:>11}\t{:<11}\t{:<15}\t{:<.2}",
                 m.instance_count,
@@ -290,7 +290,7 @@ fn report_instance_peak_memory(map: &BTreeMap<usize, BTreeMap<usize, MemoryMeasu
     println!("\n=== Instance Peak Construction Memory ===\n");
     println!("transitions\tinstances\tpeak additional\tbytes/instance");
     for (count, map2) in map.iter() {
-        for (_, m) in map2.iter() {
+        for m in map2.values() {
             println!(
                 "{count:>11}\t{:<11}\t{:<15}\t{:<.2}",
                 m.instance_count,
