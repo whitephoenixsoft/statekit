@@ -1,0 +1,109 @@
+name: crates.io Adoption Statistics
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Daily at 11:30 UTC (7:30 AM EDT / 6:30 AM EST).
+    - cron: '30 11 * * *'
+
+permissions:
+  contents: read
+
+jobs:
+  report:
+    name: Report Statekit adoption
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Query crates.io and publish summary
+        env:
+          CRATE_NAME: statekit
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import datetime
+          import json
+          import os
+          import sys
+          import time
+          import urllib.error
+          import urllib.request
+
+          crate_name = os.environ['CRATE_NAME']
+          base = f'https://crates.io/api/v1/crates/{crate_name}'
+
+          def fetch(url):
+              request = urllib.request.Request(
+                  url,
+                  headers={
+                      'User-Agent': 'statekit-adoption-monitor (https://github.com/whitephoenixsoft/statekit)',
+                      'Accept': 'application/json',
+                  },
+              )
+              for attempt in range(3):
+                  try:
+                      with urllib.request.urlopen(request, timeout=20) as response:
+                          return json.load(response)
+                  except (urllib.error.URLError, TimeoutError, ValueError) as exc:
+                      if attempt == 2:
+                          raise RuntimeError(f'Failed to retrieve {url}: {exc}') from exc
+                      time.sleep(2 ** attempt)
+
+          try:
+              details = fetch(base)
+              reverse = fetch(base + '/reverse_dependencies')
+              crate = details['crate']
+              versions = details['versions']
+              dependencies = reverse['dependencies']
+              total_reverse = reverse['meta']['total']
+              if total_reverse > len(dependencies):
+                  raise RuntimeError('Reverse dependency response is paginated; cannot report all identities reliably')
+
+              result = {
+                  'collected_at_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                  'crate': crate_name,
+                  'total_downloads': crate['downloads'],
+                  'recent_downloads': crate['recent_downloads'],
+                  'latest_version': crate['max_version'],
+                  'version_downloads': {v['num']: v['downloads'] for v in versions},
+                  'reverse_dependencies_count': total_reverse,
+                  'reverse_dependencies': [
+                      {'crate_id': d.get('crate_id'), 'version_id': d.get('version_id'), 'req': d.get('req')}
+                      for d in dependencies
+                  ],
+              }
+              print('STATEKIT_ADOPTION_JSON=' + json.dumps(result, separators=(',', ':'), sort_keys=True))
+
+              lines = [
+                  f'# crates.io adoption — {crate_name}',
+                  '',
+                  f"Collected (UTC): {result['collected_at_utc']}",
+                  '',
+                  '| Metric | Value |',
+                  '| --- | ---: |',
+                  f"| Lifetime downloads | {result['total_downloads']} |",
+                  f"| Recent downloads (crates.io rolling window) | {result['recent_downloads']} |",
+                  f"| Latest version | {result['latest_version']} |",
+                  f"| Published reverse dependencies | {total_reverse} |",
+                  '',
+                  '## Downloads by version',
+                  '',
+                  '| Version | Downloads |',
+                  '| --- | ---: |',
+              ]
+              for version in versions:
+                  lines.append(f"| {version['num']} | {version['downloads']} |")
+              lines.extend(['', '## Published reverse dependencies', ''])
+              if dependencies:
+                  for dep in dependencies:
+                      lines.append(f"- `{dep.get('crate_id', 'unknown')}` (requirement: `{dep.get('req', 'unknown')}`)")
+              else:
+                  lines.append('None reported by crates.io.')
+              lines.extend(['', '> Downloads are not unique users. This report does not detect private or unpublished consumers.'])
+              with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as summary:
+                  summary.write('\n'.join(lines) + '\n')
+          except Exception as exc:
+              print(f'::error::{exc}', file=sys.stderr)
+              sys.exit(1)
+          PY
+          
