@@ -1,7 +1,7 @@
 ---
 project: statekit
 category: traceability
-version: 0.4
+version: 0.5
 status: active
 review-status: needs-review
 ---
