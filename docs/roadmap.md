@@ -115,9 +115,9 @@ Consider:
 - updating specification to match the new architecture
 
 Todo:
-- update specification
+- update specification (done)
 - change existing validation to match Invariant changes (done)
-- update unit tests
+- update unit tests. Add reversal of the Invariants removed.
 - update property tests. Check for test that successful transition does not always change the state. Also update generators to include self transitions.
 - update README 
 - update test outlines
