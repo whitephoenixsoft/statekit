@@ -117,7 +117,7 @@ Consider:
 Todo:
 - update specification
 - change existing validation to match Invariant changes (done)
-- update unit tests (done)
+- update unit tests
 - update property tests (done)
 - update README 
 - update test outlines
@@ -126,11 +126,8 @@ Todo:
 Items to address:
 - Self-transitions are valid
 - A machine may have zero transitions
-- States may exist independently of transitions
 - A completely empty machine is valid
-- Machine equality includes both states and transitions
 - An instance still requires a known initial state
-- Transition endpoints may continue to introduce state implicitly
 
 ### Phase 8 - Additional Data Structure Functions (v0.5)
 
@@ -148,6 +145,11 @@ Todo:
 - update README with new examples 
 - add doc tests
 - update GitHub description 
+
+Items to address:
+- States may exist independently of transitions
+- Machine equality includes both states and transitions
+- Transition endpoints may continue to introduce state implicitly
 
 ### Phase 9 - Data Structure Tests and Benchmarks (v0.5.1)
 
