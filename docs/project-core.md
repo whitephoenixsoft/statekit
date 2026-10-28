@@ -85,7 +85,7 @@ Failed instance transitions have no observable effect.
 Instances sharing a machine maintain independent traversal state.
 
 **INV-013: Machine Equality**
-Machine equality reflects machine definition, not shared allocation identity.
+Machine equality reflects machine definition, not shared allocation identity. A machine is equal if and only if both the logical states and transitions are equal.
 
 **INV-014: Instance Equality**
 Instances on equal machine definitions and in the same state are equal. This is because two instances can be in the same logical traversal position.
@@ -94,7 +94,13 @@ Instances on equal machine definitions and in the same state are equal. This is 
 States must be represented with or without any transitions. 
 
 **INV-016: Isolated states must not transition to a separate state**
-Isolated states are states that have no transition or transition to itself.
+An isolated state has no incoming or outgoing transitions.
+
+**INV-017: Logical State Uniqueness**
+Duplicate states with the same name or identifier represent the same logical state.
+
+**INV-018: Terminality is transition based**
+A terminal state is a state in a transition but has no outgoing transitions.
 
 ## Decisions
 
