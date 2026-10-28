@@ -4,7 +4,7 @@ category: specification
 category-level: foundational
 version: 0.4
 status: active
-review-status: reviewed
+review-status: needs-review
 ---
 # Statekit Specification
 
@@ -16,14 +16,14 @@ This specification defines the Statekit domain model and the behavioral contract
 
 Machine is an immutable value-like definition of the allowed state transitions. 
 ### Construction
-- Contains at least one logical transition.
 - Contains only validated state names and transitions.
-- Cycles between distinct states are permitted.
+- Cycles between states are permitted.
 - Once constructed, its definition cannot change.
 ### Queries
 - Determines whether an edge exists between two states.
 - Exposes states, sources, transitions, and outgoing targets.
 - Querying the transitions reachable from a state with no outgoing transitions produces an empty result. This includes states that appear only as transition targets and names that do not occur in the machine.
+- Determines whether a state is terminal.
 ### Identity and Equality
 - State names are matched exactly.
 - Query input is not normalized or trimmed.
@@ -64,7 +64,6 @@ Validates and builds the state-machine.
 Represents a directed transition from a source state to a target state.
 ### Construction 
 - A transition is defined by its source and target states.
-- The source and target states must be different.
 - Once constructed, its source and target cannot change.
 ### Equality 
 - Two transitions with the same source and target represent the same logical transition.
