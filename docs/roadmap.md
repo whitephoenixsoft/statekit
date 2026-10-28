@@ -110,15 +110,15 @@ Cleanup:
 Not a release.
 
 Consider:
-- updating the project core to remove opinionated restrictions
-- updating iterators to support new infrastructure
+- updating the project core to remove opinionated restrictions (done)
+- updating iterators to support new infrastructure (not needed)
 - updating specification to match the new architecture
 
 Todo:
 - update specification
-- change existing validation to match Invariant changes
-- update unit tests
-- update property tests
+- change existing validation to match Invariant changes (done)
+- update unit tests (done)
+- update property tests (done)
 - update README 
 - update test outlines
 - move broken document example tests to compile-test fail doc folder 
