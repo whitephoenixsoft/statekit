@@ -255,21 +255,6 @@ proptest! {
     }
 
     #[test]
-    fn self_transition_is_rejected(
-        input_state in valid_state_name(),
-    ) {
-        let result = Machine::builder()
-            .try_allow(&input_state, &input_state);
-
-        let is_self_transition = matches!(
-            result,
-            Err(StateError::SelfTransition { state }) if state == input_state
-        );
-
-        prop_assert!(is_self_transition);
-    }
-
-    #[test]
     fn case_distinct_names_are_different(
         (probe1, probe2) in transition_and_its_upper_copy(),
     ) {

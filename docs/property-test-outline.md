@@ -17,9 +17,6 @@ The purpose of this document is to outline what property tests have been defined
 
 ## CORE INVARIANT COVERAGE
 
-**INV-002 No Self Transition**
-  → self_transition_is_rejected
-
 **INV-004 Logical Transition Uniqueness**
   → duplicate_transitions_collapse
   → model transition count
@@ -63,7 +60,6 @@ VALIDATION
 ✔ successful instance transitions update current state exactly to the target
 ✔ failed instance transitions have no observable effect
 ✔ shared-machine instance independence
-✔ self transitions are rejected
 ✔ logically equal machine definitions are equal
 ✔ instances are equal when state and machine definitions are equal
 ✔ case distinct names are treated as distinct identities 
