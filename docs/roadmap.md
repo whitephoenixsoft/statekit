@@ -111,7 +111,7 @@ Not a release.
 
 Consider:
 - updating the project core to remove opinionated restrictions (done)
-- updating iterators to support new infrastructure (not needed)
+- updating iterators to support new infrastructure ie empty transitions
 - updating specification to match the new architecture
 
 Todo:
@@ -150,6 +150,8 @@ Items to address:
 - States may exist independently of transitions
 - Machine equality includes both states and transitions
 - Transition endpoints may continue to introduce state implicitly
+- states are isolated with and without self transitions
+- isolated states are not terminal states
 
 ### Phase 9 - Data Structure Tests and Benchmarks (v0.5.1)
 
