@@ -37,25 +37,6 @@ fn rejects_transition_not_defined_by_the_workflow() -> Result<(), StateError> {
 }
 
 #[test]
-fn rejects_an_empty_machine_definition() {
-    let result = Machine::builder().build();
-
-    assert!(matches!(result, Err(StateError::NoTransitions)));
-}
-
-#[test]
-fn rejects_a_self_transition() {
-    let result = Machine::builder().try_allow("running", "running");
-
-    assert!(matches!(
-        result,
-        Err(StateError::SelfTransition {
-            ref state
-        }) if state == "running"
-    ));
-}
-
-#[test]
 fn rejects_ambiguous_state_names() {
     let result = Machine::builder().try_allow("queued ", "running");
 

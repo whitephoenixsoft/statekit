@@ -50,19 +50,13 @@ impl MachineBuilder {
     ///
     /// - [`StateError::AmbiguousStateName`] if an endpoint has leading or trailing
     ///   Unicode whitespace.
-    /// - [`StateError::SelfTransition`] if a transition has identical endpoints.
-    /// - [`StateError::EmptyState`] if an endpoint is empty or whitespace-only.
     ///
     /// # Examples
     /// ```
     /// use statekit::{Machine, StateError};
     ///
-    /// let result = Machine::builder().try_allow("a", "a");
+    /// Machine::builder().try_allow("a", "a")?;
     ///
-    /// assert!(matches!(
-    ///     result,
-    ///     Err(StateError::SelfTransition { state }) if state == "a"
-    /// ));
     /// # Ok::<(), StateError>(())
     /// ```
     pub fn try_allow(
@@ -79,26 +73,13 @@ impl MachineBuilder {
 
     /// Builds an immutable [`Machine`].
     ///
-    /// # Errors
-    ///
-    /// Returns [`StateError::NoTransitions`] if no transitions were configured.
-    ///
     /// # Examples
     /// ```
     /// use statekit::{Machine, StateError};
     ///
     /// let builder = Machine::builder();
-    ///
-    /// assert!(matches!(
-    ///     builder.build(),
-    ///     Err(StateError::NoTransitions)
-    /// ));
     /// ```
     pub fn build(self) -> Result<Machine, StateError> {
-        if self.transitions.is_empty() {
-            return Err(StateError::NoTransitions);
-        }
-
         Ok(Machine::new(self.transitions))
     }
 
@@ -192,13 +173,6 @@ mod tests {
 
     mod build {
         use super::*;
-
-        #[test]
-        fn build_empty_returns_no_transitions() {
-            let builder = MachineBuilder::new();
-
-            assert!(matches!(builder.build(), Err(StateError::NoTransitions)));
-        }
 
         #[test]
         fn build_allows_cycles() -> Result<(), StateError> {
@@ -367,17 +341,6 @@ mod tests {
             assert_eq!(builder.transition_count(), 2);
 
             Ok(())
-        }
-
-        #[test]
-        fn try_allow_error_transition_to_self() {
-            let builder = MachineBuilder::new();
-            let result = builder.try_allow("start", "start");
-
-            assert!(matches!(
-                result,
-                Err(StateError::SelfTransition { ref state }) if state == "start"
-            ));
         }
 
         #[test]

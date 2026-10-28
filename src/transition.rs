@@ -20,12 +20,6 @@ impl Transition {
         let source = StateName::try_from(source.as_ref())?;
         let target = StateName::try_from(target.as_ref())?;
 
-        if source == target {
-            return Err(StateError::SelfTransition {
-                state: source.into_string(),
-            });
-        }
-
         Ok(Self { source, target })
     }
 
@@ -90,16 +84,6 @@ mod tests {
         assert_eq!(transition.target(), "2");
 
         Ok(())
-    }
-
-    #[test]
-    fn self_transition_returns_error() {
-        let result = Transition::try_new("1", "1");
-
-        assert!(matches!(
-            result,
-            Err(StateError::SelfTransition { ref state }) if state == "1"
-        ));
     }
 
     #[test]
