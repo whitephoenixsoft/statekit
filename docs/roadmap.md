@@ -118,7 +118,7 @@ Todo:
 - update specification
 - change existing validation to match Invariant changes (done)
 - update unit tests
-- update property tests (done)
+- update property tests. Check for test that successful transition does not always change the state. Also update generators to include self transitions.
 - update README 
 - update test outlines
 - move broken document example tests to compile-test fail doc folder 
