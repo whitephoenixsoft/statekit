@@ -36,7 +36,7 @@ State machines are intended to be defined from data rather than requiring machin
 ## Boundaries / Durable Intent
 
 **BI-001: Building Block**
-Statekit remains a validation building block rather than becoming a process, workflow, policy, or pathfinding engine.
+Statekit remains a structural building block rather than becoming a process, workflow, policy, or pathfinding engine.
 
 **BI-002: Hidden Internal Storage**
 Internal storage/representation is not part of the public domain contract.
@@ -90,17 +90,17 @@ Machine equality reflects machine definition, not shared allocation identity. A 
 **INV-014: Instance Equality**
 Instances on equal machine definitions and in the same state are equal. This is because two instances can be in the same logical traversal position.
 
-**INV-015: States are independent of transitions**
+**(Planned) INV-015: States are independent of transitions**
 States must be represented with or without any transitions. 
 
-**INV-016: Isolated states must not transition to a separate state**
-An isolated state has no incoming or outgoing transitions.
+**(Planned) INV-016: Isolated State Semantics**
+A state is isolated if and only if it has no incoming or outgoing transitions, including self-transitions.
 
-**INV-017: Logical State Uniqueness**
+**(Planned) INV-017: Logical State Uniqueness**
 Duplicate states with the same name or identifier represent the same logical state.
 
-**INV-018: Terminality is transition based**
-A terminal state is a state in a transition but has no outgoing transitions.
+**(Planned) INV-018: Terminality is transition independent**
+A terminal state has no outgoing transitions.
 
 ## Decisions
 
