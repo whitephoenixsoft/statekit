@@ -50,10 +50,12 @@ Scheduling and synchronization policy belong to the host application.
 A built state machine is immutable.
 
 **(Retired)** INV-002: No Self Transitions
-Self transitions are rejected.
+Self transitions were rejected.
+- Retired on version v0.5
 
 **(Retired)** INV-003: Non-Empty Transition Set
-A valid machine contains at least one transition.
+A valid machine has to contain at least one transition.
+- Retired on version v0.5
 
 **INV-004: Logical Transition Uniqueness**
 Duplicate transitions with the same source and target represent the same logical transition.
@@ -87,6 +89,12 @@ Machine equality reflects machine definition, not shared allocation identity.
 
 **INV-014: Instance Equality**
 Instances on equal machine definitions and in the same state are equal. This is because two instances can be in the same logical traversal position.
+
+**INV-015: States are independent of transitions**
+States must be represented with or without any transitions. 
+
+**INV-016: Isolated states must not transition to a separate state**
+Isolated states are states that have no transition or transition to itself.
 
 ## Decisions
 
