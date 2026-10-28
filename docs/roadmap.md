@@ -128,6 +128,7 @@ Items to address:
 - A machine may have zero transitions
 - A completely empty machine is valid
 - An instance still requires a known initial state
+- Terminality is only for existing states. This is a breaking change to 0.4
 
 ### Phase 8 - Additional Data Structure Functions (v0.5)
 
@@ -151,7 +152,7 @@ Items to address:
 - Machine equality includes both states and transitions
 - Transition endpoints may continue to introduce state implicitly
 - states are isolated with and without self transitions
-- isolated states are not terminal states
+- Isolated states are also terminal states because they have no outgoing transitions.
 
 ### Phase 9 - Data Structure Tests and Benchmarks (v0.5.1)
 

@@ -91,7 +91,7 @@ Machine equality reflects machine definition, not shared allocation identity. A 
 Instances on equal machine definitions and in the same state are equal. This is because two instances can be in the same logical traversal position.
 
 **(Planned) INV-015: States are independent of transitions**
-States must be represented with or without any transitions. 
+A state may exist in the machine without participating in any transition. Every transition endpoint must belong to the machine's state set.
 
 **(Planned) INV-016: Isolated State Semantics**
 A state is isolated if and only if it has no incoming or outgoing transitions, including self-transitions.
@@ -100,7 +100,7 @@ A state is isolated if and only if it has no incoming or outgoing transitions, i
 Duplicate states with the same name or identifier represent the same logical state.
 
 **(Planned) INV-018: Terminality is transition independent**
-A terminal state has no outgoing transitions.
+A state belonging to the machine is terminal if and only if it has no outgoing transitions.
 
 ## Decisions
 
