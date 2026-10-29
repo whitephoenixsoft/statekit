@@ -112,7 +112,7 @@ Not a release.
 Consider:
 - updating the project core to remove opinionated restrictions (done)
 - updating iterators to support new infrastructure ie empty transitions
-- updating specification to match the new architecture
+- updating specification to match the new architecture (done)
 
 Todo:
 - update specification (done)
@@ -138,6 +138,7 @@ Consider:
 - adding `try_state` to add an independent list of states
 - adding `sources_to` for incoming states
 - adding `is_isolated` for orphaned single states
+- adding `is_empty` to the builder and machine
 
 Todo:
 - update specification 
