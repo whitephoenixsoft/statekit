@@ -181,10 +181,40 @@ mod tests {
 
             Ok(())
         }
+
+        #[test]
+        fn build_allows_empty_machine() -> Result<(), StateError> {
+            let machine = MachineBuilder::new()
+                .build();
+
+            assert!(machine.is_ok());
+
+            Ok(())
+        }
     }
 
     mod try_allow {
         use super::*;
+
+        #[test]
+        fn try_allow_self_transition_has_one_state() -> Result<(), StateError> {
+            let builder = MachineBuilder::new()
+                .try_allow("1", "1")?;
+
+            assert_eq!(builder.state_count(), 1);
+
+            Ok(())
+        }
+
+        #[test]
+        fn try_allow_self_transition_is_one_transition() -> Result<(), StateError> {
+            let builder = MachineBuilder::new()
+                .try_allow("1", "1")?;
+
+            assert_eq!(builder.transition_count(), 1);
+
+            Ok(())
+        }
 
         #[test]
         fn try_allow_once_has_two_states() -> Result<(), StateError> {
