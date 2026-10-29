@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 /// An immutable state-machine definition.
 ///
-/// A `Machine` contains at least one transition. Every stored state name and
+/// A `Machine` contains at zero or more transitions. Every stored state name and
 /// transition has already been validated by the builder.
 #[derive(Debug, PartialEq, Eq)]
 pub struct Machine {
@@ -284,10 +284,8 @@ impl Machine {
 
     /// Returns whether `state` has no outgoing transitions.
     ///
-    /// Unknown states are also considered terminal because they have no
-    /// configured outgoing transitions.
-    ///
-    /// Use [`Machine::contains_state`] to check whether a state exists.
+    /// Unknown states are not considered terminal because they are not
+    /// part of the machine definition.
     ///
     /// # Examples
     /// ```
@@ -299,7 +297,7 @@ impl Machine {
     ///
     /// assert!(!machine.is_terminal("a"));
     /// assert!(machine.is_terminal("b"));
-    /// assert!(machine.is_terminal("unknown"));
+    /// assert!(!machine.is_terminal("unknown"));
     /// # Ok::<(), StateError>(())
     /// ```
     pub fn is_terminal(&self, state: &str) -> bool {
@@ -572,10 +570,10 @@ mod tests {
         }
 
         #[test]
-        fn unknown_source_is_terminal() -> Result<(), StateError> {
+        fn unknown_source_is_not_terminal() -> Result<(), StateError> {
             let machine = Machine::builder().try_allow("1", "2")?.build()?;
 
-            assert!(machine.is_terminal("not-exist"));
+            assert!(!machine.is_terminal("not-exist"));
 
             Ok(())
         }

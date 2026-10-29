@@ -5,12 +5,8 @@ use crate::{Machine, StateError, Transition, Transitions};
 /// Transitions are added with [`MachineBuilder::try_allow`] and validated
 /// immediately before being stored.
 ///
-/// [`MachineBuilder::build`] only succeeds when at least one valid transition
-/// has been configured.
-///
-/// State names are case-sensitive. Empty or whitespace-only state names,
-/// names with leading or trailing whitespace, and self-transitions are rejected.
-/// Cycles are allowed.
+/// State names are case-sensitive. Empty or whitespace-only state names, and
+/// names with leading or trailing whitespace are rejected. Cycles are allowed.
 #[derive(Debug)]
 pub struct MachineBuilder {
     transitions: Transitions,

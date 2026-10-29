@@ -59,9 +59,9 @@ impl MachineInner {
         self.transitions.iter()
     }
 
-    ///A state is terminal when it has no outgoing transitions.
+    ///A state is terminal when it is part of the machine and it has no outgoing transitions.
     pub fn is_terminal(&self, state: &str) -> bool {
-        self.targets_from(state).next().is_none()
+        self.transitions.contains_state(state) && self.transitions.targets_from(state).next().is_none()
     }
 }
 
@@ -464,6 +464,18 @@ mod tests {
             let machine = MachineInner::new(transitions);
 
             assert!(!machine.is_terminal("1"));
+
+            Ok(())
+        }
+
+        #[test]
+        fn unknown_state_returns_false() -> Result<(), StateError> {
+            let mut transitions = Transitions::new();
+            transitions.add(Transition::try_new("1", "2")?);
+
+            let machine = MachineInner::new(transitions);
+
+            assert!(!machine.is_terminal("unknown"));
 
             Ok(())
         }
