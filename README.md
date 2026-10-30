@@ -144,9 +144,7 @@ assert!(instance.is_terminal());
 - State names must not be empty or consist entirely of whitespace.
 - State names must not begin or end with Unicode whitespace.
 - State names are case-sensitive.
-- Self-transitions are rejected.
-- Cycles between distinct states are permitted.
-- A machine must contain at least one transition.
+- Cycles are permitted.
 - Duplicate transitions between the same source and target are stored as a single logical transition.
 - A transition attempt is rejected unless it is allowed by the machine definition.
 - Instances must be initialized with an existing state.

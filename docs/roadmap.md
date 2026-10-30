@@ -117,18 +117,18 @@ Consider:
 Todo:
 - update specification (done)
 - change existing validation to match Invariant changes (done)
-- update unit tests. Add reversal of the Invariants removed.
+- update unit tests. Add reversal of the Invariants removed. (done)
 - update property tests. Check for test that successful transition does not always change the state. Also update generators to include self transitions.
-- update README 
-- update test outlines
+- update README (done)
+- update test outlines (done)
 - move broken document example tests to compile-test fail doc folder 
 
 Items to address:
-- Self-transitions are valid
-- A machine may have zero transitions
+- Self-transitions are valid (done)
+- A machine may have zero transitions 
 - A completely empty machine is valid
-- An instance still requires a known initial state
-- Terminality is only for existing states. This is a breaking change to 0.4
+- An instance still requires a known initial state (done)
+- Terminality is only for existing states. This is a breaking change to 0.4 (done)
 
 ### Phase 8 - Additional Data Structure Functions (v0.5)
 

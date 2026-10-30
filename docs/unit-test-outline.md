@@ -26,8 +26,6 @@ Test paths and names below describe the current suite. Internal unit tests live 
 | Invariant                              | Focused-test evidence                                                           | Status |
 | -------------------------------------- | ------------------------------------------------------------------------------- | ------ |
 | INV-001 Machine Immutability           | Private field access and mutable transition access are rejected                 | Direct |
-| INV-002 No Self Transitions            | Known self-transition inputs are rejected                                       | Direct |
-| INV-003 Non-Empty Transition Set       | Empty builds are rejected                                                       | Direct |
 | INV-004 Logical Transition Uniqueness  | Duplicate transitions collapse                                                  | Direct |
 | INV-005 Case-Sensitive State Identity  | Case-distinct names remain distinct                                             | Direct |
 | INV-006 Runtime Configuration          | Runtime-owned transitions retained after source data is dropped                 | Direct |
@@ -57,29 +55,6 @@ Evidence: instances can retain and share a built machine definition, and the pub
 Compile-time tests verify that external consumers cannot access `Machine::inner` and that `Machine::transitions()` returns shared references that cannot be assigned to mutable transition references.
 
 `machine_construction.rs` verifies supported public construction and inspection rather than immutability itself.
-
-## INV-002 — No Self Transitions
-
-**Status:** Direct
-
-Focused evidence:
-
-- `tests/transition_tests.rs::rejects_a_self_transition`
-- `src/builder.rs::try_allow_error_transition_to_self`
-- `src/transition.rs::self_transition_returns_error`
-
-Evidence: a known transition whose source and target are equal is rejected as `StateError::SelfTransition`, including the offending state.
-
-## INV-003 — Non-Empty Transition Set
-
-**Status:** Direct
-
-Focused evidence:
-
-- `tests/transition_tests.rs::rejects_an_empty_machine_definition`
-- `src/builder.rs::build_empty_returns_no_transitions`
-
-Evidence: building without a transition returns `StateError::NoTransitions`.
 
 ## INV-004 — Logical Transition Uniqueness
 
