@@ -4,7 +4,7 @@ use std::collections::HashSet;
 use statekit::{Machine, StateError};
 
 type Model = HashSet<(String, String)>;
-type GeneratedInput = Vec<(String, String)>;
+type GeneratedTransitions = Vec<(String, String)>;
 
 fn build_machine(transitions: &[(String, String)]) -> Machine {
     let mut builder = Machine::builder();
@@ -30,9 +30,6 @@ fn valid_state_name() -> impl Strategy<Value = String> {
 
 fn valid_transition_pair() -> impl Strategy<Value = (String, String)> {
     (valid_state_name(), valid_state_name())
-        .prop_filter("source and target must be different", |(source, target)| {
-            source != target
-        })
 }
 
 fn valid_transition_pairs() -> impl Strategy<Value = Vec<(String, String)>> {
@@ -51,7 +48,7 @@ fn trailing_whitespace_state_name() -> impl Strategy<Value = String> {
     ("[ \t]{1,4}", valid_state_name()).prop_map(|(whitespace, name)| format!("{name}{whitespace}"))
 }
 
-fn different_transitions() -> impl Strategy<Value = (GeneratedInput, GeneratedInput)> {
+fn different_transitions() -> impl Strategy<Value = (GeneratedTransitions, GeneratedTransitions)> {
     (valid_transition_pairs(), valid_transition_pair())
         .prop_filter(
             "original transition must not contain additional entry",
