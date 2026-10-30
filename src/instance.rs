@@ -338,6 +338,23 @@ mod tests {
         use super::*;
 
         #[test]
+        fn transition_to_self_transition() -> Result<(), StateError> {
+            let machine = Machine::builder()
+                .try_allow("1", "1")?
+                .build()?;
+
+            let mut instance = machine.instance("1")?;
+
+            assert_eq!(instance.state(), "1");
+
+            instance.transition_to("1")?;
+
+            assert_eq!(instance.state(), "1");
+
+            Ok(())
+        }
+
+        #[test]
         fn transition_to_one_transition() -> Result<(), StateError> {
             let machine = Machine::builder()
                 .try_allow("1", "2")?
@@ -530,12 +547,39 @@ mod tests {
         }
 
         #[test]
+        fn is_terminal_on_initial_returns_false_on_self_transition() -> Result<(), StateError> {
+            let machine = Machine::builder().try_allow("1", "1")?.build()?;
+
+            let instance = machine.instance("1")?;
+
+            assert!(!instance.is_terminal());
+
+            Ok(())
+        }
+
+        #[test]
         fn is_terminal_on_initial_returns_true_on_terminal_state() -> Result<(), StateError> {
             let machine = Machine::builder().try_allow("1", "2")?.build()?;
 
             let instance = machine.instance("2")?;
 
             assert!(instance.is_terminal());
+
+            Ok(())
+        }
+
+        #[test]
+        fn is_terminal_returns_false_after_transition_to_self_transition() -> Result<(), StateError>
+        {
+            let machine = Machine::builder()
+                .try_allow("1", "1")?
+                .build()?;
+
+            let mut instance = machine.instance("1")?;
+
+            instance.transition_to("1")?;
+
+            assert!(!instance.is_terminal());
 
             Ok(())
         }
