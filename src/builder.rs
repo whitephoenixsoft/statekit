@@ -23,10 +23,6 @@ impl MachineBuilder {
     /// Adds an allowed transition from one state to another.
     ///
     /// Adding the same transition more than once has no additional effect.
-    ///
-    /// # Panics
-    ///
-    /// Panics if either state name is invalid or the transition is a self-transition.
     #[deprecated(
         since = "0.2.0",
         note = "use `try_allow` to handle invalid transitions without panicking"
