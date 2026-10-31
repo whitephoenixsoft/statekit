@@ -100,10 +100,8 @@ Evidence: an external consumer can construct and inspect a machine through the p
 
 Focused evidence:
 
-- `tests/transition_tests.rs::rejects_a_self_transition`
 - `tests/transition_tests.rs::rejects_ambiguous_state_names`
 - `tests/transition_tests.rs::rejects_whitespace_only_state_names`
-- `tests/transition_tests.rs::rejects_an_empty_machine_definition`
 - `src/instance.rs::initial_unknown_state_fails_with_unknown_initial_state_error`
 
 Evidence: invalid transition endpoints and self-transitions fail when added by `try_allow`; an empty transition set fails at `build`; an unknown initial state fails when instance construction first makes it invalid.
@@ -115,8 +113,6 @@ Evidence: invalid transition endpoints and self-transitions fail when added by `
 Focused evidence:
 
 - `src/error.rs::empty_state_display_message`
-- `src/error.rs::no_transitions_display_message`
-- `src/error.rs::self_transition_display_message_includes_state`
 - `src/error.rs::invalid_transition_display_message_includes_endpoints`
 - focused `matches!` assertions throughout `src/builder.rs`,
   `src/instance.rs`, and `tests/transition_tests.rs`
