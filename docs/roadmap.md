@@ -125,8 +125,8 @@ Todo:
 
 Items to address:
 - Self-transitions are valid (done)
-- A machine may have zero transitions 
-- A completely empty machine is valid
+- A machine may have zero transitions (done)
+- A completely empty machine is valid (done)
 - An instance still requires a known initial state (done)
 - Terminality is only for existing states. This is a breaking change to 0.4 (done)
 
