@@ -17,7 +17,7 @@ fn build_machine(transitions: &[(String, String)]) -> Machine {
 
     builder
         .build()
-        .expect("at least one transition was generated")
+        .expect("generated machine definition is valid")
 }
 
 fn build_model(transitions: &[(String, String)]) -> Model {
@@ -28,12 +28,23 @@ fn valid_state_name() -> impl Strategy<Value = String> {
     "[A-Za-z]{1,16}"
 }
 
+fn self_transition() -> impl Strategy<Value = (String, String)> {
+    valid_state_name().prop_map(|state| (state.clone(), state))
+}
+
 fn valid_transition_pair() -> impl Strategy<Value = (String, String)> {
-    (valid_state_name(), valid_state_name())
+    prop_oneof![
+        3 => (valid_state_name(), valid_state_name()),
+        1 => self_transition()
+    ]
 }
 
 fn valid_transition_pairs() -> impl Strategy<Value = Vec<(String, String)>> {
     proptest::collection::vec(valid_transition_pair(), 1..20)
+}
+
+fn possibly_empty_transition_pairs() -> impl Strategy<Value = Vec<(String, String)>> {
+    proptest::collection::vec(valid_transition_pair(), 0..20)
 }
 
 fn whitespace_only_state_name() -> impl Strategy<Value = String> {
@@ -49,7 +60,7 @@ fn trailing_whitespace_state_name() -> impl Strategy<Value = String> {
 }
 
 fn different_transitions() -> impl Strategy<Value = (GeneratedTransitions, GeneratedTransitions)> {
-    (valid_transition_pairs(), valid_transition_pair())
+    (possibly_empty_transition_pairs(), valid_transition_pair())
         .prop_filter(
             "original transition must not contain additional entry",
             |(transitions, data)| !transitions.contains(data),
@@ -436,7 +447,7 @@ proptest! {
 
     #[test]
     fn transition_count_matches_iteration(
-        transitions in valid_transition_pairs(),
+        transitions in possibly_empty_transition_pairs(),
     ) {
         let machine = build_machine(&transitions);
 
@@ -504,7 +515,7 @@ proptest! {
 
     #[test]
     fn duplicate_machines_are_equal(
-        transitions in valid_transition_pairs(),
+        transitions in possibly_empty_transition_pairs(),
     ) {
         let machine = build_machine(&transitions);
         let machine2 = build_machine(&transitions);
@@ -524,7 +535,7 @@ proptest! {
 
     #[test]
     fn model_based_valid_transitions_yields_equivalent_transition_count(
-        transitions in valid_transition_pairs(),
+        transitions in possibly_empty_transition_pairs(),
     ) {
         let machine = build_machine(&transitions);
         let model = build_model(&transitions);
@@ -781,11 +792,6 @@ proptest! {
             prop_assert_eq!(
                 transition.target(),
                 transition.target().trim(),
-            );
-
-            prop_assert_ne!(
-                transition.source(),
-                transition.target(),
             );
         }
     }
