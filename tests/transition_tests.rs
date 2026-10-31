@@ -195,3 +195,13 @@ fn machine_can_be_built_from_runtime_owned_transitions() -> Result<(), StateErro
 
     Ok(())
 }
+
+#[test]
+fn empty_builder_builds_valid_machine() -> Result<(), StateError> {
+    let machine = Machine::builder().build()?;
+
+    assert_eq!(machine.transition_count(), 0);
+    assert_eq!(machine.states().count(), 0);
+
+    Ok(())
+}
