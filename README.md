@@ -1,6 +1,6 @@
 # Statekit
 
-An immutable state transition validator for applications that model workflow as data.
+A lightweight, immutable structure for validating, inspecting, and analyzing directed state relationships.
 
 ## Purpose
 Many applications model workflows such as order processing, ticketing, or document approval.
@@ -154,7 +154,7 @@ assert!(instance.is_terminal());
 
 `try_allow()` validates state names and transition relationships when they are added.
 
-`build()` validates machine-level requirements, including that at least one transition exists.
+`build()` validates machine-level requirements.
 
 `validate_transition()` and `transition_to()` validate transitions from the allowed list.
 
