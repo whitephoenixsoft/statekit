@@ -213,6 +213,17 @@ mod tests {
         }
 
         #[test]
+        fn try_allow_self_transition_twice_is_one_transition() -> Result<(), StateError> {
+            let builder = MachineBuilder::new()
+                .try_allow("1", "1")?
+                .try_allow("1", "1")?;
+
+            assert_eq!(builder.transition_count(), 1);
+
+            Ok(())
+        }
+
+        #[test]
         fn try_allow_once_has_two_states() -> Result<(), StateError> {
             let builder = MachineBuilder::new();
             let builder = builder.try_allow("start", "finish")?;

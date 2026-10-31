@@ -309,6 +309,28 @@ impl Machine {
 mod tests {
     use super::*;
 
+    mod construction {
+        use super::*;
+
+        #[test]
+        fn empty_machine_has_zero_states() -> Result<(), StateError> {
+            let machine = Machine::builder().build()?;
+            
+            assert_eq!(machine.states().count(), 0);
+
+            Ok(())
+        }
+
+        #[test]
+        fn empty_machine_has_zero_transitions() -> Result<(), StateError> {
+            let machine = Machine::builder().build()?;
+            
+            assert_eq!(machine.transition_count(), 0);
+
+            Ok(())
+        }
+    }
+
     mod validate_transition {
         use super::*;
 
@@ -328,6 +350,23 @@ mod tests {
         #[test]
         fn validate_transition_not_exists_returns_invalid_error() -> Result<(), StateError> {
             let builder = Machine::builder().try_allow("start", "finish")?;
+
+            let m = builder.build()?;
+
+            assert_eq!(
+                m.validate_transition("start", "invalid"),
+                Err(StateError::InvalidTransition {
+                    from: "start".to_string(),
+                    to: "invalid".to_string(),
+                })
+            );
+
+            Ok(())
+        }
+
+        #[test]
+        fn validate_transition_empty_returns_invalid_error() -> Result<(), StateError> {
+            let builder = Machine::builder();
 
             let m = builder.build()?;
 
@@ -377,6 +416,17 @@ mod tests {
         #[test]
         fn can_transition_not_exists_returns_false() -> Result<(), StateError> {
             let builder = Machine::builder().try_allow("start", "finish")?;
+
+            let m = builder.build()?;
+
+            assert!(!m.can_transition("start", "invalid"));
+
+            Ok(())
+        }
+
+        #[test]
+        fn can_transition_empty_returns_false() -> Result<(), StateError> {
+            let builder = Machine::builder();
 
             let m = builder.build()?;
 
@@ -452,6 +502,19 @@ mod tests {
 
             Ok(())
         }
+
+        #[test]
+        fn targets_from_empty_transition_no_values() -> Result<(), StateError> {
+            let builder = Machine::builder();
+
+            let m = builder.build()?;
+            let collected: Vec<_> = m.targets_from("start").collect();
+
+            assert!(collected.is_empty());
+
+            Ok(())
+        }
+
     }
 
     mod targets {
@@ -498,6 +561,17 @@ mod tests {
 
             Ok(())
         }
+
+        #[test]
+        fn sources_returns_empty() -> Result<(), StateError> {
+            let machine = Machine::builder().build()?;
+
+            let sources: Vec<_> = machine.sources().collect();
+
+            assert!(sources.is_empty());
+
+            Ok(())
+        }
     }
 
     mod states {
@@ -516,6 +590,17 @@ mod tests {
             states.sort();
 
             assert_eq!(states, vec!["1", "2", "3", "4"]);
+
+            Ok(())
+        }
+
+        #[test]
+        fn states_returns_empty() -> Result<(), StateError> {
+            let machine = Machine::builder().build()?;
+
+            let states: Vec<_> = machine.states().collect();
+
+            assert!(states.is_empty());
 
             Ok(())
         }
@@ -543,6 +628,17 @@ mod tests {
             let transitions: Vec<_> = machine.transitions().collect();
 
             assert_eq!(transitions.len(), 1);
+
+            Ok(())
+        }
+
+        #[test]
+        fn transitions_returns_empty() -> Result<(), StateError> {
+            let machine = Machine::builder().build()?;
+
+            let transitions: Vec<_> = machine.transitions().collect();
+
+            assert!(transitions.is_empty());
 
             Ok(())
         }
