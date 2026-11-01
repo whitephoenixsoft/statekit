@@ -64,7 +64,7 @@ Focused evidence:
 
 - `src/builder.rs::try_allow_duplicate_transition_is_ignored`
 - `src/transitions.rs::duplicate_transition_is_stored_once`
-- `src/machine_inner.rs::targets_from_duplicate_transition_is_stored_once`
+- `src/inner.rs::targets_from_duplicate_transition_is_stored_once`
 
 Evidence: adding the same source-target pair more than once leaves one logical transition and one outgoing target.
 
@@ -104,7 +104,7 @@ Focused evidence:
 - `tests/transition_tests.rs::rejects_whitespace_only_state_names`
 - `src/instance.rs::initial_unknown_state_fails_with_unknown_initial_state_error`
 
-Evidence: invalid transition endpoints and self-transitions fail when added by `try_allow`; an empty transition set fails at `build`; an unknown initial state fails when instance construction first makes it invalid.
+Evidence: invalid transition endpoints fail when added by `try_allow`; there is allowance for failures at `build`; an unknown initial state fails when instance construction first makes it invalid.
 
 ## INV-008 — Standard Error Integration
 
