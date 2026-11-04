@@ -19,21 +19,35 @@ The purpose of this document is to outline what property tests have been defined
 
 **INV-004 Logical Transition Uniqueness**
   → duplicate_transitions_collapse
-  → model transition count
+  → model_based_valid_transitions_yields_equivalent_transition_count
+  → model_and_machine_agree_on_possibly_empty_definitions
 
 **INV-005 Case-Sensitive State Identity**
   → case_distinct_names_are_different
   → case_distinct_names_can_coexist_together
+
+**INV-006 Runtime Configuration**
+  → added_transition_is_allowed
+  → model_and_machine_agree_on_possibly_empty_definitions
+
+**INV-007 Earliest Valid Error Detection**
+  → whitespace_only_source_is_rejected
+  → whitespace_only_target_is_rejected
+  → leading_whitespace_source_is_rejected
+  → trailing_whitespace_source_is_rejected
 
 **INV-009 Shared Immutable Machine**
   → instances_are_independent
 
 **INV-010 Valid Traversal**
   → can_transition_to_agrees_with_the_edge_model
+  → successful_instant_transitions_updates_current_state_to_target
+  → model_and_instance_agree_with_transitions
   → model_and_instance_agree_on_attempts
 
 **INV-011 Safe Traversal Failure**
   → failed_instance_transitions_have_no_observable_effect
+  → model_and_instance_agree_with_transitions
   → model_and_instance_agree_on_attempts
 
 **INV-012 Independent Instances**
@@ -42,9 +56,11 @@ The purpose of this document is to outline what property tests have been defined
 **INV-013 Machine Equality**
   → duplicate_machines_are_equal
   → different_machines_are_not_equal
+  → current properties use the same transition input for the equal case and add a distinct transition for the unequal case; they do not test equality across different insertion orders
 
 **INV-014 Instance Equality**
   → instances_are_equal_when_machine_definition_and_states_are_equal
+  → tests the equal case; no property tests unequal instances
 
 ## Outline
 
@@ -97,6 +113,11 @@ SEMANTIC DISTRIBUTION
 ✔ source with no outgoing transition
 ✔ known-existing state
 ✔ known-missing state
+
+RETIRED-INVARIANT BEHAVIOR
+✔ self transitions are accepted and traversable
+✔ a self-loop is not terminal
+✔ an empty machine can be built, but cannot create an instance at an unknown state
 
 Random generation provides variation, but generators should deliberately produce important semantic categories such as existing and missing transitions rather than relying on chance.
 

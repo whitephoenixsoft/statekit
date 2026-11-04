@@ -118,10 +118,9 @@ Todo:
 - update specification (done)
 - change existing validation to match Invariant changes (done)
 - update unit tests. Add reversal of the Invariants removed. (done)
-- update property tests. Check for test that successful transition does not always change the state. Also update generators to include self transitions.
+- update property tests. Check for test that successful transition does not always change the state. Also update generators to include self transitions. (done)
 - update README (done)
 - update test outlines (done)
-- move broken document example tests to compile-test fail doc folder 
 
 Items to address:
 - Self-transitions are valid (done)
@@ -147,6 +146,7 @@ Todo:
 - update README with new examples 
 - add doc tests
 - update GitHub description 
+- move broken document example tests to compile-test fail doc folder 
 
 Items to address:
 - States may exist independently of transitions
