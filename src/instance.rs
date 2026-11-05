@@ -339,9 +339,7 @@ mod tests {
 
         #[test]
         fn transition_to_self_transition() -> Result<(), StateError> {
-            let machine = Machine::builder()
-                .try_allow("1", "1")?
-                .build()?;
+            let machine = Machine::builder().try_allow("1", "1")?.build()?;
 
             let mut instance = machine.instance("1")?;
 
@@ -571,9 +569,7 @@ mod tests {
         #[test]
         fn is_terminal_returns_false_after_transition_to_self_transition() -> Result<(), StateError>
         {
-            let machine = Machine::builder()
-                .try_allow("1", "1")?
-                .build()?;
+            let machine = Machine::builder().try_allow("1", "1")?.build()?;
 
             let mut instance = machine.instance("1")?;
 

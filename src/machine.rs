@@ -315,7 +315,7 @@ mod tests {
         #[test]
         fn empty_machine_has_zero_states() -> Result<(), StateError> {
             let machine = Machine::builder().build()?;
-            
+
             assert_eq!(machine.states().count(), 0);
 
             Ok(())
@@ -324,7 +324,7 @@ mod tests {
         #[test]
         fn empty_machine_has_zero_transitions() -> Result<(), StateError> {
             let machine = Machine::builder().build()?;
-            
+
             assert_eq!(machine.transition_count(), 0);
 
             Ok(())
@@ -514,7 +514,6 @@ mod tests {
 
             Ok(())
         }
-
     }
 
     mod targets {

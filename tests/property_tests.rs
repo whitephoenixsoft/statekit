@@ -247,7 +247,7 @@ fn transitions_with_missing_edge_from_existing_source()
 
 proptest! {
     #![proptest_config(ProptestConfig::with_cases(1000))]
-    
+
     #[test]
     fn added_transition_is_allowed(
         (source, target) in valid_transition_pair(),
@@ -262,7 +262,7 @@ proptest! {
 
         prop_assert!(machine.can_transition(&source, &target));
     }
-    
+
     #[test]
     fn self_transition_has_one_state(
         state in valid_state_name(),
@@ -272,7 +272,7 @@ proptest! {
             .unwrap()
             .build()
             .unwrap();
-    
+
         prop_assert_eq!(machine.states().count(), 1);
         prop_assert_eq!(machine.transition_count(), 1);
         prop_assert!(machine.can_transition(&state, &state));
@@ -586,18 +586,18 @@ proptest! {
 
         prop_assert_eq!(machine.can_transition(source, target), model.contains(&probe));
     }
-    
+
     #[test]
     fn model_and_machine_agree_on_possibly_empty_definitions(
         transitions in possibly_empty_transition_pairs(),
     ) {
         let machine = build_machine(&transitions);
         let model = build_model(&transitions);
-    
+
         let actual: Model = machine.transitions()
             .map(|t| (t.source().to_owned(), t.target().to_owned()))
             .collect();
-    
+
         prop_assert_eq!(actual, model.clone());
         prop_assert_eq!(machine.transition_count(), model.len());
     }
@@ -803,17 +803,17 @@ proptest! {
     ) {
         let machine = build_machine(&transitions);
         let model = build_model(&transitions);
-    
+
         let exists = model.iter().any(|(source, target)| {
             source == &state || target == &state
         });
-    
+
         let has_outgoing = model.iter().any(|(source, _)| {
             source == &state
         });
-    
+
         let expected = exists && !has_outgoing;
-    
+
         prop_assert_eq!(machine.is_terminal(&state), expected);
     }
 
@@ -1040,25 +1040,25 @@ proptest! {
 
         prop_assert_eq!(first, second);
     }
-    
+
     #[test]
     fn empty_machine_rejects_any_initial_state(
         state in valid_state_name(),
     ) {
         let machine = Machine::builder().build().unwrap();
-    
+
         prop_assert!(!machine.contains_state(&state));
-    
+
         let result = machine.instance(&state);
-        
+
         let matches_error = matches!(
             result,
             Err(StateError::UnknownInitialState { .. })
         );
-    
+
         prop_assert!(matches_error);
     }
-    
+
     #[test]
     fn self_transition_succeeds_without_changing_state(
         state in valid_state_name(),
@@ -1068,13 +1068,13 @@ proptest! {
             .unwrap()
             .build()
             .unwrap();
-    
+
         let mut instance = machine.instance(&state).unwrap();
-    
+
         prop_assert!(instance.can_transition_to(&state));
-    
+
         let result = instance.transition_to(&state);
-    
+
         prop_assert!(result.is_ok());
         prop_assert_eq!(instance.state(), state);
     }
@@ -1088,9 +1088,9 @@ proptest! {
             .unwrap()
             .build()
             .unwrap();
-    
+
         prop_assert!(!machine.is_terminal(&state));
-    
+
         let instance = machine.instance(&state).unwrap();
         prop_assert!(!instance.is_terminal());
     }

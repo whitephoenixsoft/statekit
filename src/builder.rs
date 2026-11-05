@@ -180,8 +180,7 @@ mod tests {
 
         #[test]
         fn build_allows_empty_machine() -> Result<(), StateError> {
-            let machine = MachineBuilder::new()
-                .build();
+            let machine = MachineBuilder::new().build();
 
             assert!(machine.is_ok());
 
@@ -194,8 +193,7 @@ mod tests {
 
         #[test]
         fn try_allow_self_transition_has_one_state() -> Result<(), StateError> {
-            let builder = MachineBuilder::new()
-                .try_allow("1", "1")?;
+            let builder = MachineBuilder::new().try_allow("1", "1")?;
 
             assert_eq!(builder.state_count(), 1);
 
@@ -204,8 +202,7 @@ mod tests {
 
         #[test]
         fn try_allow_self_transition_is_one_transition() -> Result<(), StateError> {
-            let builder = MachineBuilder::new()
-                .try_allow("1", "1")?;
+            let builder = MachineBuilder::new().try_allow("1", "1")?;
 
             assert_eq!(builder.transition_count(), 1);
 

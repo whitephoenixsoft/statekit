@@ -61,7 +61,8 @@ impl MachineInner {
 
     ///A state is terminal when it is part of the machine and it has no outgoing transitions.
     pub fn is_terminal(&self, state: &str) -> bool {
-        self.transitions.contains_state(state) && self.transitions.targets_from(state).next().is_none()
+        self.transitions.contains_state(state)
+            && self.transitions.targets_from(state).next().is_none()
     }
 }
 
@@ -156,7 +157,7 @@ mod tests {
 
             Ok(())
         }
-        
+
         #[test]
         fn transition_count_empty_returns_zero() {
             let transitions = Transitions::new();
@@ -358,8 +359,7 @@ mod tests {
 
             Ok(())
         }
-        
-        
+
         #[test]
         fn targets_from_empty_returns_zero() {
             let transitions = Transitions::new();
@@ -416,8 +416,7 @@ mod tests {
 
             Ok(())
         }
-        
-        
+
         #[test]
         fn sources_empty_returns_zero() {
             let transitions = Transitions::new();
@@ -491,7 +490,7 @@ mod tests {
 
             Ok(())
         }
-        
+
         #[test]
         fn states_empty_returns_zero() {
             let transitions = Transitions::new();
@@ -549,7 +548,7 @@ mod tests {
 
             Ok(())
         }
-        
+
         #[test]
         fn transitions_empty_returns_zero() {
             let transitions = Transitions::new();
@@ -692,7 +691,7 @@ mod tests {
 
             Ok(())
         }
-        
+
         #[test]
         fn empty_machines_are_equal() {
             let transitions = Transitions::new();
