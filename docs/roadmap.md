@@ -111,7 +111,7 @@ Not a release.
 
 Consider:
 - updating the project core to remove opinionated restrictions (done)
-- updating iterators to support new infrastructure ie empty transitions
+- updating iterators to support new infrastructure ie empty transitions (done)
 - updating specification to match the new architecture (done)
 
 Todo:

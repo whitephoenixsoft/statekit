@@ -156,6 +156,13 @@ mod tests {
 
             Ok(())
         }
+        
+        #[test]
+        fn transition_count_empty_returns_zero() {
+            let transitions = Transitions::new();
+            let m = MachineInner::new(transitions);
+            assert_eq!(m.transition_count(), 0);
+        }
     }
 
     mod can_transition {
@@ -351,6 +358,15 @@ mod tests {
 
             Ok(())
         }
+        
+        
+        #[test]
+        fn targets_from_empty_returns_zero() {
+            let transitions = Transitions::new();
+            let m = MachineInner::new(transitions);
+            let targets: Vec<_> = m.targets_from("start").collect();
+            assert!(targets.is_empty());
+        }
     }
 
     mod sources {
@@ -399,6 +415,15 @@ mod tests {
             assert_eq!(sources, vec!["1", "2", "3"]);
 
             Ok(())
+        }
+        
+        
+        #[test]
+        fn sources_empty_returns_zero() {
+            let transitions = Transitions::new();
+            let m = MachineInner::new(transitions);
+            let sources: Vec<_> = m.sources().collect();
+            assert!(sources.is_empty());
         }
     }
 
@@ -466,6 +491,14 @@ mod tests {
 
             Ok(())
         }
+        
+        #[test]
+        fn states_empty_returns_zero() {
+            let transitions = Transitions::new();
+            let m = MachineInner::new(transitions);
+            let states: Vec<_> = m.states().collect();
+            assert!(states.is_empty());
+        }
     }
 
     mod transitions {
@@ -515,6 +548,14 @@ mod tests {
             assert_eq!(transitions2.len(), 4);
 
             Ok(())
+        }
+        
+        #[test]
+        fn transitions_empty_returns_zero() {
+            let transitions = Transitions::new();
+            let m = MachineInner::new(transitions);
+            let t: Vec<_> = m.transitions().collect();
+            assert!(t.is_empty());
         }
     }
 
@@ -650,6 +691,15 @@ mod tests {
             assert_ne!(machine1, machine2);
 
             Ok(())
+        }
+        
+        #[test]
+        fn empty_machines_are_equal() {
+            let transitions = Transitions::new();
+            let transitions2 = Transitions::new();
+            let m1 = MachineInner::new(transitions);
+            let m2 = MachineInner::new(transitions2);
+            assert_eq!(m1, m2);
         }
     }
 }
