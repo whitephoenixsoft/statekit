@@ -191,8 +191,8 @@ Focused evidence:
 - `src/machine.rs::equality::different_machines_are_not_equal`
 - `src/inner.rs::partial_eq::similar_machines_are_equal`
 - `src/inner.rs::partial_eq::similar_machines_in_different_order_are_equal`
-- `src/inner.rs::partial_eq::different_machines_are_not_equal`
-
+- `src/inner.rs::partial_eq::differe nt_machines_are_not_equal`
+- `src/inner.rs::partial_eq::empty_machines_are_equal`
 Evidence: equivalent definitions compare equal regardless of transition order; different definitions compare unequal.
 
 ## INV-014 — Instance Equality
