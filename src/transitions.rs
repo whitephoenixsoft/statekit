@@ -19,11 +19,6 @@ impl Transitions {
         self.items.len()
     }
 
-    /// Returns whether the collection is empty or not.
-    pub(crate) fn is_empty(&self) -> bool {
-        self.items.is_empty()
-    }
-
     /// Adds a [`Transition`] to the collection.
     pub(crate) fn add(&mut self, transition: Transition) {
         self.items.insert(transition);
@@ -128,28 +123,6 @@ mod tests {
             items.add(Transition::try_new("1", "2")?);
 
             assert_eq!(items.len(), 1);
-
-            Ok(())
-        }
-    }
-
-    mod is_empty {
-        use super::*;
-
-        #[test]
-        fn is_empty_returns_true_on_no_items() {
-            let transitions = Transitions::new();
-
-            assert!(transitions.is_empty());
-        }
-
-        #[test]
-        fn is_empty_returns_false_with_an_item() -> Result<(), StateError> {
-            let mut transitions = Transitions::new();
-
-            transitions.add(Transition::try_new("1", "2")?);
-
-            assert!(!transitions.is_empty());
 
             Ok(())
         }

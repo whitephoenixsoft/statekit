@@ -110,27 +110,24 @@ Cleanup:
 Not a release.
 
 Consider:
-- updating the project core to remove opinionated restrictions
-- updating iterators to support new infrastructure
-- updating specification to match the new architecture
+- updating the project core to remove opinionated restrictions (done)
+- updating iterators to support new infrastructure ie empty transitions (done)
+- updating specification to match the new architecture (done)
 
 Todo:
-- update specification
-- change existing validation to match Invariant changes
-- update unit tests
-- update property tests
-- update README 
-- update test outlines
-- move broken document example tests to compile-test fail doc folder 
+- update specification (done)
+- change existing validation to match Invariant changes (done)
+- update unit tests. Add reversal of the Invariants removed. (done)
+- update property tests. Check for test that successful transition does not always change the state. Also update generators to include self transitions. (done)
+- update README (done)
+- update test outlines (done)
 
 Items to address:
-- Self-transitions are valid
-- A machine may have zero transitions
-- States may exist independently of transitions
-- A completely empty machine is valid
-- Machine equality includes both states and transitions
-- An instance still requires a known initial state
-- Transition endpoints may continue to introduce state implicitly
+- Self-transitions are valid (done)
+- A machine may have zero transitions (done)
+- A completely empty machine is valid (done)
+- An instance still requires a known initial state (done)
+- Terminality is only for existing states. This is a breaking change to 0.4 (done)
 
 ### Phase 8 - Additional Data Structure Functions (v0.5)
 
@@ -140,6 +137,7 @@ Consider:
 - adding `try_state` to add an independent list of states
 - adding `sources_to` for incoming states
 - adding `is_isolated` for orphaned single states
+- adding `is_empty` to the builder and machine
 
 Todo:
 - update specification 
@@ -148,6 +146,14 @@ Todo:
 - update README with new examples 
 - add doc tests
 - update GitHub description 
+- move broken document example tests to compile-test fail doc folder 
+
+Items to address:
+- States may exist independently of transitions
+- Machine equality includes both states and transitions
+- Transition endpoints may continue to introduce state implicitly
+- states are isolated with and without self transitions
+- Isolated states are also terminal states because they have no outgoing transitions.
 
 ### Phase 9 - Data Structure Tests and Benchmarks (v0.5.1)
 

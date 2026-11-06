@@ -2,10 +2,12 @@
 
 //! # Statekit
 //!
-//! An immutable state-transition validator for predefined workflows.
+//! A lightweight, immutable structure for validating, inspecting, and analyzing
+//! directed state relationships.
 //!
 //! This crate is useful when states are dynamic, configuration-driven, or stored
-//! as data, allowing applications to avoid hard-coding state transitions.
+//! as data. This allows applications to avoid hard-coding state transitions, and
+//! directed relationships, such as control flows, dependencies, and paths.
 //!
 //! State and transition invariants are enforced while constructing the machine
 //! through [`MachineBuilder`].
@@ -44,12 +46,10 @@
 //!
 //! # Invariants
 //!
-//! -  State names must not be empty or consist entirely of whitespace.
+//! - State names must not be empty or consist entirely of whitespace.
 //! - State names must not begin or end with Unicode whitespace.
 //! - State names are case-sensitive.
-//! - Self-transitions are rejected.
-//! - Cycles between distinct states are permitted.
-//! - A machine must contain at least one transition.
+//! - Cycles are permitted, including self transitions.
 //! - Duplicate transitions between the same source and target are stored as a single logical transition.
 //! - Transitions with non-existing edges are rejected.
 //! - Instances must be initialized with an existing state.

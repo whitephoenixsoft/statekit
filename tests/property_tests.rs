@@ -4,7 +4,7 @@ use std::collections::HashSet;
 use statekit::{Machine, StateError};
 
 type Model = HashSet<(String, String)>;
-type GeneratedInput = Vec<(String, String)>;
+type GeneratedTransitions = Vec<(String, String)>;
 
 fn build_machine(transitions: &[(String, String)]) -> Machine {
     let mut builder = Machine::builder();
@@ -17,7 +17,7 @@ fn build_machine(transitions: &[(String, String)]) -> Machine {
 
     builder
         .build()
-        .expect("at least one transition was generated")
+        .expect("generated machine definition is valid")
 }
 
 fn build_model(transitions: &[(String, String)]) -> Model {
@@ -28,15 +28,23 @@ fn valid_state_name() -> impl Strategy<Value = String> {
     "[A-Za-z]{1,16}"
 }
 
+fn self_transition() -> impl Strategy<Value = (String, String)> {
+    valid_state_name().prop_map(|state| (state.clone(), state))
+}
+
 fn valid_transition_pair() -> impl Strategy<Value = (String, String)> {
-    (valid_state_name(), valid_state_name())
-        .prop_filter("source and target must be different", |(source, target)| {
-            source != target
-        })
+    prop_oneof![
+        3 => (valid_state_name(), valid_state_name()),
+        1 => self_transition()
+    ]
 }
 
 fn valid_transition_pairs() -> impl Strategy<Value = Vec<(String, String)>> {
     proptest::collection::vec(valid_transition_pair(), 1..20)
+}
+
+fn possibly_empty_transition_pairs() -> impl Strategy<Value = Vec<(String, String)>> {
+    proptest::collection::vec(valid_transition_pair(), 0..20)
 }
 
 fn whitespace_only_state_name() -> impl Strategy<Value = String> {
@@ -51,8 +59,8 @@ fn trailing_whitespace_state_name() -> impl Strategy<Value = String> {
     ("[ \t]{1,4}", valid_state_name()).prop_map(|(whitespace, name)| format!("{name}{whitespace}"))
 }
 
-fn different_transitions() -> impl Strategy<Value = (GeneratedInput, GeneratedInput)> {
-    (valid_transition_pairs(), valid_transition_pair())
+fn different_transitions() -> impl Strategy<Value = (GeneratedTransitions, GeneratedTransitions)> {
+    (possibly_empty_transition_pairs(), valid_transition_pair())
         .prop_filter(
             "original transition must not contain additional entry",
             |(transitions, data)| !transitions.contains(data),
@@ -239,6 +247,7 @@ fn transitions_with_missing_edge_from_existing_source()
 
 proptest! {
     #![proptest_config(ProptestConfig::with_cases(1000))]
+
     #[test]
     fn added_transition_is_allowed(
         (source, target) in valid_transition_pair(),
@@ -255,18 +264,18 @@ proptest! {
     }
 
     #[test]
-    fn self_transition_is_rejected(
-        input_state in valid_state_name(),
+    fn self_transition_has_one_state(
+        state in valid_state_name(),
     ) {
-        let result = Machine::builder()
-            .try_allow(&input_state, &input_state);
+        let machine = Machine::builder()
+            .try_allow(&state, &state)
+            .unwrap()
+            .build()
+            .unwrap();
 
-        let is_self_transition = matches!(
-            result,
-            Err(StateError::SelfTransition { state }) if state == input_state
-        );
-
-        prop_assert!(is_self_transition);
+        prop_assert_eq!(machine.states().count(), 1);
+        prop_assert_eq!(machine.transition_count(), 1);
+        prop_assert!(machine.can_transition(&state, &state));
     }
 
     #[test]
@@ -454,7 +463,7 @@ proptest! {
 
     #[test]
     fn transition_count_matches_iteration(
-        transitions in valid_transition_pairs(),
+        transitions in possibly_empty_transition_pairs(),
     ) {
         let machine = build_machine(&transitions);
 
@@ -522,7 +531,7 @@ proptest! {
 
     #[test]
     fn duplicate_machines_are_equal(
-        transitions in valid_transition_pairs(),
+        transitions in possibly_empty_transition_pairs(),
     ) {
         let machine = build_machine(&transitions);
         let machine2 = build_machine(&transitions);
@@ -542,7 +551,7 @@ proptest! {
 
     #[test]
     fn model_based_valid_transitions_yields_equivalent_transition_count(
-        transitions in valid_transition_pairs(),
+        transitions in possibly_empty_transition_pairs(),
     ) {
         let machine = build_machine(&transitions);
         let model = build_model(&transitions);
@@ -576,6 +585,21 @@ proptest! {
         prop_assert!(!model.contains(&probe));
 
         prop_assert_eq!(machine.can_transition(source, target), model.contains(&probe));
+    }
+
+    #[test]
+    fn model_and_machine_agree_on_possibly_empty_definitions(
+        transitions in possibly_empty_transition_pairs(),
+    ) {
+        let machine = build_machine(&transitions);
+        let model = build_model(&transitions);
+
+        let actual: Model = machine.transitions()
+            .map(|t| (t.source().to_owned(), t.target().to_owned()))
+            .collect();
+
+        prop_assert_eq!(actual, model.clone());
+        prop_assert_eq!(machine.transition_count(), model.len());
     }
 
     #[test]
@@ -772,6 +796,26 @@ proptest! {
         prop_assert!(machine.can_transition(&source, &target));
     }
 
+    #[test]
+    fn machine_terminality_agrees_with_model(
+        transitions in possibly_empty_transition_pairs(),
+        state in valid_state_name(),
+    ) {
+        let machine = build_machine(&transitions);
+        let model = build_model(&transitions);
+
+        let exists = model.iter().any(|(source, target)| {
+            source == &state || target == &state
+        });
+
+        let has_outgoing = model.iter().any(|(source, _)| {
+            source == &state
+        });
+
+        let expected = exists && !has_outgoing;
+
+        prop_assert_eq!(machine.is_terminal(&state), expected);
+    }
 
     #[test]
     fn accepted_arbitrary_transitions_preserve_invariants(
@@ -799,11 +843,6 @@ proptest! {
             prop_assert_eq!(
                 transition.target(),
                 transition.target().trim(),
-            );
-
-            prop_assert_ne!(
-                transition.source(),
-                transition.target(),
             );
         }
     }
@@ -1002,4 +1041,57 @@ proptest! {
         prop_assert_eq!(first, second);
     }
 
+    #[test]
+    fn empty_machine_rejects_any_initial_state(
+        state in valid_state_name(),
+    ) {
+        let machine = Machine::builder().build().unwrap();
+
+        prop_assert!(!machine.contains_state(&state));
+
+        let result = machine.instance(&state);
+
+        let matches_error = matches!(
+            result,
+            Err(StateError::UnknownInitialState { .. })
+        );
+
+        prop_assert!(matches_error);
+    }
+
+    #[test]
+    fn self_transition_succeeds_without_changing_state(
+        state in valid_state_name(),
+    ) {
+        let machine = Machine::builder()
+            .try_allow(&state, &state)
+            .unwrap()
+            .build()
+            .unwrap();
+
+        let mut instance = machine.instance(&state).unwrap();
+
+        prop_assert!(instance.can_transition_to(&state));
+
+        let result = instance.transition_to(&state);
+
+        prop_assert!(result.is_ok());
+        prop_assert_eq!(instance.state(), state);
+    }
+
+    #[test]
+    fn self_loop_is_not_terminal(
+        state in valid_state_name(),
+    ) {
+        let machine = Machine::builder()
+            .try_allow(&state, &state)
+            .unwrap()
+            .build()
+            .unwrap();
+
+        prop_assert!(!machine.is_terminal(&state));
+
+        let instance = machine.instance(&state).unwrap();
+        prop_assert!(!instance.is_terminal());
+    }
 }

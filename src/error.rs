@@ -26,10 +26,6 @@ use thiserror::Error;
 /// ```
 #[derive(Debug, Error, PartialEq, Eq)]
 pub enum StateError {
-    /// The machine must contain at least one transition.
-    #[error("state machine must define at least one transition")]
-    NoTransitions,
-
     /// A state name must not be empty or whitespace-only.
     #[error("state name cannot be empty or whitespace-only")]
     EmptyState,
@@ -38,13 +34,6 @@ pub enum StateError {
     #[error("state name {state:?} must not begin or end with Unicode whitespace")]
     AmbiguousStateName {
         /// The state containing leading or trailing Unicode whitespace.
-        state: String,
-    },
-
-    /// A transition must connect two different states.
-    #[error("self-transitions are not allowed for state {state:?}")]
-    SelfTransition {
-        /// The state that was used as both the source and destination.
         state: String,
     },
 
@@ -76,28 +65,6 @@ mod tests {
         assert_eq!(
             error.to_string(),
             "state name cannot be empty or whitespace-only"
-        );
-    }
-
-    #[test]
-    fn no_transitions_display_message() {
-        let error = StateError::NoTransitions;
-
-        assert_eq!(
-            error.to_string(),
-            "state machine must define at least one transition"
-        );
-    }
-
-    #[test]
-    fn self_transition_display_message_includes_state() {
-        let error = StateError::SelfTransition {
-            state: "start".to_owned(),
-        };
-
-        assert_eq!(
-            error.to_string(),
-            "self-transitions are not allowed for state \"start\""
         );
     }
 

@@ -1,7 +1,7 @@
 ---
 project: statekit
 category: foundation
-version: 0.4
+version: 0.5
 status: active
 review-status: needs-review
 ---
@@ -14,8 +14,7 @@ It is not intended to replace specifications, roadmaps, tests, benchmarks, sourc
 
 ## Project Identity
 
-Statekit is an immutable state transition validator
-for applications that model workflow as data.
+A lightweight, immutable structure for validating, inspecting, and analyzing directed state relationships.
 
 ## Intents
 
@@ -37,7 +36,7 @@ State machines are intended to be defined from data rather than requiring machin
 ## Boundaries / Durable Intent
 
 **BI-001: Building Block**
-Statekit remains a validation building block rather than becoming a process, workflow, policy, or pathfinding engine.
+Statekit remains a structural building block rather than becoming a process, workflow, policy, or pathfinding engine.
 
 **BI-002: Hidden Internal Storage**
 Internal storage/representation is not part of the public domain contract.
@@ -50,11 +49,13 @@ Scheduling and synchronization policy belong to the host application.
 **INV-001: Machine Immutability**
 A built state machine is immutable.
 
-**INV-002: No Self Transitions**
-Self transitions are rejected.
+**(Retired)** INV-002: No Self Transitions
+Self transitions were rejected.
+- Retired on version v0.5
 
-**INV-003: Non-Empty Transition Set**
-A valid machine contains at least one transition.
+**(Retired)** INV-003: Non-Empty Transition Set
+A valid machine has to contain at least one transition.
+- Retired on version v0.5
 
 **INV-004: Logical Transition Uniqueness**
 Duplicate transitions with the same source and target represent the same logical transition.
@@ -84,10 +85,22 @@ Failed instance transitions have no observable effect.
 Instances sharing a machine maintain independent traversal state.
 
 **INV-013: Machine Equality**
-Machine equality reflects machine definition, not shared allocation identity.
+Machine equality reflects machine definition, not shared allocation identity. A machine is equal if and only if both the logical states and transitions are equal.
 
 **INV-014: Instance Equality**
 Instances on equal machine definitions and in the same state are equal. This is because two instances can be in the same logical traversal position.
+
+**(Planned) INV-015: States are independent of transitions**
+A state may exist in the machine without participating in any transition. Every transition endpoint must belong to the machine's state set.
+
+**(Planned) INV-016: Isolated State Semantics**
+A state is isolated if and only if it has no incoming or outgoing transitions, including self-transitions.
+
+**(Planned) INV-017: Logical State Uniqueness**
+Duplicate states with the same name or identifier represent the same logical state.
+
+**(Planned) INV-018: Terminality is transition independent**
+A state belonging to the machine is terminal if and only if it has no outgoing transitions.
 
 ## Decisions
 

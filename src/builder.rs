@@ -5,12 +5,8 @@ use crate::{Machine, StateError, Transition, Transitions};
 /// Transitions are added with [`MachineBuilder::try_allow`] and validated
 /// immediately before being stored.
 ///
-/// [`MachineBuilder::build`] only succeeds when at least one valid transition
-/// has been configured.
-///
-/// State names are case-sensitive. Empty or whitespace-only state names,
-/// names with leading or trailing whitespace, and self-transitions are rejected.
-/// Cycles are allowed.
+/// State names are case-sensitive. Empty or whitespace-only state names, and
+/// names with leading or trailing whitespace are rejected. Cycles are allowed.
 #[derive(Debug)]
 pub struct MachineBuilder {
     transitions: Transitions,
@@ -27,10 +23,6 @@ impl MachineBuilder {
     /// Adds an allowed transition from one state to another.
     ///
     /// Adding the same transition more than once has no additional effect.
-    ///
-    /// # Panics
-    ///
-    /// Panics if either state name is invalid or the transition is a self-transition.
     #[deprecated(
         since = "0.2.0",
         note = "use `try_allow` to handle invalid transitions without panicking"
@@ -50,19 +42,13 @@ impl MachineBuilder {
     ///
     /// - [`StateError::AmbiguousStateName`] if an endpoint has leading or trailing
     ///   Unicode whitespace.
-    /// - [`StateError::SelfTransition`] if a transition has identical endpoints.
-    /// - [`StateError::EmptyState`] if an endpoint is empty or whitespace-only.
     ///
     /// # Examples
     /// ```
     /// use statekit::{Machine, StateError};
     ///
-    /// let result = Machine::builder().try_allow("a", "a");
+    /// Machine::builder().try_allow("a", "a")?;
     ///
-    /// assert!(matches!(
-    ///     result,
-    ///     Err(StateError::SelfTransition { state }) if state == "a"
-    /// ));
     /// # Ok::<(), StateError>(())
     /// ```
     pub fn try_allow(
@@ -79,26 +65,13 @@ impl MachineBuilder {
 
     /// Builds an immutable [`Machine`].
     ///
-    /// # Errors
-    ///
-    /// Returns [`StateError::NoTransitions`] if no transitions were configured.
-    ///
     /// # Examples
     /// ```
     /// use statekit::{Machine, StateError};
     ///
     /// let builder = Machine::builder();
-    ///
-    /// assert!(matches!(
-    ///     builder.build(),
-    ///     Err(StateError::NoTransitions)
-    /// ));
     /// ```
     pub fn build(self) -> Result<Machine, StateError> {
-        if self.transitions.is_empty() {
-            return Err(StateError::NoTransitions);
-        }
-
         Ok(Machine::new(self.transitions))
     }
 
@@ -194,13 +167,6 @@ mod tests {
         use super::*;
 
         #[test]
-        fn build_empty_returns_no_transitions() {
-            let builder = MachineBuilder::new();
-
-            assert!(matches!(builder.build(), Err(StateError::NoTransitions)));
-        }
-
-        #[test]
         fn build_allows_cycles() -> Result<(), StateError> {
             let machine = MachineBuilder::new()
                 .try_allow("start", "finish")?
@@ -211,10 +177,48 @@ mod tests {
 
             Ok(())
         }
+
+        #[test]
+        fn build_allows_empty_machine() -> Result<(), StateError> {
+            let machine = MachineBuilder::new().build();
+
+            assert!(machine.is_ok());
+
+            Ok(())
+        }
     }
 
     mod try_allow {
         use super::*;
+
+        #[test]
+        fn try_allow_self_transition_has_one_state() -> Result<(), StateError> {
+            let builder = MachineBuilder::new().try_allow("1", "1")?;
+
+            assert_eq!(builder.state_count(), 1);
+
+            Ok(())
+        }
+
+        #[test]
+        fn try_allow_self_transition_is_one_transition() -> Result<(), StateError> {
+            let builder = MachineBuilder::new().try_allow("1", "1")?;
+
+            assert_eq!(builder.transition_count(), 1);
+
+            Ok(())
+        }
+
+        #[test]
+        fn try_allow_self_transition_twice_is_one_transition() -> Result<(), StateError> {
+            let builder = MachineBuilder::new()
+                .try_allow("1", "1")?
+                .try_allow("1", "1")?;
+
+            assert_eq!(builder.transition_count(), 1);
+
+            Ok(())
+        }
 
         #[test]
         fn try_allow_once_has_two_states() -> Result<(), StateError> {
@@ -367,17 +371,6 @@ mod tests {
             assert_eq!(builder.transition_count(), 2);
 
             Ok(())
-        }
-
-        #[test]
-        fn try_allow_error_transition_to_self() {
-            let builder = MachineBuilder::new();
-            let result = builder.try_allow("start", "start");
-
-            assert!(matches!(
-                result,
-                Err(StateError::SelfTransition { ref state }) if state == "start"
-            ));
         }
 
         #[test]

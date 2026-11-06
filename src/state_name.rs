@@ -12,11 +12,6 @@ impl StateName {
     pub(crate) fn as_str(&self) -> &str {
         &self.0
     }
-
-    /// Consumes the state name and returns its owned string.
-    pub(crate) fn into_string(self) -> String {
-        self.0
-    }
 }
 
 impl TryFrom<&str> for StateName {

@@ -57,6 +57,8 @@ Methods:
 - is_cyclic(state) - whether state is in a cycle 
 - instance.reachable_states()
 - instance.can_reach(D)
+- is_isomorphic(machine)
+- contains_subgraph_isomorphic_to(machine)
 
 Approach:
 - Compatibility: Preserve existing public methods unless a change is independently justified.
