@@ -103,7 +103,7 @@ Cleanup:
 - Changelog (done)
 - Final review (done)
 
-### Phase 7 - Data Structure Conversion 
+### Phase 7 - Data Structure Conversion -- COMPLETED
 
 **Goal:** Establish Statekit as a general, immutable state-transition data structure without imposing consumer-specific configuration restrictions.
 
@@ -152,7 +152,7 @@ Items to address:
 - States may exist independently of transitions
 - Machine equality includes both states and transitions
 - Transition endpoints may continue to introduce state implicitly
-- states are isolated with and without self transitions
+- states are isolated when transitions
 - Isolated states are also terminal states because they have no outgoing transitions.
 
 ### Phase 9 - Data Structure Tests and Benchmarks (v0.5.1)
