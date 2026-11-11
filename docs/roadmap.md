@@ -137,7 +137,7 @@ Consider:
 - adding `try_state` to add an independent list of states
 - adding `sources_to` for incoming states
 - adding `is_isolated` for orphaned single states
-- adding `is_empty` to the builder and machine
+- adding `is_empty` to the builder and machine (done)
 
 Todo:
 - update specification 

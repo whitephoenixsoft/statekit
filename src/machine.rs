@@ -303,6 +303,23 @@ impl Machine {
     pub fn is_terminal(&self, state: &str) -> bool {
         self.inner.is_terminal(state)
     }
+
+    /// Returns whether there are no transitions.
+    ///
+    /// # Examples
+    /// ```
+    /// use statekit::{Machine, StateError};
+    ///
+    /// let machine = Machine::builder()
+    ///     .try_allow("a", "b")?
+    ///     .build()?;
+    ///
+    /// assert!(!machine.is_empty());
+    /// # Ok::<(), StateError>(())
+    /// ```
+    pub fn is_empty(&self) -> bool {
+        self.inner.is_empty()
+    }
 }
 
 #[cfg(test)]
@@ -693,6 +710,28 @@ mod tests {
             let machine2 = Machine::builder().try_allow("1", "3")?.build()?;
 
             assert_ne!(machine1, machine2);
+
+            Ok(())
+        }
+    }
+
+    mod is_empty {
+        use super::*;
+
+        #[test]
+        fn is_empty_no_transitions() -> Result<(), StateError> {
+            let machine = Machine::builder().build()?;
+
+            assert!(machine.is_empty());
+
+            Ok(())
+        }
+
+        #[test]
+        fn is_empty_transitions() -> Result<(), StateError> {
+            let machine = Machine::builder().try_allow("1", "2")?.build()?;
+
+            assert!(!machine.is_empty());
 
             Ok(())
         }

@@ -64,6 +64,11 @@ impl MachineInner {
         self.transitions.contains_state(state)
             && self.transitions.targets_from(state).next().is_none()
     }
+
+    /// Returns whether the machine empty or not.
+    pub fn is_empty(&self) -> bool {
+        self.transitions.len() == 0
+    }
 }
 
 #[cfg(test)]
@@ -699,6 +704,29 @@ mod tests {
             let m1 = MachineInner::new(transitions);
             let m2 = MachineInner::new(transitions2);
             assert_eq!(m1, m2);
+        }
+    }
+
+    mod is_empty {
+        use super::*;
+
+        #[test]
+        fn is_empty_no_items() {
+            let transitions = Transitions::new();
+            let m = MachineInner::new(transitions);
+
+            assert!(m.is_empty());
+        }
+
+        #[test]
+        fn is_empty_items() -> Result<(), StateError> {
+            let mut transitions = Transitions::new();
+            transitions.add(Transition::try_new("2", "1")?);
+            let m = MachineInner::new(transitions);
+
+            assert!(!m.is_empty());
+
+            Ok(())
         }
     }
 }
