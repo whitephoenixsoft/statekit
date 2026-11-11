@@ -1,6 +1,7 @@
 # Statekit Implementation Design
 
 MachineBuilder
+- Transitions
 - creates MachineInner
 
 Machine
