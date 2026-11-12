@@ -13,14 +13,11 @@ pub struct Transition {
 
 impl Transition {
     /// Creates a validated transition from `source` to `target`.
-    pub(crate) fn try_new(
-        source: impl AsRef<str>,
-        target: impl AsRef<str>,
-    ) -> Result<Self, StateError> {
-        let source = StateName::try_from(source.as_ref())?;
-        let target = StateName::try_from(target.as_ref())?;
-
-        Ok(Self { source, target })
+    pub(crate) fn new(
+        source: StateName,
+        target: StateName,
+    ) -> Self {
+        Self { source, target }
     }
 
     /// Returns the source state of the transition.

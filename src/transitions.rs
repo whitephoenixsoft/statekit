@@ -2,10 +2,11 @@ use std::collections::HashSet;
 
 use crate::Transition;
 
-/// A collection of Transition items.
+/// A collection of states and transitions.
 #[derive(Debug, Default, PartialEq, Eq)]
 pub(crate) struct Transitions {
-    items: HashSet<Transition>,
+    states: Vec<StateName>,
+    edges: HashSet<(usize, usize)>,
 }
 
 impl Transitions {
@@ -14,76 +15,81 @@ impl Transitions {
         Self::default()
     }
 
-    /// Returns the length of the collection.
-    pub(crate) fn len(&self) -> usize {
-        self.items.len()
+    /// Resolve the state id.
+    pub(crate) fn state_id(&self, name: &StateName) -> Option<usize> {
+        self.states.iter().position(|s| s == name)
     }
 
-    /// Adds a [`Transition`] to the collection.
-    pub(crate) fn add(&mut self, transition: Transition) {
-        self.items.insert(transition);
+    /// Insert a state atomically.
+    pub(crate) get_or_insert_state(&mut self, name: StateName) -> usize {
+        if let Some(id) = self.state_id(name) {
+            return id;
+        }
+
+        let id = self.states.len();
+        self.states.push(state);
+        id
     }
 
-    /// Returns an iterator over the collection.
-    pub(crate) fn iter(&self) -> impl Iterator<Item = &Transition> {
-        self.items.iter()
+    /// Adds a source and target ids as a transition.
+    pub(crate) fn add_transaction(&mut self, source: usize, target: usize) {
+        self.edges.insert((source, target));
+    }
+
+    /// Returns an iterator over the transitions.
+    pub(crate) fn transactions(&self) -> impl Iterator<Item = &Transition> {
+        //self.edges.iter()
+    }
+
+    /// Returns the count of transactions
+    pub(crate) fn transaction_count(&self) -> usize {
+        self.edges.len()
     }
 
     /// Returns the count of the unique source and target states in
     /// the collection.
     pub(crate) fn state_count(&self) -> usize {
-        self.states().count()
+        self.states.len()
     }
 
     /// Returns whether a transition exists based on `source` and `target`.
-    pub(crate) fn contains(&self, source: &str, target: &str) -> bool {
-        self.items
-            .iter()
-            .any(|item| item.source() == source && item.target() == target)
+    pub(crate) fn contains(&self, source: &usize, target: &usize) -> bool {
+        self.edges.contains((source, target))
     }
 
-    /// Returns whether `state` appears as either endpoint of a transition.
-    pub(crate) fn contains_state(&self, state: &str) -> bool {
-        self.items
-            .iter()
-            .any(|item| item.source() == state || item.target() == state)
+    /// Returns whether `state` is a reserved state or 
+    pub(crate) fn contains_state(&self, state: &StateName) -> bool {
+        self.states.contains(state)
     }
 
     /// Returns an iterator over the states directly reachable from `source`.
     ///
     /// The iteration order is unspecified.
-    pub(crate) fn targets_from(&self, source: &str) -> impl Iterator<Item = &str> {
-        self.items
-            .iter()
-            .filter(move |item| item.source() == source)
-            .map(Transition::target)
+    pub(crate) fn targets_from(&self, source: &str) -> impl Iterator<Item = &StateName> {
+        //self.items
+            //.iter()
+            //.filter(move |item| item.source() == source)
+            //.map(Transition::target)
     }
 
     /// Returns an iterator over all source states.
     ///
     /// The iteration order is unspecified.
-    pub(crate) fn sources(&self) -> impl Iterator<Item = &str> {
-        let mut unique: HashSet<&str> = HashSet::new();
+    pub(crate) fn sources(&self) -> impl Iterator<Item = &StateName> {
+        //let mut unique: HashSet<&str> = HashSet::new();
 
-        for item in &self.items {
-            unique.insert(item.source());
-        }
+        //for item in &self.items {
+            //unique.insert(item.source());
+        //}
 
-        unique.into_iter()
+        //unique.into_iter()
     }
 
-    /// Returns an iterator over all unique source and target states.
+    /// Returns an iterator over all unique states.
     ///
     /// The iteration order is unspecified.
-    pub(crate) fn states(&self) -> impl Iterator<Item = &str> {
-        let mut unique: HashSet<&str> = HashSet::new();
-
-        for item in &self.items {
-            unique.insert(item.source());
-            unique.insert(item.target());
-        }
-
-        unique.into_iter()
+    pub(crate) fn states(&self) -> impl Iterator<Item = &StateName> {
+        self.states.iter()
     }
 }
 
