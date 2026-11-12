@@ -37,9 +37,14 @@ StateName
 
 MachineBuilder
 - Transitions
-- try allows the str into Transitions
+- try allows the str as API
+- try from str to StateName 
+- adds state directly to Transitions
+- resolves id from Transitions 
+- adds source and target IDs directly to Transitions 
 - creates MachineInner with Transitions 
 - creates Machine with MachineInner 
+- manual PartialEq implementation 
 
 Machine
 - Arc of MachineInner
@@ -57,12 +62,15 @@ Transitions
 - HashSet of (usize, usize) for edges
 - yields Transition on demand 
     - (usize, usize) to source, target
-- try adds states
-- try adds transitions 
+- adds StateName 
+- adds transitions usize id
+- resolved state id usize (maybe also get_or_insert_state )
 
 Transition
 - source of StateName 
 - target of StateName 
+- continues to own these values to simplify interface 
 
 StateName 
 - String
+- clone for use in Transition
