@@ -15,9 +15,14 @@ impl Transitions {
         Self::default()
     }
 
-    /// Resolve the state id.
+    /// Resolve the state id from a StateName.
     pub(crate) fn state_id(&self, name: &StateName) -> Option<usize> {
         self.states.iter().position(|s| s == name)
+    }
+    
+    /// Resolve the state id from a str reference.
+    pub(crate) fn state_id_from_str(&self, name: &str) -> Option<usize> {
+        self.states.iter().position(|s| s.as_str() == name)
     }
 
     /// Insert a state atomically.
@@ -54,29 +59,17 @@ impl Transitions {
     }
 
     /// Returns whether a transition exists based on `source` and `target`.
-    pub(crate) fn contains(&self, source: &StateName, target: &StateName) -> bool {
-        let source_id = self.state_id(source);
-        let target_id = self.state_id(target);
-        
-        if source_id != None && target_id != None {
-            self.edges.contains((source_id.unwrap(), target_id.unwrap())
-        }
-        
-        false
-    }
-
-    /// Returns whether `state` is a reserved state or 
-    pub(crate) fn contains_state(&self, state: &StateName) -> bool {
-        self.states.contains(state)
+    pub(crate) fn contains(&self, source: &usize, target: &usize) -> bool {
+        self.edges.contains((source, target))
     }
 
     /// Returns an iterator over the states directly reachable from `source`.
     ///
     /// The iteration order is unspecified.
-    pub(crate) fn targets_from(&self, source: &StateName) -> impl Iterator<Item = &StateName> {
+    pub(crate) fn targets_from(&self, source: &usize) -> impl Iterator<Item = &StateName> {
         self.edges
             .iter()
-            .filter(move |(s,_)| self.states[s] == source)
+            .filter(move |(s,_)| s == source)
             .map(|(_,t)| self.states[t])
     }
 
