@@ -38,7 +38,8 @@ impl Transitions {
 
     /// Returns an iterator over the transitions.
     pub(crate) fn transactions(&self) -> impl Iterator<Item = &Transition> {
-        //self.edges.iter()
+        self.edges.iter()
+            .map(|(s, t)| Transition::new(self.states[s].clone(), self.states[t].clone()))
     }
 
     /// Returns the count of transactions
@@ -53,8 +54,15 @@ impl Transitions {
     }
 
     /// Returns whether a transition exists based on `source` and `target`.
-    pub(crate) fn contains(&self, source: &usize, target: &usize) -> bool {
-        self.edges.contains((source, target))
+    pub(crate) fn contains(&self, source: &StateName, target: &StateName) -> bool {
+        let source_id = self.state_id(source);
+        let target_id = self.state_id(target);
+        
+        if source_id != None && target_id != None {
+            self.edges.contains((source_id.unwrap(), target_id.unwrap())
+        }
+        
+        false
     }
 
     /// Returns whether `state` is a reserved state or 
@@ -65,24 +73,24 @@ impl Transitions {
     /// Returns an iterator over the states directly reachable from `source`.
     ///
     /// The iteration order is unspecified.
-    pub(crate) fn targets_from(&self, source: &str) -> impl Iterator<Item = &StateName> {
-        //self.items
-            //.iter()
-            //.filter(move |item| item.source() == source)
-            //.map(Transition::target)
+    pub(crate) fn targets_from(&self, source: &StateName) -> impl Iterator<Item = &StateName> {
+        self.edges
+            .iter()
+            .filter(move |(s,_)| self.states[s] == source)
+            .map(|(_,t)| self.states[t])
     }
 
     /// Returns an iterator over all source states.
     ///
     /// The iteration order is unspecified.
     pub(crate) fn sources(&self) -> impl Iterator<Item = &StateName> {
-        //let mut unique: HashSet<&str> = HashSet::new();
+        let mut unique: HashSet<&StateName> = HashSet::new();
 
-        //for item in &self.items {
-            //unique.insert(item.source());
-        //}
+        for (source_id, _) in &self.edges {
+            unique.insert(self.states[source_id]);
+        }
 
-        //unique.into_iter()
+        unique.into_iter()
     }
 
     /// Returns an iterator over all unique states.
