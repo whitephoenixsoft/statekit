@@ -56,9 +56,12 @@ impl MachineBuilder {
         from: impl AsRef<str>,
         to: impl AsRef<str>,
     ) -> Result<Self, StateError> {
-        let transition = Transition::try_new(from, to)?;
+        let source = StateName::try_from(from)?;
+        let target = StateName::try_from(to)?;
 
-        self.transitions.add(transition);
+        let source_id = self.transitions.get_or_insert_state(source);
+        let target_id = self.transitions.get_or_insert_state(target);
+        self.transitions.add_transition(source_id, target_id);
 
         Ok(self)
     }
@@ -90,7 +93,7 @@ impl MachineBuilder {
     /// # Ok::<(), StateError>(())
     /// ```
     pub fn transition_count(&self) -> usize {
-        self.transitions.len()
+        self.transitions.transition_count()
     }
 
     /// Returns the number of unique states used by the configured transitions.
