@@ -35,16 +35,25 @@ impl Transitions {
         self.states.push(state);
         id
     }
+    
+    /// Resolves an id to a state name
+    pub(crate) fn resolve_id(&self, id: usize) -> Option<&StateName> {
+        if id < self.states.len() {
+            return Some(self.states[id];
+        }
+        
+        None
+    }
 
     /// Adds a source and target ids as a transition.
     pub(crate) fn add_transition(&mut self, source: usize, target: usize) {
-        self.edges.insert((source, target));
+        self.edges.insert(&(source, target));
     }
 
     /// Returns an iterator over the transitions.
     pub(crate) fn transitions(&self) -> impl Iterator<Item = &Transition> {
         self.edges.iter()
-            .map(|(s, t)| Transition::new(self.states[s].clone(), self.states[t].clone()))
+            .map(|(s, t)| Transition::new(self.states[*s].clone(), self.states[*t].clone()))
     }
 
     /// Returns the count of transactions
@@ -69,8 +78,8 @@ impl Transitions {
     pub(crate) fn targets_from(&self, source: &usize) -> impl Iterator<Item = &StateName> {
         self.edges
             .iter()
-            .filter(move |(s,_)| s == source)
-            .map(|(_,t)| self.states[t])
+            .filter(move |(s,_)| *s == source)
+            .map(|(_,t)| self.states[*t])
     }
 
     /// Returns an iterator over all source states.
@@ -98,63 +107,69 @@ impl Transitions {
 mod tests {
     use super::*;
     use crate::StateError;
+    
+    mod state_id {
+        use super::*;
+    }
+    
+    mod get_or_insert_state {
+        use super::*;
+        
+        
+    }
 
-    mod len {
+    mod transition_count {
         use super::*;
 
         #[test]
-        fn len_returns_0_on_no_items() {
+        fn returns_0_on_no_items() {
             let transitions = Transitions::new();
 
-            assert_eq!(transitions.len(), 0);
+            assert_eq!(transitions.transition_count(), 0);
         }
 
         #[test]
-        fn len_returns_number_of_transitions() -> Result<(), StateError> {
+        fn returns_number_of_transitions() {
             let mut transitions = Transitions::new();
 
-            transitions.add(Transition::try_new("1", "2")?);
-            transitions.add(Transition::try_new("3", "4")?);
-            transitions.add(Transition::try_new("5", "6")?);
+            transitions.add_transition(0, 0);
 
-            assert_eq!(transitions.len(), 3);
-
-            Ok(())
+            assert_eq!(transitions.transition_count(), 1);
         }
 
         #[test]
-        fn duplicate_transition_is_stored_once() -> Result<(), StateError> {
+        fn duplicate_transition_is_stored_once() {
             let mut items = Transitions::new();
 
-            items.add(Transition::try_new("1", "2")?);
-            items.add(Transition::try_new("1", "2")?);
-
-            assert_eq!(items.len(), 1);
+            items.add_transition(0, 0);
+            items.add_transition(0, 0);
+            
+            assert_eq!(items.transition_count(), 1);
 
             Ok(())
         }
     }
 
-    mod iter {
+    mod transitions {
         use super::*;
 
         #[test]
-        fn iter_returns_empty_on_no_items() {
+        fn returns_empty_on_no_items() {
             let items = Transitions::new();
 
-            let transitions: Vec<_> = items.iter().collect();
+            let transitions: Vec<_> = items.transitions().collect();
 
             assert!(transitions.is_empty());
         }
 
         #[test]
-        fn iter_one_transition_returns_matching_fields() -> Result<(), StateError> {
+        fn one_transition_returns_matching_fields() -> Result<(), StateError> {
             let mut items = Transitions::new();
-            items.add(Transition::try_new("1", "2")?);
+            items.add_transition(1, 2);
 
             let transitions: Vec<_> = items.iter().collect();
 
-            assert_eq!(transitions[0].source(), "1");
+            assert_eq!(transitions[0].source(), 1);
             assert_eq!(transitions[0].target(), "2");
 
             Ok(())

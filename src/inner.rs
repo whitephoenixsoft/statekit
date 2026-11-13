@@ -11,6 +11,16 @@ impl MachineInner {
     pub(crate) fn new(transitions: Transitions) -> Self {
         Self { transitions }
     }
+    
+    /// Resolves a &str to a state id for integrated modules
+    pub(crate) fn state_id(&self, state: &str) -> usize {
+        self.transitions.state_id_from_str(state)
+    }
+    
+    /// Resolves an id to a StateName
+    pub(crate) fn resolve_id(&self, state_id: usize) -> Option<&StateName> {
+        self.transitions.resolve_id(state_id)
+    }
 
     /// Returns whether the transition from `from` to `to` is allowed.
     pub(crate) fn can_transition(&self, from: &str, to: &str) -> bool {

@@ -8,21 +8,22 @@ use std::sync::Arc;
 #[derive(Debug, PartialEq, Eq)]
 pub struct MachineInstance {
     machine: Arc<MachineInner>,
-    current: String,
+    current: usize,
 }
 
 impl MachineInstance {
     /// Returns a MachineInstance. Returns a [`StateError::UnknownInitialState`]
     /// if `initial` is not an existing state.
     pub(crate) fn try_new(machine: Arc<MachineInner>, initial: String) -> Result<Self, StateError> {
-        if !machine.contains_state(initial.as_str()) {
+        if let Some(id) = machine.state_id(initial.as_str()) {
+            return Ok(Self {
+                machine,
+                current: id,
+            });
+        } 
+        else {
             return Err(StateError::UnknownInitialState { state: initial });
         }
-
-        Ok(Self {
-            machine,
-            current: initial,
-        })
     }
 
     /// Returns the current state.
@@ -43,7 +44,7 @@ impl MachineInstance {
     /// # Ok::<(), StateError>(())
     /// ```
     pub fn state(&self) -> &str {
-        &self.current
+        machine.resolve_id(self.current).unwrap().as_str()
     }
 
     /// Returns true if the instance can transition to `target`.
@@ -67,7 +68,7 @@ impl MachineInstance {
     /// # Ok::<(), StateError>(())
     /// ```
     pub fn can_transition_to(&self, target: &str) -> bool {
-        self.machine.can_transition(&self.current, target)
+        self.machine.can_transition(self.state(), target)
     }
 
     /// Changes the state to `target` if the transition is allowed.
@@ -104,11 +105,12 @@ impl MachineInstance {
     /// # Ok::<(), StateError>(())
     /// ```
     pub fn transition_to(&mut self, target: &str) -> Result<(), StateError> {
-        self.machine.validate_transition(&self.current, target)?;
-
-        self.current.clear();
-        self.current.push_str(target);
-
+        self.machine.validate_transition(self.sstate(), target)?;
+        
+        if let Some(id) = machine.state_id(target) {
+            self.current = id
+        } 
+        
         Ok(())
     }
 
