@@ -24,6 +24,7 @@ MachineInner
 Transitions
 - HashSet of Transition 
 - adds transition
+- Iterators return &str
 
 Transition
 - source of StateName 
@@ -56,6 +57,8 @@ MachineInstance
 
 MachineInner
 - Transitions 
+- translates StateName Iterators to &str
+- translates &str queries into StateName
 
 Transitions
 - Vec of StateName for states
@@ -65,6 +68,7 @@ Transitions
 - adds StateName 
 - adds transitions usize id
 - resolved state id usize (maybe also get_or_insert_state )
+- Iterators return &StateName
 
 Transition
 - source of StateName 
