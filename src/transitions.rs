@@ -32,18 +32,18 @@ impl Transitions {
     }
 
     /// Adds a source and target ids as a transition.
-    pub(crate) fn add_transaction(&mut self, source: usize, target: usize) {
+    pub(crate) fn add_transition(&mut self, source: usize, target: usize) {
         self.edges.insert((source, target));
     }
 
     /// Returns an iterator over the transitions.
-    pub(crate) fn transactions(&self) -> impl Iterator<Item = &Transition> {
+    pub(crate) fn transitions(&self) -> impl Iterator<Item = &Transition> {
         self.edges.iter()
             .map(|(s, t)| Transition::new(self.states[s].clone(), self.states[t].clone()))
     }
 
     /// Returns the count of transactions
-    pub(crate) fn transaction_count(&self) -> usize {
+    pub(crate) fn transition_count(&self) -> usize {
         self.edges.len()
     }
 
