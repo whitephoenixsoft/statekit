@@ -17,7 +17,7 @@ impl MachineInner {
         let source = self.transitions.state_id_from_str(from);
         let target = self.transitions.state_id_from_str(to);
         
-        if let source = Some(s) && target = Some(t) {
+        if let source = Some(s) && let target = Some(t) {
             return self.transitions.contains(s, t);
         }
         
