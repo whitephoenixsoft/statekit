@@ -32,14 +32,14 @@ impl Transitions {
         }
 
         let id = self.states.len();
-        self.states.push(state);
+        self.states.push(name);
         id
     }
     
     /// Resolves an id to a state name
     pub(crate) fn resolve_id(&self, id: usize) -> Option<&StateName> {
         if id < self.states.len() {
-            return Some(self.states[id];
+            return Some(self.states[id]);
         }
         
         None
@@ -47,13 +47,13 @@ impl Transitions {
 
     /// Adds a source and target ids as a transition.
     pub(crate) fn add_transition(&mut self, source: usize, target: usize) {
-        self.edges.insert(&(source, target));
+        self.edges.insert((source, target));
     }
 
     /// Returns an iterator over the transitions.
     pub(crate) fn transitions(&self) -> impl Iterator<Item = &Transition> {
         self.edges.iter()
-            .map(|(s, t)| Transition::new(self.states[*s].clone(), self.states[*t].clone()))
+            .map(|(s, t)| &Transition::new(self.states[*s].clone(), self.states[*t].clone()))
     }
 
     /// Returns the count of transactions

@@ -61,6 +61,7 @@ impl MachineInner {
         let source = self.transitions.state_id_from_str(from);
         if let Some(id) = source {
             return self.transitions.targets_from(id)
+            .map(|state| state.as_str())
         }
         
         std::iter::empty::<&str>()
@@ -69,11 +70,13 @@ impl MachineInner {
     /// Returns an iterator over all source states.
     pub(crate) fn sources(&self) -> impl Iterator<Item = &str> {
         self.transitions.sources()
+            .map(|state| state.as_str())
     }
 
     /// Returns an iterator over all unique source and target states.
     pub(crate) fn states(&self) -> impl Iterator<Item = &str> {
         self.transitions.states()
+            .map(|state| state.as_str())
     }
 
     /// Returns an iterator over all the transitions in the state machine.

@@ -322,6 +322,14 @@ impl Machine {
     }
 }
 
+impl PartialEq for Machine {
+    fn eq(&self, other: &Self) -> bool {
+        // Compare state membership.
+        // Compare logical edges by names, not numeric IDs.
+        
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
