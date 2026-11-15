@@ -13,7 +13,7 @@ impl MachineInner {
     }
     
     /// Resolves a &str to a state id for integrated modules
-    pub(crate) fn state_id(&self, state: &str) -> usize {
+    pub(crate) fn state_id(&self, state: &str) -> Option<usize> {
         self.transitions.state_id_from_str(state)
     }
     
