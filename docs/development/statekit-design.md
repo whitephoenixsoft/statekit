@@ -53,7 +53,7 @@ Machine
 
 MachineInstance
 - Arc of MachineInner 
-- state as usize
+- state as StateName
 
 MachineInner
 - Transitions 
