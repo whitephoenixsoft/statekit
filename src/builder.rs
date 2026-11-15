@@ -66,6 +66,36 @@ impl MachineBuilder {
         Ok(self)
     }
 
+    /// Adds a state that may not already be part of a transition.
+    ///
+    /// Adding the same state more than once has no additional effect.
+    ///
+    /// # Errors
+    ///
+    /// Returns:
+    ///
+    /// - [`StateError::AmbiguousStateName`] if an endpoint has leading or trailing
+    ///   Unicode whitespace.
+    ///
+    /// # Examples
+    /// ```
+    /// use statekit::{Machine, StateError};
+    ///
+    /// Machine::builder().try_state("a")?;
+    ///
+    /// # Ok::<(), StateError>(())
+    /// ```
+    pub fn try_state(
+        mut self,
+        state: impl AsRef<str>,
+    ) -> Result<Self, StateError> {
+        let state = StateName::try_from(state)?;
+
+        _ = self.transitions.get_or_insert_state(state);
+
+        Ok(self)
+    }
+
     /// Builds an immutable [`Machine`].
     ///
     /// # Examples

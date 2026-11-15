@@ -1,4 +1,4 @@
-use crate::{Machine, MachineInner, StateError};
+use crate::{Machine, MachineInner, StateName, StateError};
 use std::sync::Arc;
 
 /// A mutable state-machine instance backed by an immutable [`Machine`] definition.
@@ -8,7 +8,7 @@ use std::sync::Arc;
 #[derive(Debug, PartialEq, Eq)]
 pub struct MachineInstance {
     machine: Arc<MachineInner>,
-    current: usize,
+    current: StateName,
 }
 
 impl MachineInstance {
@@ -18,7 +18,7 @@ impl MachineInstance {
         if let Some(id) = machine.state_id(initial.as_str()) {
             return Ok(Self {
                 machine,
-                current: id,
+                current: machine.resolve_id(id).unwrap(),
             });
         } 
         else {
@@ -44,7 +44,7 @@ impl MachineInstance {
     /// # Ok::<(), StateError>(())
     /// ```
     pub fn state(&self) -> &str {
-        machine.resolve_id(self.current).unwrap().as_str()
+        self.current.as_str()
     }
 
     /// Returns true if the instance can transition to `target`.
@@ -105,10 +105,10 @@ impl MachineInstance {
     /// # Ok::<(), StateError>(())
     /// ```
     pub fn transition_to(&mut self, target: &str) -> Result<(), StateError> {
-        self.machine.validate_transition(self.sstate(), target)?;
+        self.machine.validate_transition(self.state(), target)?;
         
         if let Some(id) = machine.state_id(target) {
-            self.current = id
+            self.current = machine.resolve_id(id).unwrap();
         } 
         
         Ok(())
