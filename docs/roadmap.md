@@ -134,12 +134,13 @@ Items to address:
 **Goal:** Add API that further support for direct neighbor analysis.
 
 Consider: 
-- adding `try_state` to add an independent list of states
+- adding `try_state` to add an independent list of states (done)
 - adding `sources_to` for incoming states
 - adding `is_isolated` for orphaned single states
 - adding `is_empty` to the builder and machine (done)
 
 Todo:
+- add design document (done)
 - update specification 
 - adding additional property tests to cover new invariants
 - update outline documents
