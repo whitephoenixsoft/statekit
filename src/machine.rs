@@ -87,7 +87,15 @@ impl Machine {
     /// # Ok::<(), StateError>(())
     /// ```
     pub fn can_transition(&self, from: &str, to: &str) -> bool {
-        self.inner.can_transition(from, to)
+        let Some(source) = self.inner.resolve_str(from) else {
+            return false;
+        }
+
+        let Some(target) = self.inner.resolve_str(to) else {
+            return false;
+        }
+
+        self.inner.can_transition(source, target)
     }
 
     /// Validates that the transition from `from` to `to` is allowed.

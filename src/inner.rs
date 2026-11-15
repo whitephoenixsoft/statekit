@@ -13,7 +13,12 @@ impl MachineInner {
     }
     
     /// Resolves a &str to a state id for integrated modules
-    pub(crate) fn state_id(&self, state: &str) -> Option<usize> {
+    pub(crate) fn state_id(&self, state: &StateName) -> Option<usize> {
+        self.transitions.state_id(state)
+    }
+    
+    /// Resolves a &str to a state id for integrated modules
+    pub(crate) fn state_id_from_str(&self, state: &str) -> Option<usize> {
         self.transitions.state_id_from_str(state)
     }
     
@@ -22,10 +27,14 @@ impl MachineInner {
         self.transitions.resolve_id(state_id)
     }
 
+    pub(crate) fn resolve_str(&self, name: &str) -> Option<&StateName> {
+        self.transitions.resolve_id(self.transitions.state_id_from_str(name))
+    }
+
     /// Returns whether the transition from `from` to `to` is allowed.
-    pub(crate) fn can_transition(&self, from: &str, to: &str) -> bool {
-        let source = self.transitions.state_id_from_str(from);
-        let target = self.transitions.state_id_from_str(to);
+    pub(crate) fn can_transition(&self, from: &StateName, to: &StateName) -> bool {
+        let source = self.transitions.state_id(from);
+        let target = self.transitions.state_id(to);
         
         if let source = Some(s) && let target = Some(t) {
             return self.transitions.contains(s, t);
@@ -35,13 +44,13 @@ impl MachineInner {
     }
 
     /// Validates that the transition from `from` to `to` is allowed.
-    pub(crate) fn validate_transition(&self, from: &str, to: &str) -> Result<(), StateError> {
+    pub(crate) fn validate_transition(&self, from: &StateName, to: &StateName) -> Result<(), StateError> {
         if self.can_transition(from, to) {
             Ok(())
         } else {
             Err(StateError::InvalidTransition {
-                from: from.to_owned(),
-                to: to.to_owned(),
+                from: from.as_str(),
+                to: to.as_str(),
             })
         }
     }
@@ -52,41 +61,42 @@ impl MachineInner {
     }
 
     /// Returns whether `state` appears as either endpoint of a transition.
-    pub(crate) fn contains_state(&self, state: &str) -> bool {
-        self.transitions.state_id_from_str(state) != None
+    pub(crate) fn contains_state(&self, state: &StateName) -> bool {
+        self.transitions.state_id(state) != None
     }
 
     /// Returns an iterator over states directly reachable from `from`.
-    pub(crate) fn targets_from(&self, from: &str) -> impl Iterator<Item = &str> {
-        let source = self.transitions.state_id_from_str(from);
-        if let Some(id) = source {
-            return self.transitions.targets_from(id)
-            .map(|state| state.as_str())
+    pub(crate) fn targets_from(&self, from: &StateName) -> impl Iterator<Item = &StateName> {
+        let source = self.transitions.state_id(from);
+        if let Some(source_id) = source {
+            return self.transitions.targets_from(source_id)
+                .map(|id| self.safe_resolve_id(id))
         }
         
-        std::iter::empty::<&str>()
+        std::iter::empty::<&StateName>()
     }
 
     /// Returns an iterator over all source states.
-    pub(crate) fn sources(&self) -> impl Iterator<Item = &str> {
+    pub(crate) fn sources(&self) -> impl Iterator<Item = &StateName> {
         self.transitions.sources()
-            .map(|state| state.as_str())
+            .map(|id| self.safe_resolve_id(id))
     }
 
     /// Returns an iterator over all unique source and target states.
-    pub(crate) fn states(&self) -> impl Iterator<Item = &str> {
+    pub(crate) fn states(&self) -> impl Iterator<Item = &StateName> {
         self.transitions.states()
-            .map(|state| state.as_str())
+            .map(|id| self.safe_resolve_id(id))
     }
 
     /// Returns an iterator over all the transitions in the state machine.
-    pub(crate) fn transitions(&self) -> impl Iterator<Item = &Transition> {
+    pub(crate) fn transitions(&self) -> impl Iterator<Item = (&StateName, &StateName)> {
         self.transitions.transitions()
+            .map(|(sid, tid)| (self.safe_resolve_id(sid), self.safe_resolve_id(tid)))
     }
 
     ///A state is terminal when it is part of the machine and it has no outgoing transitions.
-    pub fn is_terminal(&self, state: &str) -> bool {
-        let s = self.transitions.state_id_from_str(state);
+    pub fn is_terminal(&self, state: &StateName) -> bool {
+        let s = self.transitions.state_id(state);
         if let Some(id) = s {
             return self.transitions.targets_from(id).next().is_none();
         }
@@ -97,7 +107,10 @@ impl MachineInner {
     /// Returns whether the machine empty or not.
     pub fn is_empty(&self) -> bool {
         self.transitions.state_count() == 0
-        && self.transitions.transition_count() == 0
+    }
+
+    fn safe_resolve_id(&self, id: usize) -> &StateName {
+        self.resolve_id(id).unwrap()
     }
 }
 
