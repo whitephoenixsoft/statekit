@@ -51,9 +51,8 @@ impl Transitions {
     }
 
     /// Returns an iterator over the transitions.
-    pub(crate) fn transitions(&self) -> impl Iterator<Item = &Transition> {
+    pub(crate) fn transitions(&self) -> impl Iterator<Item = &(usize, usize)> {
         self.edges.iter()
-            .map(|(s, t)| &Transition::new(self.states[*s].clone(), self.states[*t].clone()))
     }
 
     /// Returns the count of transactions
@@ -75,21 +74,21 @@ impl Transitions {
     /// Returns an iterator over the states directly reachable from `source`.
     ///
     /// The iteration order is unspecified.
-    pub(crate) fn targets_from(&self, source: &usize) -> impl Iterator<Item = &StateName> {
+    pub(crate) fn targets_from(&self, source: &usize) -> impl Iterator<Item = &usize> {
         self.edges
             .iter()
             .filter(move |(s,_)| *s == source)
-            .map(|(_,t)| self.states[*t])
+            .map(|(_,t)| *t)
     }
 
     /// Returns an iterator over all source states.
     ///
     /// The iteration order is unspecified.
-    pub(crate) fn sources(&self) -> impl Iterator<Item = &StateName> {
-        let mut unique: HashSet<&StateName> = HashSet::new();
+    pub(crate) fn sources(&self) -> impl Iterator<Item = &usize> {
+        let mut unique: HashSet<&usize> = HashSet::new();
 
         for (source_id, _) in &self.edges {
-            unique.insert(self.states[source_id]);
+            unique.insert(source_id);
         }
 
         unique.into_iter()
@@ -98,7 +97,7 @@ impl Transitions {
     /// Returns an iterator over all unique states.
     ///
     /// The iteration order is unspecified.
-    pub(crate) fn states(&self) -> impl Iterator<Item = &StateName> {
+    pub(crate) fn states(&self) -> impl Iterator<Item = &usize> {
         self.states.iter()
     }
 }
