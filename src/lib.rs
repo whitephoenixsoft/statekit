@@ -63,6 +63,7 @@ mod builder;
 mod error;
 mod instance;
 mod machine;
+mod registry;
 mod transition;
 
 mod inner;
@@ -76,5 +77,6 @@ pub use machine::Machine;
 pub use transition::Transition;
 
 pub(crate) use inner::MachineInner;
+pub(crate) use registry::StateRegistry;
 pub(crate) use state_name::StateName;
 pub(crate) use transitions::Transitions;
