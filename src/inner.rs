@@ -1,39 +1,43 @@
-use crate::{StateError, Transition, Transitions};
+use crate::{StateError, StateRegistry, Transition, Transitions};
 
 /// The internally shared immutable state-machine definition.
 #[derive(Debug, PartialEq, Eq)]
 pub(crate) struct MachineInner {
+    states: StateRegistry,
     transitions: Transitions,
 }
 
 impl MachineInner {
     /// Constructs a machine from validated transitions.
-    pub(crate) fn new(transitions: Transitions) -> Self {
+    pub(crate) fn new(
+        states: StateRegistry,
+        transitions: Transitions,
+    ) -> Self {
         Self { transitions }
     }
     
     /// Resolves a &str to a state id for integrated modules
     pub(crate) fn state_id(&self, state: &StateName) -> Option<usize> {
-        self.transitions.state_id(state)
+        self.states.id_of(state)
     }
     
     /// Resolves a &str to a state id for integrated modules
     pub(crate) fn state_id_from_str(&self, state: &str) -> Option<usize> {
-        self.transitions.state_id_from_str(state)
+        self.states.id_of_name(state)
     }
     
     /// Resolves an id to a StateName
     pub(crate) fn resolve_id(&self, state_id: usize) -> Option<&StateName> {
-        self.transitions.resolve_id(state_id)
+        self.states.state_of(state_id)
     }
 
     pub(crate) fn resolve_str(&self, name: &str) -> Option<&StateName> {
-        self.transitions.resolve_id(self.transitions.state_id_from_str(name))
+        self.transitions.resolve_id(self.states.id_of_name(name))
     }
 
     /// Returns whether the transition from `from` to `to` is allowed.
     pub(crate) fn can_transition(&self, from: &StateName, to: &StateName) -> bool {
-        let source = self.transitions.state_id(from);
+        let source = self.states.id_of(from);
         let target = self.transitions.state_id(to);
         
         if let source = Some(s) && let target = Some(t) {

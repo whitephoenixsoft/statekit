@@ -7,7 +7,13 @@ pub(crate) struct StateRegistry {
 }
 
 impl StateRegistry {
-    /// Returna the state id from a StateName.
+    pub(crate) fn new(states: &[StateName]) {
+        Self {
+            states: Vec::from(states),
+        }
+    }
+    
+    /// Returns the state id from a StateName.
     pub(crate) fn id_of(&self, name: &StateName) -> Option<usize> {
         self.states.iter().position(|s| s == name)
     }
@@ -31,7 +37,6 @@ impl StateRegistry {
         
         None
     }
-    
     
     /// Returns the count of the unique source and target states in
     /// the collection.

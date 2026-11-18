@@ -2,10 +2,9 @@ use std::collections::HashSet;
 
 use crate::Transition;
 
-/// A collection of states and transitions.
+/// A collection of transition ids.
 #[derive(Debug, Default, PartialEq, Eq)]
 pub(crate) struct Transitions {
-    states: Vec<StateName>,
     edges: HashSet<(usize, usize)>,
 }
 
@@ -15,38 +14,8 @@ impl Transitions {
         Self::default()
     }
 
-    /// Resolve the state id from a StateName.
-    pub(crate) fn state_id(&self, name: &StateName) -> Option<usize> {
-        self.states.iter().position(|s| s == name)
-    }
-    
-    /// Resolve the state id from a str reference.
-    pub(crate) fn state_id_from_str(&self, name: &str) -> Option<usize> {
-        self.states.iter().position(|s| s.as_str() == name)
-    }
-
-    /// Insert a state atomically.
-    pub(crate) get_or_insert_state(&mut self, name: StateName) -> usize {
-        if let Some(id) = self.state_id(name) {
-            return id;
-        }
-
-        let id = self.states.len();
-        self.states.push(name);
-        id
-    }
-    
-    /// Resolves an id to a state name
-    pub(crate) fn resolve_id(&self, id: usize) -> Option<&StateName> {
-        if id < self.states.len() {
-            return Some(self.states[id]);
-        }
-        
-        None
-    }
-
     /// Adds a source and target ids as a transition.
-    pub(crate) fn add_transition(&mut self, source: usize, target: usize) {
+    pub(crate) fn insert(&mut self, source: usize, target: usize) {
         self.edges.insert((source, target));
     }
 
@@ -56,14 +25,8 @@ impl Transitions {
     }
 
     /// Returns the count of transactions
-    pub(crate) fn transition_count(&self) -> usize {
+    pub(crate) fn len(&self) -> usize {
         self.edges.len()
-    }
-
-    /// Returns the count of the unique source and target states in
-    /// the collection.
-    pub(crate) fn state_count(&self) -> usize {
-        self.states.len()
     }
 
     /// Returns whether a transition exists based on `source` and `target`.
@@ -93,13 +56,6 @@ impl Transitions {
 
         unique.into_iter()
     }
-
-    /// Returns an iterator over all unique states.
-    ///
-    /// The iteration order is unspecified.
-    pub(crate) fn states(&self) -> impl Iterator<Item = &usize> {
-        self.states.iter()
-    }
 }
 
 #[cfg(test)]
@@ -107,24 +63,14 @@ mod tests {
     use super::*;
     use crate::StateError;
     
-    mod state_id {
-        use super::*;
-    }
-    
-    mod get_or_insert_state {
-        use super::*;
-        
-        
-    }
-
-    mod transition_count {
+    mod len {
         use super::*;
 
         #[test]
         fn returns_0_on_no_items() {
             let transitions = Transitions::new();
 
-            assert_eq!(transitions.transition_count(), 0);
+            assert_eq!(transitions.len(), 0);
         }
 
         #[test]
