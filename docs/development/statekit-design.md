@@ -1,4 +1,8 @@
-# Statekit Implementation Design
+# Statekit Detailed Specification
+
+## Purpose
+
+To describe internal domain responsibilities, invariants, relationships, and representations.
 
 Context: v0.4 to v0.5
 
@@ -78,3 +82,72 @@ Transition
 StateName 
 - String
 - clone for use in Transition
+
+---
+## State Registry
+
+### Purpose
+Maintain the identities of states belonging to a machine definition.
+
+### Responsibilities
+- Register valid states independently of transition creation.
+- Resolve state names to internal identifiers
+- Resolve internal identifiers to state names.
+- Prevent duplicate logical state registration.
+
+### Invariants
+- Every registered state has exactly one internal identity.
+- A state name resolves consistently throughout construction.
+- Registering an existing state does not create another logical state.
+- Internal identities remain valid for the lifetime of the constructed machine.
+
+### Relationships
+- `MachineBuilder` coordinates registration.
+- `Transitions` references registered identities.
+- `MachineInner` provides access to the validated state set.
+
+### Representation
+Vector of State Name.
+
+### Traceability
+Project Core: INV-005, INV-015, INV-017.
+Foundation Specification: State Name, Machine Construction, Machine Queries
+
+---
+## Transitions
+Maintain the relationships between state identities in the machine definition.
+
+### Representation
+HashSet of a Tuple of (usize, usize).
+
+---
+## State Name
+The semantic identity of the state.
+
+### Representation
+String
+
+---
+## Machine Builder
+Validate and build the machine definition.
+
+### Responsibilities
+- Public interface for fallible state contruction
+- Public interface for fallible transition contruction
+- Guarantee that both state and transition construction is atomic 
+
+### Representation
+- State Registry for the states
+- Transitions for the transitions
+
+---
+## Machine Inner
+Immutable machine definition.
+
+### Representation
+- State Registry for the states
+- Transitions for the transitions
+
+---
+## Machine
+Immutable 
