@@ -136,8 +136,9 @@ Items to address:
 Consider: 
 - adding `try_state` to add an independent list of states (done)
 - adding `sources_to` for incoming states
-- adding `is_isolated` for orphaned single states
+- adding `is_isolated` for orphaned single states to machine and machine instance
 - adding `is_empty` to the builder and machine (done)
+- adding `state_count` to machine and machine inner (done)
 
 Todo:
 - add design document (done)
@@ -153,7 +154,7 @@ Items to address:
 - States may exist independently of transitions
 - Machine equality includes both states and transitions
 - Transition endpoints may continue to introduce state implicitly
-- states are isolated when transitions
+- states are isolated when they are not in a transition
 - Isolated states are also terminal states because they have no outgoing transitions.
 
 ### Phase 9 - Data Structure Tests and Benchmarks (v0.5.1)
