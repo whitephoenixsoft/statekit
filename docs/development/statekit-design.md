@@ -6,40 +6,7 @@ To describe internal domain responsibilities, invariants, relationships, and rep
 
 Context: v0.4 to v0.5
 
-## Before
-
-MachineBuilder
-- Transitions
-- try allows the str into Transition
-- creates MachineInner with Transitions 
-- creates Machine with MachineInner 
-
-Machine
-- Arc of MachineInner
-- creates MachineInstance with Machine and StateName 
-
-MachineInstance
-- Arc of MachineInner 
-- StateName 
-
-MachineInner
-- Transitions 
-
-Transitions
-- HashSet of Transition 
-- adds transition
-- Iterators return &str
-
-Transition
-- source of StateName 
-- target of StateName 
-- try new transition 
-
-StateName 
-- String
-
-## After
-
+## Changes
 MachineBuilder
 - Transitions
 - try allows the str as API
@@ -84,6 +51,39 @@ StateName
 - clone for use in Transition
 
 ---
+## Machine
+Shared Public immutable machine definition
+
+### Representation
+ARC of Machine Inner.
+
+---
+## Machine Builder
+Validate and build the machine definition.
+
+### Responsibilities
+- Public interface for fallible state contruction
+- Public interface for fallible transition contruction
+- Guarantee that both state and transition construction is atomic 
+
+### Representation
+- State Registry for the states
+- Transitions for the transitions
+
+---
+---
+## Machine Inner
+Immutable machine definition.
+
+### Responsibilities
+- return public projections of states as State Name
+- return public projections of transitions State Name or Transition
+
+### Representation
+- State Registry
+- Transitions
+
+---
 ## State Registry
 
 ### Purpose
@@ -115,7 +115,12 @@ Foundation Specification: State Name, Machine Construction, Machine Queries
 
 ---
 ## Transitions
-Maintain the relationships between state identities in the machine definition.
+Maintain a collection of the relationships between state identities in the machine definition.
+
+### Responsibilities
+- inserts a transition to the collection
+- prevents duplicate logical transitions
+- returns projections of the transitions
 
 ### Representation
 HashSet of a Tuple of (usize, usize).
@@ -124,30 +129,10 @@ HashSet of a Tuple of (usize, usize).
 ## State Name
 The semantic identity of the state.
 
+### Reponsibilities
+- maintain invariants for the the state name identity
+
 ### Representation
 String
 
 ---
-## Machine Builder
-Validate and build the machine definition.
-
-### Responsibilities
-- Public interface for fallible state contruction
-- Public interface for fallible transition contruction
-- Guarantee that both state and transition construction is atomic 
-
-### Representation
-- State Registry for the states
-- Transitions for the transitions
-
----
-## Machine Inner
-Immutable machine definition.
-
-### Representation
-- State Registry for the states
-- Transitions for the transitions
-
----
-## Machine
-Immutable 
