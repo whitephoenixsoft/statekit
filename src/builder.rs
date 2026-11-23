@@ -1,4 +1,4 @@
-use crate::{Machine, StateError, StateRegistry, Transitions};
+use crate::{Machine, MachineInner, StateError, StateRegistry, Transitions};
 
 /// A builder for constructing a [`Machine`].
 ///
@@ -107,7 +107,8 @@ impl MachineBuilder {
     /// let builder = Machine::builder();
     /// ```
     pub fn build(self) -> Result<Machine, StateError> {
-        Ok(Machine::new(self.states, self.transitions))
+        let machine = MachineInner::new(self.states, self.transitions);
+        Ok(Machine::new(machine))
     }
 
     /// Returns the number of unique transitions added to the state machine.

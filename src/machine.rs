@@ -1,4 +1,4 @@
-use crate::{MachineBuilder, MachineInner, MachineInstance, StateError, StateRegistry, Transition, Transitions};
+use crate::{MachineBuilder, MachineInner, MachineInstance, StateError, Transition};
 use std::sync::Arc;
 
 /// An immutable state-machine definition.
@@ -12,9 +12,7 @@ pub struct Machine {
 
 impl Machine {
     /// Constructs a machine from validated transitions.
-    pub(crate) fn new(states: StateRegistry, transitions: Transitions) -> Self {
-        let inner = MachineInner::new(states, transitions);
-
+    pub(crate) fn new(inner: MachineInner) -> Self {
         Self {
             inner: Arc::new(inner),
         }
@@ -142,6 +140,10 @@ impl Machine {
     /// ```
     pub fn transition_count(&self) -> usize {
         self.inner.transition_count()
+    }
+
+    pub fn state_count(&self) -> usize {
+        self.inner.state_count()
     }
 
     /// Returns whether `state` appears as either endpoint of a transition.
@@ -320,13 +322,9 @@ impl Machine {
     pub fn is_empty(&self) -> bool {
         self.inner.is_empty()
     }
-}
 
-impl PartialEq for Machine {
-    fn eq(&self, other: &Self) -> bool {
-        // Compare state membership.
-        // Compare logical edges by names, not numeric IDs.
-        
+    pub fn is_isolated(&self, state: &str) -> bool {
+        self.inner.is_isolated(state)
     }
 }
 

@@ -1,7 +1,7 @@
 use crate::{StateError, StateRegistry, Transition, Transitions};
 
 /// The internally shared immutable state-machine definition.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug,  Eq)]
 pub(crate) struct MachineInner {
     states: StateRegistry,
     transitions: Transitions,
@@ -65,6 +65,11 @@ impl MachineInner {
         self.transitions.len()
     }
 
+    /// Returns the number of states in the state machine.
+    pub(crate) fn state_count(&self) -> usize {
+        self.states.len()
+    }
+
     /// Returns whether `state` appears as either endpoint of a transition.
     pub(crate) fn contains_state(&self, state: &str) -> bool {
         self.states.id_of_name(state) != None
@@ -102,7 +107,7 @@ impl MachineInner {
     }
 
     ///A state is terminal when it is part of the machine and it has no outgoing transitions.
-    pub fn is_terminal(&self, state: &str) -> bool {
+    pub(crate) fn is_terminal(&self, state: &str) -> bool {
         if let Some(id) = self.states.id_of_name(state) {
             return self.transitions.targets_from(id).next().is_none();
         }
@@ -111,13 +116,37 @@ impl MachineInner {
     }
 
     /// Returns whether the machine empty or not.
-    pub fn is_empty(&self) -> bool {
+    pub(crate) fn is_empty(&self) -> bool {
         self.states.len() == 0 && self.transitions.len() == 0
+    }
+
+    /// Returns whether a state is not part of a transition
+    pub(crate) fn is_isolated(&self, state: &str) -> bool {
+        if let Some(id) = self.states.id_of_name(state) {
+            return !self.transitions.transitions().any(|&(s,t)| s == id || t == id)
+        }
+        
+        false
     }
 
     /// Convience wrapper function to get the state, unwrap, and convert it to &str
     fn safe_resolve_id(&self, id: usize) -> &str {
         self.states.state_of(id).unwrap().as_str()
+    }
+}
+
+impl PartialEq for MachineInner {
+    fn eq(&self, other: &Self) -> bool {
+        // Compare state membership.
+        // Compare logical edges by names, not numeric IDs.
+        
+        self.states == other.states &&
+            self.transitions.iter().map(|&(s1,t1)| 
+                (self.states.state_of(s1).unwrap(), self.states.state_of(t1).unwrap()))
+            .eq(
+                self.transitions.iter().map(|&(s2,t2)| 
+                    (self.states.state_of(s2).unwrap(), self.states.state_of(t2).unwrap()))
+            )
     }
 }
 
