@@ -1,7 +1,7 @@
 use crate::StateName;
 
 /// A registry of states.
-#[derive(Debug, Default, PartialEq, Eq)]
+#[derive(Debug, Default, Eq)]
 pub(crate) struct StateRegistry {
     states: Vec<StateName>
 }
@@ -55,4 +55,35 @@ impl StateRegistry {
     pub(crate) fn states(&self) -> impl Iterator<Item = &StateName> {
         self.states.iter()
     }
+}
+
+impl PartialEq for StateRegistry {
+    fn eq(&self, other: &Self) -> bool {
+        //states must be in the same order to compare
+        self.states.sort_unstable() == other.states.sort_unstable()    
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::StateError;
+    
+    mod get_or_insert {
+        use super::*;
+
+        #[test]
+        fn no_states_returns_id() -> Result<(), StateError> {
+            let registry = StateRegistry::new();
+
+            let state = StateName::try_from("a")?;
+            let id = registry.get_or_insert(state);
+            
+            assert_eq!(id, 0);
+
+            Ok(())
+        }
+    }
+}
+
 }
