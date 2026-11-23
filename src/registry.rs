@@ -7,15 +7,20 @@ pub(crate) struct StateRegistry {
 }
 
 impl StateRegistry {
-    pub(crate) fn new(states: &[StateName]) {
+    pub(crate) fn new() {
         Self {
-            states: Vec::from(states),
+            states: Vec::new(),
         }
     }
     
     /// Returns the state id from a StateName.
     pub(crate) fn id_of(&self, name: &StateName) -> Option<usize> {
         self.states.iter().position(|s| s == name)
+    }
+
+    /// Returns the state id from a &str.
+    pub(crate) fn id_of_name(&self, name: &str) -> Option<usize> {
+        self.states.iter().position(|s| s.as_str() == name)
     }
     
     /// Insert a state atomically.

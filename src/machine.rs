@@ -1,4 +1,4 @@
-use crate::{MachineBuilder, MachineInner, MachineInstance, StateError, Transition, Transitions};
+use crate::{MachineBuilder, MachineInner, MachineInstance, StateError, StateRegistry, Transition, Transitions};
 use std::sync::Arc;
 
 /// An immutable state-machine definition.
@@ -12,8 +12,8 @@ pub struct Machine {
 
 impl Machine {
     /// Constructs a machine from validated transitions.
-    pub(crate) fn new(transitions: Transitions) -> Self {
-        let inner = MachineInner::new(transitions);
+    pub(crate) fn new(states: StateRegistry, transitions: Transitions) -> Self {
+        let inner = MachineInner::new(states, transitions);
 
         Self {
             inner: Arc::new(inner),
@@ -87,14 +87,6 @@ impl Machine {
     /// # Ok::<(), StateError>(())
     /// ```
     pub fn can_transition(&self, from: &str, to: &str) -> bool {
-        let Some(source) = self.inner.resolve_str(from) else {
-            return false;
-        }
-
-        let Some(target) = self.inner.resolve_str(to) else {
-            return false;
-        }
-
         self.inner.can_transition(source, target)
     }
 

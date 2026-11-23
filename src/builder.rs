@@ -1,4 +1,4 @@
-use crate::{Machine, StateError, Transition, Transitions};
+use crate::{Machine, StateError, StateRegistry, Transitions};
 
 /// A builder for constructing a [`Machine`].
 ///
@@ -9,6 +9,7 @@ use crate::{Machine, StateError, Transition, Transitions};
 /// names with leading or trailing whitespace are rejected. Cycles are allowed.
 #[derive(Debug)]
 pub struct MachineBuilder {
+    states: StateRegistry,
     transitions: Transitions,
 }
 
@@ -16,6 +17,7 @@ impl MachineBuilder {
     /// Creates an empty builder.
     pub(crate) fn new() -> Self {
         Self {
+            states: StateRegistry::new(),
             transitions: Transitions::new(),
         }
     }
@@ -59,9 +61,9 @@ impl MachineBuilder {
         let source = StateName::try_from(from)?;
         let target = StateName::try_from(to)?;
 
-        let source_id = self.transitions.get_or_insert_state(source);
-        let target_id = self.transitions.get_or_insert_state(target);
-        self.transitions.add_transition(source_id, target_id);
+        let source_id = self.states.get_or_insert_state(source);
+        let target_id = self.states.get_or_insert_state(target);
+        self.transitions.insert(source_id, target_id);
 
         Ok(self)
     }
@@ -91,7 +93,7 @@ impl MachineBuilder {
     ) -> Result<Self, StateError> {
         let state = StateName::try_from(state)?;
 
-        _ = self.transitions.get_or_insert_state(state);
+        _ = self.states.get_or_insert_state(state);
 
         Ok(self)
     }
@@ -105,7 +107,7 @@ impl MachineBuilder {
     /// let builder = Machine::builder();
     /// ```
     pub fn build(self) -> Result<Machine, StateError> {
-        Ok(Machine::new(self.transitions))
+        Ok(Machine::new(self.states, self.transitions))
     }
 
     /// Returns the number of unique transitions added to the state machine.
@@ -123,7 +125,7 @@ impl MachineBuilder {
     /// # Ok::<(), StateError>(())
     /// ```
     pub fn transition_count(&self) -> usize {
-        self.transitions.transition_count()
+        self.transitions.len()
     }
 
     /// Returns the number of unique states used by the configured transitions.
@@ -141,7 +143,7 @@ impl MachineBuilder {
     /// # Ok::<(), StateError>(())
     /// ```
     pub fn state_count(&self) -> usize {
-        self.transitions.state_count()
+        self.states.len()
     }
 }
 
