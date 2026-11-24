@@ -63,10 +63,10 @@ mod builder;
 mod error;
 mod instance;
 mod machine;
-mod registry;
 mod transition;
 
 mod inner;
+mod registry;
 mod state_name;
 mod transitions;
 
