@@ -20,7 +20,7 @@ impl Transitions {
     }
 
     /// Returns an iterator over the transitions.
-    pub(crate) fn transitions(&self) -> impl Iterator<Item = &(usize, usize)> {
+    pub(crate) fn iter(&self) -> impl Iterator<Item = &(usize, usize)> {
         self.edges.iter()
     }
 
@@ -77,251 +77,109 @@ mod tests {
         fn returns_number_of_transitions() {
             let mut transitions = Transitions::new();
 
-            transitions.add_transition(0, 0);
+            transitions.insert(0, 0);
 
-            assert_eq!(transitions.transition_count(), 1);
+            assert_eq!(transitions.len(), 1);
         }
 
         #[test]
         fn duplicate_transition_is_stored_once() {
             let mut items = Transitions::new();
 
-            items.add_transition(0, 0);
-            items.add_transition(0, 0);
+            items.insert(0, 0);
+            items.insert(0, 0);
             
-            assert_eq!(items.transition_count(), 1);
-
-            Ok(())
+            assert_eq!(items.len(), 1);
         }
     }
 
-    mod transitions {
+    mod iter {
         use super::*;
 
         #[test]
         fn returns_empty_on_no_items() {
             let items = Transitions::new();
 
-            let transitions: Vec<_> = items.transitions().collect();
+            let transitions: Vec<_> = items.iter().collect();
 
             assert!(transitions.is_empty());
         }
 
         #[test]
-        fn one_transition_returns_matching_fields() -> Result<(), StateError> {
+        fn one_transition_returns_matching_fields() {
             let mut items = Transitions::new();
-            items.add_transition(1, 2);
+            items.insert(1, 2);
 
             let transitions: Vec<_> = items.iter().collect();
 
-            assert_eq!(transitions[0].source(), 1);
-            assert_eq!(transitions[0].target(), "2");
-
-            Ok(())
+            assert_eq!(transitions[0], ,(1, 2));
         }
 
         #[test]
-        fn iter_one_transition_returns_one_item() -> Result<(), StateError> {
+        fn one_transition_returns_one_item() {
             let mut items = Transitions::new();
 
-            items.add(Transition::try_new("1", "2")?);
+            items.insert(1, 2);
 
             let transitions: Vec<_> = items.iter().collect();
 
             assert_eq!(transitions.len(), 1);
-
-            Ok(())
         }
 
         #[test]
-        fn iter_multiple_transitions_returns_correct_count() -> Result<(), StateError> {
+        fn multiple_transitions_returns_correct_count() {
             let mut items = Transitions::new();
 
-            items.add(Transition::try_new("1", "2")?);
-            items.add(Transition::try_new("2", "3")?);
-            items.add(Transition::try_new("2", "1")?);
-            items.add(Transition::try_new("5", "2")?);
+            items.insert(1, 2);
+            items.insert(2, 3);
+            items.insert(2, 1);
+            items.insert(5, 2);
 
             let transitions: Vec<_> = items.iter().collect();
 
             assert_eq!(transitions.len(), 4);
-
-            Ok(())
         }
     }
-
-    mod state_count {
-        use super::*;
-
-        #[test]
-        fn state_count_no_items_returns_0() {
-            let items = Transitions::new();
-
-            assert_eq!(items.state_count(), 0);
-        }
-
-        #[test]
-        fn state_count_one_transition_returns_2_states() -> Result<(), StateError> {
-            let mut items = Transitions::new();
-
-            items.add(Transition::try_new("1", "2")?);
-
-            assert_eq!(items.state_count(), 2);
-
-            Ok(())
-        }
-
-        #[test]
-        fn state_count_two_shared_source_transitions_returns_3_states() -> Result<(), StateError> {
-            let mut items = Transitions::new();
-
-            items.add(Transition::try_new("1", "2")?);
-            items.add(Transition::try_new("1", "3")?);
-
-            assert_eq!(items.state_count(), 3);
-
-            Ok(())
-        }
-
-        #[test]
-        fn state_count_same_transition_twice_returns_2_states() -> Result<(), StateError> {
-            let mut items = Transitions::new();
-
-            items.add(Transition::try_new("1", "2")?);
-            items.add(Transition::try_new("1", "2")?);
-
-            assert_eq!(items.state_count(), 2);
-
-            Ok(())
-        }
-
-        #[test]
-        fn state_count_two_connected_transitions_returns_3_states() -> Result<(), StateError> {
-            let mut items = Transitions::new();
-
-            items.add(Transition::try_new("1", "2")?);
-            items.add(Transition::try_new("2", "3")?);
-
-            assert_eq!(items.state_count(), 3);
-
-            Ok(())
-        }
-
-        #[test]
-        fn state_count_two_shared_terminal_transitions_returns_3_states() -> Result<(), StateError>
-        {
-            let mut items = Transitions::new();
-
-            items.add(Transition::try_new("1", "2")?);
-            items.add(Transition::try_new("4", "2")?);
-
-            assert_eq!(items.state_count(), 3);
-
-            Ok(())
-        }
-
-        #[test]
-        fn state_count_two_different_transitions_returns_4_states() -> Result<(), StateError> {
-            let mut items = Transitions::new();
-
-            items.add(Transition::try_new("1", "2")?);
-            items.add(Transition::try_new("4", "3")?);
-
-            assert_eq!(items.state_count(), 4);
-
-            Ok(())
-        }
-    }
-
+    
     mod contains {
         use super::*;
 
         #[test]
-        fn contains_exists_returns_true() -> Result<(), StateError> {
+        fn contains_exists_returns_true() {
             let mut items = Transitions::new();
 
-            items.add(Transition::try_new("1", "2")?);
+            items.insert(1, 2);
 
-            assert!(items.contains("1", "2"));
-
-            Ok(())
+            assert!(items.contains(1, 2));
         }
 
         #[test]
-        fn contains_not_exists_returns_false() -> Result<(), StateError> {
+        fn contains_not_exists_returns_false() {
             let mut items = Transitions::new();
 
-            items.add(Transition::try_new("1", "2")?);
+            items.insert(1, 2);
 
-            assert!(!items.contains("1", "3"));
-
-            Ok(())
+            assert!(!items.contains(1, 3));
         }
 
         #[test]
         fn contains_no_items_returns_false() {
             let items = Transitions::new();
 
-            assert!(!items.contains("1", "2"));
+            assert!(!items.contains(1, 2));
         }
 
         #[test]
-        fn contains_is_directional() -> Result<(), StateError> {
+        fn contains_is_directional() {
             let mut items = Transitions::new();
 
-            items.add(Transition::try_new("1", "2")?);
+            items.insert(1, 2);
 
-            assert!(items.contains("1", "2"));
-            assert!(!items.contains("2", "1"));
-
-            Ok(())
+            assert!(items.contains(1, 2));
+            assert!(!items.contains(2, 1));
         }
     }
-
-    mod contains_state {
-        use super::*;
-
-        #[test]
-        fn contains_state_no_items_returns_false() {
-            let items = Transitions::new();
-
-            assert!(!items.contains_state("1"));
-        }
-
-        #[test]
-        fn contains_state_finds_target_only_state() -> Result<(), StateError> {
-            let mut items = Transitions::new();
-
-            items.add(Transition::try_new("1", "2")?);
-
-            assert!(items.contains_state("2"));
-
-            Ok(())
-        }
-
-        #[test]
-        fn contains_state_finds_source_state() -> Result<(), StateError> {
-            let mut items = Transitions::new();
-
-            items.add(Transition::try_new("1", "2")?);
-
-            assert!(items.contains_state("1"));
-
-            Ok(())
-        }
-
-        #[test]
-        fn contains_state_rejects_unknown_state() -> Result<(), StateError> {
-            let mut items = Transitions::new();
-
-            items.add(Transition::try_new("1", "2")?);
-
-            assert!(!items.contains_state("3"));
-
-            Ok(())
-        }
-    }
-
+    
     mod targets_from {
         use super::*;
 
@@ -329,79 +187,70 @@ mod tests {
         fn targets_from_no_items_returns_empty() {
             let items = Transitions::new();
 
-            let collected: Vec<_> = items.targets_from("1").collect();
+            let collected: Vec<_> = items.targets_from(1).collect();
 
             assert!(collected.is_empty());
         }
 
         #[test]
-        fn targets_from_source_does_not_exist_returns_empty() -> Result<(), StateError> {
+        fn targets_from_source_does_not_exist_returns_empty() {
             let mut items = Transitions::new();
 
-            items.add(Transition::try_new("1", "2")?);
+            items.insert(1, 2);
 
-            let collected: Vec<_> = items.targets_from("3").collect();
+            let collected: Vec<_> = items.targets_from(3).collect();
 
-            assert!(collected.is_empty());
-
-            Ok(())
-        }
-
-        #[test]
-        fn targets_from_one_source_with_one_target() -> Result<(), StateError> {
-            let mut items = Transitions::new();
-
-            items.add(Transition::try_new("1", "2")?);
-
-            let collected: Vec<_> = items.targets_from("1").collect();
-
-            assert_eq!(collected, vec!["2"]);
-
-            Ok(())
-        }
-
-        #[test]
-        fn targets_from_target_only_returns_empty() -> Result<(), StateError> {
-            let mut items = Transitions::new();
-
-            items.add(Transition::try_new("1", "2")?);
-
-            let collected: Vec<_> = items.targets_from("2").collect();
-
-            assert!(items.contains_state("2"));
             assert!(collected.is_empty());
 
             Ok(())
         }
 
         #[test]
-        fn targets_from_one_source_multiple_targets() -> Result<(), StateError> {
+        fn targets_from_one_source_with_one_target() {
             let mut items = Transitions::new();
 
-            items.add(Transition::try_new("1", "2")?);
-            items.add(Transition::try_new("1", "3")?);
-            items.add(Transition::try_new("1", "4")?);
+            items.insert(1, 2);
 
-            let mut collected: Vec<_> = items.targets_from("1").collect();
+            let collected: Vec<_> = items.targets_from(1).collect();
+
+            assert_eq!(collected, vec![2]);
+        }
+
+        #[test]
+        fn targets_from_target_only_returns_empty() {
+            let mut items = Transitions::new();
+
+            items.insert(1, 2);
+
+            let collected: Vec<_> = items.targets_from(2).collect();
+            
+            assert!(collected.is_empty());
+        }
+
+        #[test]
+        fn targets_from_one_source_multiple_targets() {
+            let mut items = Transitions::new();
+
+            items.insert(1, 2);
+            items.insert(1, 3);
+            items.insert(1, 4);
+
+            let mut collected: Vec<_> = items.targets_from(1).collect();
             collected.sort();
 
-            assert_eq!(collected, vec!["2", "3", "4"]);
-
-            Ok(())
+            assert_eq!(collected, vec![2, 3, 4]);
         }
 
         #[test]
-        fn targets_from_duplicate_transition_is_stored_once() -> Result<(), StateError> {
+        fn targets_from_duplicate_transition_is_stored_once() {
             let mut items = Transitions::new();
 
-            items.add(Transition::try_new("1", "2")?);
-            items.add(Transition::try_new("1", "2")?);
+            items.insert(1, 2);
+            items.insert(1, 2);
 
-            let collected: Vec<_> = items.targets_from("1").collect();
+            let collected: Vec<_> = items.targets_from(1).collect();
 
-            assert_eq!(collected, vec!["2"]);
-
-            Ok(())
+            assert_eq!(collected, vec![2]);
         }
     }
 
@@ -418,123 +267,60 @@ mod tests {
         }
 
         #[test]
-        fn sources_one_source_one_value() -> Result<(), StateError> {
+        fn sources_one_source_one_value() {
             let mut items = Transitions::new();
 
-            items.add(Transition::try_new("1", "2")?);
+            items.insert(1, 2);
 
             let collected: Vec<_> = items.sources().collect();
 
-            assert_eq!(collected, vec!["1"]);
-
-            Ok(())
+            assert_eq!(collected, vec![1]);
         }
 
         #[test]
-        fn sources_returns_all_source_states() -> Result<(), StateError> {
+        fn sources_returns_all_source_states() {
             let mut items = Transitions::new();
 
-            items.add(Transition::try_new("1", "0")?);
-            items.add(Transition::try_new("4", "0")?);
-            items.add(Transition::try_new("2", "0")?);
-            items.add(Transition::try_new("3", "0")?);
-            items.add(Transition::try_new("4", "1")?);
+            items.insert(1, 0);
+            items.insert(4, 0);
+            items.insert(2, 0);
+            items.insert(3, 0);
+            items.insert(4, 1);
 
             let mut collected: Vec<_> = items.sources().collect();
             collected.sort();
 
-            assert_eq!(collected, vec!["1", "2", "3", "4"]);
-
-            Ok(())
+            assert_eq!(collected, vec![1, 2, 3, 4]);
         }
     }
-
-    mod states {
-        use super::*;
-
-        #[test]
-        fn states_no_items_returns_empty() {
-            let items = Transitions::new();
-
-            let collected: Vec<_> = items.states().collect();
-
-            assert!(collected.is_empty());
-        }
-
-        #[test]
-        fn states_one_transition_returns_2_values() -> Result<(), StateError> {
-            let mut items = Transitions::new();
-
-            items.add(Transition::try_new("1", "2")?);
-
-            let mut collected: Vec<_> = items.states().collect();
-            collected.sort();
-
-            assert_eq!(collected, vec!["1", "2"]);
-
-            Ok(())
-        }
-
-        #[test]
-        fn returns_unique_source_and_target_states() -> Result<(), StateError> {
-            let mut items = Transitions::new();
-
-            items.add(Transition::try_new("1", "2")?);
-            items.add(Transition::try_new("1", "3")?);
-            items.add(Transition::try_new("2", "3")?);
-            items.add(Transition::try_new("3", "4")?);
-
-            let mut collected: Vec<_> = items.states().collect();
-            collected.sort();
-
-            assert_eq!(collected, vec!["1", "2", "3", "4"]);
-
-            Ok(())
-        }
-
-        /// Repeats the target-only-state invariant explicitly for documentation.
-        #[test]
-        fn includes_target_only_states() -> Result<(), StateError> {
-            let mut items = Transitions::new();
-
-            items.add(Transition::try_new("1", "2")?);
-
-            let mut collected: Vec<_> = items.states().collect();
-            collected.sort();
-
-            assert_eq!(collected, vec!["1", "2"]);
-
-            Ok(())
-        }
-    }
-
+ 
     mod equality {
         use super::*;
 
         #[test]
-        fn similar_transitions_are_equal() -> Result<(), StateError> {
+        fn similar_transitions_are_equal() {
             let mut items1 = Transitions::new();
-            items1.add(Transition::try_new("1", "2")?);
+            
+            items1.insert(1, 2);
 
             let mut items2 = Transitions::new();
-            items2.add(Transition::try_new("1", "2")?);
+            
+            items2.insert(1, 2);
 
             assert_eq!(items1, items2);
-
-            Ok(())
         }
 
         #[test]
-        fn different_transitions_are_not_equal() -> Result<(), StateError> {
+        fn different_transitions_are_not_equal() {
             let mut items1 = Transitions::new();
-            items1.add(Transition::try_new("1", "2")?);
+            
+            items1.insert(1, 2);
 
             let mut items2 = Transitions::new();
-            items2.add(Transition::try_new("2", "4")?);
+            
+            items1.insert(2, 1);
 
             assert_ne!(items1, items2);
-
-            Ok(())
         }
     }
 }
