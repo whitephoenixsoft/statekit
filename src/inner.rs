@@ -144,8 +144,8 @@ impl PartialEq for MachineInner {
             self.transitions.iter().map(|&(s1,t1)| 
                 (self.states.state_of(s1).unwrap(), self.states.state_of(t1).unwrap()))
             .eq(
-                self.transitions.iter().map(|&(s2,t2)| 
-                    (self.states.state_of(s2).unwrap(), self.states.state_of(t2).unwrap()))
+                other.transitions.iter().map(|&(s2,t2)| 
+                    (other.states.state_of(s2).unwrap(), other.states.state_of(t2).unwrap()))
             )
     }
 }
