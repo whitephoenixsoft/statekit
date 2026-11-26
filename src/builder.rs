@@ -146,6 +146,11 @@ impl MachineBuilder {
     pub fn state_count(&self) -> usize {
         self.states.len()
     }
+
+    ///Function to assist with testing machine inner
+    pub(crate) fn build_inner(self) -> Result<MachineInner, StateError> {
+        Ok(MachineInner::new(self.states, self.transitions))
+    }
 }
 
 #[cfg(test)]

@@ -123,9 +123,6 @@ impl MachineInner {
 
 impl PartialEq for MachineInner {
     fn eq(&self, other: &Self) -> bool {
-        // Compare state membership.
-        // Compare logical edges by names, not numeric IDs.
-        
         self.states == other.states &&
             self.transitions.iter().map(|&(s1,t1)| 
                 (self.states.state_of(s1).unwrap(), self.states.state_of(t1).unwrap()))
