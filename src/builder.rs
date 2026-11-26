@@ -61,8 +61,8 @@ impl MachineBuilder {
         let source = StateName::try_from(from)?;
         let target = StateName::try_from(to)?;
 
-        let source_id = self.states.get_or_insert_state(source);
-        let target_id = self.states.get_or_insert_state(target);
+        let source_id = self.states.get_or_insert(source);
+        let target_id = self.states.get_or_insert(target);
         self.transitions.insert(source_id, target_id);
 
         Ok(self)
@@ -93,7 +93,7 @@ impl MachineBuilder {
     ) -> Result<Self, StateError> {
         let state = StateName::try_from(state)?;
 
-        _ = self.states.get_or_insert_state(state);
+        _ = self.states.get_or_insert(state);
 
         Ok(self)
     }
@@ -440,6 +440,69 @@ mod tests {
             assert!(matches!(
                     result,
                     Err(StateError::AmbiguousStateName { ref state }) if state == "start "
+            ));
+        }
+    }
+    
+    mod try_state {
+        use super::*;
+        
+        #[test]
+        fn try_state_adds_state_count() -> Result<(), StateError> {
+            let builder = MachineBuilder::new();
+            let builder = builder.try_state("1")?;
+
+            assert_eq!(builder.state_count(), 1);
+
+            Ok(())
+        }
+        
+        #[test]
+        fn try_state_no_transitions() -> Result<(), StateError> {
+            let builder = MachineBuilder::new();
+            let builder = builder.try_state("1")?;
+
+            assert_eq!(builder.transition_count(), 0);
+
+            Ok(())
+        }
+        
+        #[test]
+        fn try_state_duplicate_state_not_counted() -> Result<(), StateError> {
+            let builder = MachineBuilder::new();
+            let builder = builder.try_state("1")?
+            .try_state("1")?;
+
+            assert_eq!(builder.state_count(), 1);
+
+            Ok(())
+        }
+        
+        #[test]
+        fn try_state_is_case_sensitive() -> Result<(), StateError> {
+            let builder = MachineBuilder::new();
+            let builder = builder.try_state("a")?
+            .try_state("A")?;
+
+            assert_eq!(builder.state_count(), 2);
+
+            Ok(())
+        }
+        
+        #[test]
+        fn try_state_error_for_empty_state() {
+            let result = MachineBuilder::new().try_state("");
+
+            assert!(matches!(result, Err(StateError::EmptyState)));
+        }
+        
+        #[test]
+        fn try_state_errors_for_ambiguous_state() {
+            let result = MachineBuilder::new().try_state("running ");
+
+            assert!(matches!(
+                result,
+                Err(StateError::AmbiguousStateName { ref state }) if state == "running "
             ));
         }
     }
