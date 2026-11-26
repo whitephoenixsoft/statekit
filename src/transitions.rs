@@ -112,7 +112,7 @@ mod tests {
 
             let transitions: Vec<_> = items.iter().collect();
 
-            assert_eq!(transitions[0], ,(1, 2));
+            assert_eq!(transitions[0], (1, 2));
         }
 
         #[test]
@@ -201,8 +201,6 @@ mod tests {
             let collected: Vec<_> = items.targets_from(3).collect();
 
             assert!(collected.is_empty());
-
-            Ok(())
         }
 
         #[test]
@@ -298,6 +296,15 @@ mod tests {
         use super::*;
 
         #[test]
+        fn empty_transitions_are_equal() {
+            let items1 = Transitions::new();
+
+            let items2 = Transitions::new();
+
+            assert_eq!(items1, items2);
+        }
+        
+        #[test]
         fn similar_transitions_are_equal() {
             let mut items1 = Transitions::new();
             
@@ -318,7 +325,21 @@ mod tests {
 
             let mut items2 = Transitions::new();
             
-            items1.insert(2, 1);
+            items2.insert(2, 1);
+
+            assert_ne!(items1, items2);
+        }
+        
+        #[test]
+        fn different_length_transitions_are_not_equal() {
+            let mut items1 = Transitions::new();
+            
+            items1.insert(1, 2);
+
+            let mut items2 = Transitions::new();
+            
+            items1.insert(1, 2);
+            items2.insert(2, 1);
 
             assert_ne!(items1, items2);
         }
