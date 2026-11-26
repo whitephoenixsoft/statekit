@@ -59,11 +59,24 @@ impl StateRegistry {
 
 impl PartialEq for StateRegistry {
     fn eq(&self, other: &Self) -> bool {
-        //states must be in the same order to compare
-        let states1 = self.states.clone().sort_unstable();
-        let states2 = other.states.clone().sort_unstable();
-        
-        states1.eq(states2)   
+        if self.states.len() != other.states.len() {
+            return false;
+        }
+
+        let mut states1: Vec<_> = self.states
+            .iter()
+            .map(|state| state.as_str())
+            .collect();
+
+        let mut states2: Vec<_> = other.states
+            .iter()
+            .map(|state| state.as_str())
+            .collect();
+
+        states1.sort_unstable();
+        states2.sort_unstable();
+
+        states1 == states2
     }
 }
 
@@ -94,7 +107,7 @@ mod tests {
             let state = StateName::try_from("a")?;
             let state2 = StateName::try_from("b")?;
             
-            _ = registry.get_or_insert(state);
+            registry.get_or_insert(state);
             let id = registry.get_or_insert(state2);
             
             assert_eq!(id, 1);
@@ -109,7 +122,7 @@ mod tests {
             let state = StateName::try_from("a")?;
             let state2 = StateName::try_from("a")?;
             
-            _ = registry.get_or_insert(state);
+            registry.get_or_insert(state);
             let id = registry.get_or_insert(state2);
             
             assert_eq!(id, 0);
@@ -125,7 +138,7 @@ mod tests {
         fn no_state_returns_0() {
              let registry = StateRegistry::new();
 
-            assert_eq!(items.len(), 0);
+            assert_eq!(registry.len(), 0);
         }
 
         #[test]
@@ -134,7 +147,7 @@ mod tests {
             
             let state = StateName::try_from("a")?;
             
-            _ = registry.get_or_insert(state);
+            registry.get_or_insert(state);
 
             assert_eq!(registry.len(), 1);
 
@@ -148,8 +161,8 @@ mod tests {
             let state = StateName::try_from("a")?;
             let state2 = StateName::try_from("a")?;
             
-            _ = registry.get_or_insert(state);
-            _ = registry.get_or_insert(state2);
+            registry.get_or_insert(state);
+            registry.get_or_insert(state2);
 
             assert_eq!(registry.len(), 1);
 
@@ -173,7 +186,7 @@ mod tests {
             
             let state = StateName::try_from("1")?;
             
-            _ = registry.get_or_insert(state);
+            registry.get_or_insert(state);
 
             assert_eq!(registry.id_of_name("1"), Some(0));
 
@@ -186,7 +199,7 @@ mod tests {
             
             let state = StateName::try_from("1")?;
             
-            _ = registry.get_or_insert(state);
+            registry.get_or_insert(state);
 
             assert_eq!(registry.id_of_name("2"), None);
 
@@ -204,6 +217,8 @@ mod tests {
             let state = StateName::try_from("1")?;
 
             assert_eq!(registry.id_of(state), None);
+            
+            Ok(())
         }
         
         #[test]
@@ -213,7 +228,7 @@ mod tests {
             let state = StateName::try_from("1")?;
             let state2 = StateName::try_from("1")?;
             
-            _ = registry.get_or_insert(state);
+            registry.get_or_insert(state);
 
             assert_eq!(registry.id_of(state2), Some(0));
 
@@ -225,9 +240,9 @@ mod tests {
             let mut registry = StateRegistry::new();
             
             let state = StateName::try_from("1")?;
-            let state = StateName::try_from("2")?;
+            let state2 = StateName::try_from("2")?;
             
-            _ = registry.get_or_insert(state);
+            registry.get_or_insert(state);
 
             assert_eq!(registry.id_of(state2), None);
 
@@ -250,10 +265,11 @@ mod tests {
             let mut registry = StateRegistry::new();
             
             let state = StateName::try_from("1")?;
+            let state2 = state.clone();
             
-            _ = registry.get_or_insert(state);
+            registry.get_or_insert(state);
 
-            assert_eq!(registry.state_of(0), Some(state));
+            assert_eq!(registry.state_of(0), Some(state2));
 
             Ok(())
         }
@@ -264,7 +280,7 @@ mod tests {
             
             let state = StateName::try_from("1")?;
             
-            _ = registry.get_or_insert(state);
+            registry.get_or_insert(state);
 
             assert_eq!(registry.state_of(1), None);
 
@@ -290,7 +306,7 @@ mod tests {
             
             let state = StateName::try_from("1")?;
             
-            _ = registry.get_or_insert(state);
+            registry.get_or_insert(state);
             
             let mut collected: Vec<_> = registry.states().map(|s| s.as_str()).collect();
 
@@ -306,8 +322,8 @@ mod tests {
             let state = StateName::try_from("1")?;
             let state2 = StateName::try_from("2")?;
             
-            _ = registry.get_or_insert(state);
-            _ = registry.get_or_insert(state2);
+            registry.get_or_insert(state);
+            registry.get_or_insert(state2);
             
             let mut collected: Vec<_> = registry.states().map(|s| s.as_str()).collect();
             collected.sort_unstable();
@@ -321,12 +337,13 @@ mod tests {
         fn returns_unique_states() -> Result<(), StateError> {
             let mut registry = StateRegistry::new();
             
-            for i in 1..4 {
-                let state = StateName::try_from(String::from(i))?;
-                let state2 = StateName::try_from(String::from(i))?;
-                
-                _ = registry.get_or_insert(state);
-                _ = registry.get_or_insert(state2);
+            for i in 1..=4 {
+                let name = i.to_string();
+
+                let state1 = StateName::try_from(name.as_str())?;
+                let state2 = StateName::try_from(name.as_str())?;
+                registry.get_or_insert(state1);
+                registry.get_or_insert(state2);
             }
             
             let mut collected: Vec<_> = registry.states().map(|s| s.as_str()).collect();
@@ -344,33 +361,60 @@ mod tests {
         use super::*;
         
         #[test]
+        fn empty_registries_are_equal() {
+            let registry1 = StateRegistry::new();
+            
+            let registry2 = StateRegistry::new();
+            
+            assert_eq!(registry1, registry2);
+        }
+        
+        #[test]
         fn similar_registries_are_equal() {
             let state1 = StateName::try_from("1")?;
             let state2 = StateName::try_from("2")?;
             
             let mut registry1 = StateRegistry::new();
-            _ = registry1.get_or_insert(state1);
-            _ = registry1.get_or_insert(state2);
+            registry1.get_or_insert(state1.clone());
+            registry1.get_or_insert(state2.clone());
 
             let mut registry2 = StateRegistry::new();
-            _ = registry2.get_or_insert(state2);
-            _ = registry2.get_or_insert(state1);
+            registry2.get_or_insert(state2);
+            registry2.get_or_insert(state1);
 
 
             assert_eq!(registry1, registry2);
+        }
+        
+        #[test]
+        fn different_length_registries_are_not_equal() {
+            let state1 = StateName::try_from("1")?;
+            let state2 = StateName::try_from("2")?;
+            
+            let mut registry1 = StateRegistry::new();
+            registry1.get_or_insert(state1.clone());
+            registry1.get_or_insert(state2);
+
+            let mut registry2 = StateRegistry::new();
+            
+            registry2.get_or_insert(state1);
+            
+            assert_ne!(registry1, registry2);
         }
 
         #[test]
         fn different_registries_are_not_equal() {
             let state1 = StateName::try_from("1")?;
             let state2 = StateName::try_from("2")?;
+            let state3 = StateName::try_from("3")?;
             
             let mut registry1 = StateRegistry::new();
-            _ = registry1.get_or_insert(state1);
-            _ = registry1.get_or_insert(state2);
+            registry1.get_or_insert(state1.clone());
+            registry1.get_or_insert(state2);
 
             let mut registry2 = StateRegistry::new(););
-            _ = registry2.get_or_insert(state1);
+            registry2.get_or_insert(state1);
+            registry2.get_or_insert(state3);
 
             assert_ne!(registry1, registry2);
         }
