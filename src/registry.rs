@@ -114,6 +114,21 @@ mod tests {
 
             Ok(())
         }
+
+        #[test]
+        fn state_registration_is_case_insensitive() -> Result<(), StateError> {
+            let mut registry = StateRegistry::new();
+
+            let state = StateName::try_from("a")?;
+            let state2 = StateName::try_from("A")?;
+            
+            let id = registry.get_or_insert(state);
+            let id2 = registry.get_or_insert(state2);
+            
+            assert_ne!(id, id2);
+
+            Ok(())
+        }
         
         #[test]
         fn duplicate_state_returns_old_id() -> Result<(), StateError> {
@@ -126,6 +141,47 @@ mod tests {
             let id = registry.get_or_insert(state2);
             
             assert_eq!(id, 0);
+
+            Ok(())
+        }
+
+        #[test]
+        fn new_state_preserves_existing_ids() -> Result<(), StateError> {
+            let mut registry = StateRegistry::new();
+            let mut registered_ids = Vec::new();
+
+            for i in 0..5 {
+                let s = i.to_string();
+                
+                let state = StateName::try_from(i.as_str())?;
+                registered_ids.push(registry.get_or_insert(state));
+            }
+            
+            for i in 0..5 {
+                let s = i.to_string();
+                assert_eq!(registered_ids[i], s);
+            }
+
+            Ok(())
+        }
+
+        #[test]
+        fn duplicate_registration_preserves_existing_ids() -> Result<(), StateError> {
+            let mut registry = StateRegistry::new();
+            let mut registered_ids = Vec::new();
+
+            for i in 0..5 {
+                let s = i.to_string();
+                
+                let state = StateName::try_from(i.as_str())?;
+                registered_ids.push(registry.get_or_insert(state));
+            }
+            
+            for i in 0..5 {
+                let s = i.to_string();
+                let state = StateName::try_from(i.as_str())?;
+                assert_eq!(registered_ids[i], registry.get_or_insert(state));
+            }
 
             Ok(())
         }
@@ -286,6 +342,27 @@ mod tests {
 
             Ok(())
         }
+
+        #[test]
+        fn id_maps_back_state() -> Result<(), StateError> {
+            let mut registry = StateRegistry::new();
+            let mut registered_ids = Vec::new();
+
+            for i in 0..5 {
+                let s = i.to_string();
+                
+                let state = StateName::try_from(i.as_str())?;
+                registered_ids.push(registry.get_or_insert(state));
+            }
+            
+            for i in 0..5 {
+                let s = i.to_string();
+                let state = StateName::try_from(i.as_str())?;
+                assert_eq!(registry.state_of(registered_ids[i]), state);
+            }
+             
+            Ok(())
+        }
     }
     
     mod states {
@@ -370,7 +447,7 @@ mod tests {
         }
         
         #[test]
-        fn similar_registries_are_equal() {
+        fn similar_registries_are_equal() -> Result<(), StateError> {
             let state1 = StateName::try_from("1")?;
             let state2 = StateName::try_from("2")?;
             
@@ -382,12 +459,13 @@ mod tests {
             registry2.get_or_insert(state2);
             registry2.get_or_insert(state1);
 
-
             assert_eq!(registry1, registry2);
+
+            Ok(())
         }
         
         #[test]
-        fn different_length_registries_are_not_equal() {
+        fn different_length_registries_are_not_equal() -> Result<(), StateError> {
             let state1 = StateName::try_from("1")?;
             let state2 = StateName::try_from("2")?;
             
@@ -400,10 +478,12 @@ mod tests {
             registry2.get_or_insert(state1);
             
             assert_ne!(registry1, registry2);
+
+            Ok(())
         }
 
         #[test]
-        fn different_registries_are_not_equal() {
+        fn different_registries_are_not_equal() -> Result<(), StateError> {
             let state1 = StateName::try_from("1")?;
             let state2 = StateName::try_from("2")?;
             let state3 = StateName::try_from("3")?;
@@ -417,6 +497,52 @@ mod tests {
             registry2.get_or_insert(state3);
 
             assert_ne!(registry1, registry2);
+
+            Ok(())
+        }
+
+        #[test]
+        fn equality_does_not_modify_first_registry() -> Result<(), StateError> {
+            let state1 = StateName::try_from("1")?;
+            let state2 = StateName::try_from("2")?;
+
+            let mut registry1 = StateRegistry::new();
+            let r1s1 = registry1.get_or_insert(state1.clone());
+            let r1s2 = registry1.get_or_insert(state2.clone());
+
+            let mut registry2 = StateRegistry::new();
+            registry2.get_or_insert(state1);
+            registry2.get_or_insert(state2);
+
+            let are_equal = registry1 == registry2;
+
+            assert!(are_equal);
+            assert_eq!(registry1.state_of(r1s1).as_str(), "1");
+            assert_eq!(registry1.state_of(r1s2).as_str(), "2");
+
+            Ok(())
+        }
+
+        #[test]
+        fn equality_does_not_modify_second_registry() -> Result<(), StateError> {
+            let state1 = StateName::try_from("1")?;
+            let state2 = StateName::try_from("2")?;
+
+            let mut registry1 = StateRegistry::new();
+            registry1.get_or_insert(state1.clone());
+            registry1.get_or_insert(state2.clone());
+
+            let mut registry2 = StateRegistry::new();
+            let r2s1 = registry2.get_or_insert(state1);
+            let r2s2 = registry2.get_or_insert(state2);
+
+            let are_equal = registry1 == registry2;
+
+            assert!(are_equal);
+            assert_eq!(registry2.state_of(r2s1).as_str(), "1");
+            assert_eq!(registry2.state_of(r2s2).as_str(), "2");
+
+            Ok(())
         }
     }
 }
