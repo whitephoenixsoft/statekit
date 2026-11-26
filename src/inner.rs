@@ -1,4 +1,4 @@
-use crate::{StateError, StateRegistry, Transition, Transitions};
+use crate::{MachineBuilder, StateError, StateRegistry, Transition, Transitions};
 
 /// The internally shared immutable state-machine definition.
 #[derive(Debug,  Eq)]
@@ -142,11 +142,10 @@ mod tests {
 
         #[test]
         fn validate_transition_accepts_configured_transition() -> Result<(), StateError> {
-            let mut transitions = Transitions::new();
-            transitions.add(Transition::try_new("start", "finish")?);
-            transitions.add(Transition::try_new("1", "2")?);
-
-            let m = MachineInner::new(transitions);
+            let m = MachineBuilder::new()
+                .try_allow("start", "finish")?
+                .try_allow("1", "2")?
+                .build_inner()?;
 
             assert!(m.validate_transition("start", "finish").is_ok());
 
@@ -155,10 +154,9 @@ mod tests {
 
         #[test]
         fn validate_transition_accepts_self_transition() -> Result<(), StateError> {
-            let mut transitions = Transitions::new();
-            transitions.add(Transition::try_new("1", "1")?);
-
-            let m = MachineInner::new(transitions);
+            let m = MachineBuilder::new()
+                .try_allow("1", "1")?
+                .build_inner()?;
 
             assert!(m.validate_transition("1", "1").is_ok());
 
@@ -167,10 +165,9 @@ mod tests {
 
         #[test]
         fn validate_transition_not_exists_returns_invalid_error() -> Result<(), StateError> {
-            let mut transitions = Transitions::new();
-            transitions.add(Transition::try_new("start", "finish")?);
-
-            let m = MachineInner::new(transitions);
+            let m = MachineBuilder::new()
+                .try_allow("start", "finish")?
+                .build_inner()?;
 
             assert_eq!(
                 m.validate_transition("start", "invalid"),
@@ -185,11 +182,10 @@ mod tests {
 
         #[test]
         fn validate_transition_cyclic_is_valid() -> Result<(), StateError> {
-            let mut transitions = Transitions::new();
-            transitions.add(Transition::try_new("start", "finish")?);
-            transitions.add(Transition::try_new("finish", "start")?);
-
-            let m = MachineInner::new(transitions);
+            let m = MachineBuilder::new()
+                .try_allow("start", "finish")?
+                .try_allow("finish", "start")?
+                .build_inner()?;
 
             assert!(m.validate_transition("finish", "start").is_ok());
 
