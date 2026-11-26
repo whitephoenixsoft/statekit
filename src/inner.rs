@@ -16,23 +16,9 @@ impl MachineInner {
         Self { states, transitions }
     }
     
-    /// Resolves a &str to a state id for integrated modules
-    pub(crate) fn state_id(&self, state: &StateName) -> Option<usize> {
-        self.states.id_of(state)
-    }
-    
-    /// Resolves a &str to a state id for integrated modules
-    pub(crate) fn state_id_from_str(&self, state: &str) -> Option<usize> {
-        self.states.id_of_name(state)
-    }
-    
-    /// Resolves an id to a StateName
-    pub(crate) fn resolve_id(&self, state_id: usize) -> Option<&StateName> {
-        self.states.state_of(state_id)
-    }
-
-    pub(crate) fn resolve_str(&self, name: &str) -> Option<&StateName> {
-        self.transitions.resolve_id(self.states.id_of_name(name))
+    /// Returns the state from the string literal representation
+    pub(crate) fn state_of_name(&self, name: &str) -> Option<&StateName> {
+        self.states.state_of(self.states.id_of_name(name))
     }
 
     /// Returns whether the transition from `from` to `to` is allowed.

@@ -136,13 +136,14 @@ Items to address:
 Consider: 
 - adding `try_state` to add an independent list of states (done)
 - adding `sources_to` for incoming states
-- adding `is_isolated` for orphaned single states to machine and machine instance
+- adding `is_isolated` for orphaned single states to machine and machine instance (done)
 - adding `is_empty` to the builder and machine (done)
 - adding `state_count` to machine and machine inner (done)
 
 Todo:
 - add design document (done)
 - update specification 
+- adding additional api tests
 - adding additional property tests to cover new invariants
 - update outline documents
 - update README with new examples 

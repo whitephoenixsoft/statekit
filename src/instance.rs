@@ -8,17 +8,17 @@ use std::sync::Arc;
 #[derive(Debug, PartialEq, Eq)]
 pub struct MachineInstance {
     machine: Arc<MachineInner>,
-    current: StateName,
+    current: &StateName,
 }
 
 impl MachineInstance {
     /// Returns a MachineInstance. Returns a [`StateError::UnknownInitialState`]
     /// if `initial` is not an existing state.
-    pub(crate) fn try_new(machine: Arc<MachineInner>, initial: String) -> Result<Self, StateError> {
-        if let Some(id) = machine.state_id(initial.as_str()) {
+    pub(crate) fn try_new(machine: Arc<MachineInner>, initial: &str) -> Result<Self, StateError> {
+        if let Some(state) = machine.state_of_name(initial) {
             return Ok(Self {
                 machine,
-                current: machine.resolve_id(id).unwrap(),
+                current: state
             });
         } 
         else {
@@ -107,8 +107,8 @@ impl MachineInstance {
     pub fn transition_to(&mut self, target: &str) -> Result<(), StateError> {
         self.machine.validate_transition(self.state(), target)?;
         
-        if let Some(id) = machine.state_id(target) {
-            self.current = machine.resolve_id(id).unwrap();
+        if let Some(state) = machine.state_of_name(target) {
+            self.current = state;
         } 
         
         Ok(())
@@ -135,6 +135,10 @@ impl MachineInstance {
         self.machine.is_terminal(self.state())
     }
 
+    pub fn is_isolated(&self) -> {
+        self.machine.is_isolated(self.state())
+    }
+
     /// Returns a shared handle to this instance's machine definition.
     ///
     /// # Examples
@@ -153,7 +157,7 @@ impl MachineInstance {
     /// # Ok::<(), StateError>(())
     /// ```
     pub fn machine(&self) -> Machine {
-        Machine::from_inner(Arc::clone(&self.machine))
+        Machine::from_shared(Arc::clone(&self.machine))
     }
 }
 

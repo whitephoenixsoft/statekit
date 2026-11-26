@@ -19,7 +19,7 @@ impl Machine {
     }
 
     /// Constructs a machine handle from existing MachineInner.
-    pub(crate) fn from_inner(inner: Arc<MachineInner>) -> Self {
+    pub(crate) fn from_shared(inner: Arc<MachineInner>) -> Self {
         Self { inner }
     }
 
@@ -63,7 +63,7 @@ impl Machine {
     /// # Ok::<(), StateError>(())
     /// ```
     pub fn instance(&self, initial: &str) -> Result<MachineInstance, StateError> {
-        MachineInstance::try_new(Arc::clone(&self.inner), initial.to_owned())
+        MachineInstance::try_new(Arc::clone(&self.inner), initial)
     }
 
     /// Returns whether the transition from `from` to `to` is allowed.
