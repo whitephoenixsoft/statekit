@@ -99,7 +99,7 @@ impl MachineInner {
 
     /// Returns an iterator over all the transitions in the state machine.
     pub(crate) fn transitions(&self) -> impl Iterator<Item = &Transition> {
-        self.transitions.transitions()
+        self.transitions.iter()
             .map(|(sid, tid)| Transition::new( 
                 self.states.stateof(sid).unwrap(),
                 self.states.stateof(tid).unwrap(),
@@ -123,7 +123,7 @@ impl MachineInner {
     /// Returns whether a state is not part of a transition
     pub(crate) fn is_isolated(&self, state: &str) -> bool {
         if let Some(id) = self.states.id_of_name(state) {
-            return !self.transitions.transitions().any(|&(s,t)| s == id || t == id)
+            return !self.transitions.iter().any(|&(s,t)| s == id || t == id)
         }
         
         false
