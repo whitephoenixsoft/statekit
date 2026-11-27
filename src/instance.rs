@@ -135,7 +135,7 @@ impl MachineInstance {
         self.machine.is_terminal(self.state())
     }
 
-    pub fn is_isolated(&self) -> {
+    pub fn is_isolated(&self) -> bool {
         self.machine.is_isolated(self.state())
     }
 

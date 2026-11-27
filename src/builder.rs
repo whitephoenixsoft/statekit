@@ -1,4 +1,4 @@
-use crate::{Machine, MachineInner, StateError, StateRegistry, Transitions};
+use crate::{Machine, MachineInner, StateName, StateError, StateRegistry, Transitions};
 
 /// A builder for constructing a [`Machine`].
 ///

@@ -492,7 +492,7 @@ mod tests {
             registry1.get_or_insert(state1.clone());
             registry1.get_or_insert(state2);
 
-            let mut registry2 = StateRegistry::new(););
+            let mut registry2 = StateRegistry::new();
             registry2.get_or_insert(state1);
             registry2.get_or_insert(state3);
 

@@ -25,7 +25,7 @@ impl MachineInner {
     pub(crate) fn can_transition(&self, from: &str, to: &str) -> bool {
         let Some(source) = self.states.id_of_name(from) else {
             return false;
-        };
+        }
 
         let Some(target) = self.states.id_of_name(to) else {
             return false;
